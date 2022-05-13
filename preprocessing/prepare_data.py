@@ -18,9 +18,9 @@ parser.add_argument('data_file_dir', type=str,
                     help='Path to directory with .h5 files containing jet image data.')
 parser.add_argument('output_dir', type=str,
                     help='Directory to save the processed data in.')
-parser.add_argument('--min_pt', type=float,
+parser.add_argument('--min_pt', type=float, default=2,
                     help='Maximum transverse momentum that the data should have.')
-parser.add_argument('--max_constituents', type=int,
+parser.add_argument('--max_constituents', type=int, default=8,
                     help='Maximum number of jet constituents data should have.')
 parser.add_argument('--flag', type=str, default='',
                     help='Attach a string to the end of the output file name.')

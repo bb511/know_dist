@@ -16,12 +16,8 @@ parser.add_argument('--y_data_paths', type=str, nargs='+', required=True,
                     help='Paths to the target files corresponding to the data.')
 parser.add_argument('--output_dir', type=str, required=True,
                     help='Path to the output folder.')
-parser.add_argument('--output_name', type=str, required=True,
-                    help='Name of the output file. Will be same for data and target.')
 parser.add_argument('--norm', type=str, default='nonorm',
                     help='The type of normalisation to apply to the data.')
-parser.add_argument('--max_data', type=int, default=-1,
-                    help='Maximum number of events that your data set should have.')
 parser.add_argument('--test_split', type=float, default=0.33,
                     help='The percentage of data to be used as validation.')
 
@@ -34,8 +30,9 @@ def main(args):
         x_data = np.concatenate((x_data, np.load(x_data_path)), axis=0)
         y_data = np.concatenate((y_data, np.load(y_data_path)), axis=0)
 
-    x_data, y_data = equalize_classes(x_data, y_data, args.max_data)
+    x_data, y_data = equalize_classes(x_data, y_data)
     x_data = apply_normalisation(args.norm, x_data)
+
     x_data_train, x_data_test, y_data_train, y_data_test = \
         train_test_split(x_data, y_data, test_size=args.test_split, random_state=7,
                          stratify=y_data)
@@ -43,14 +40,11 @@ def main(args):
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    np.save(os.path.join(args.output_dir, "x_" + args.output_name  +
-            f"_n{x_data_train.shape[0]}_{args.norm}_train"), x_data_train)
-    np.save(os.path.join(args.output_dir, "x_" + args.output_name +
-            f"_n{x_data_test.shape[0]}_{args.norm}_test"), x_data_test)
-    np.save(os.path.join(args.output_dir, "y_" + args.output_name +
-            f"_n{y_data_train.shape[0]}_{args.norm}_train"), y_data_train)
-    np.save(os.path.join(args.output_dir, "y_" + args.output_name +
-            f"_n{y_data_test.shape[0]}_{args.norm}_test"), y_data_test)
+    output_name = format_output_filename(args.x_data_paths[0], args.norm)
+    np.save(os.path.join(args.output_dir, "x_" + output_name + "_train"), x_data_train)
+    np.save(os.path.join(args.output_dir, "x_" + output_name + "_test"), x_data_test)
+    np.save(os.path.join(args.output_dir, "y_" + output_name + "_train"), y_data_train)
+    np.save(os.path.join(args.output_dir, "y_" + output_name + "_test"), y_data_test)
 
     print('\n')
     print(tcols.HEADER + "Training data" + tcols.ENDC)
@@ -64,27 +58,21 @@ def main(args):
           " \U0001F370\U00002728" +
           tcols.ENDC)
 
-def equalize_classes(x_data: np.ndarray, y_data: np.ndarray, max_data: int) \
-    -> tuple([np.array, np.array]):
-    """Equalize the number of events each class has in the data file and make sure
-    they add up to the maximum amount of data given by the user. IF max_data is not
-    divisible by the number of classes, then it is rounded to the nearest int.
-    IF max_data is -1, use as many data points as the class with the lowest data
-    points has.
+def equalize_classes(x_data: np.ndarray, y_data: np.ndarray) \
+    ->  tuple([np.array, np.array]):
+    """Equalize the number of events each class has in the data file.
 
     Args:
         x_data: Array containing the data to equalize.
         y_data: Corresponding onehot encoded target array.
-        max_data: Maximum amount of data the total data set should have.
 
     Returns:
         The data with equal number of events per class and the corresp target.
-        This data is not shuffled, so first max_data events will be one class, the
-        next max_data events will be another class, and so on...
+        This data is not shuffled.
     """
     print("Equalizing data classes...")
     x_data_segregated, y_data_segregated = segregate_data(x_data, y_data)
-    maxdata_class = check_max_data_consitency(x_data_segregated, max_data)
+    maxdata_class = get_min_data_per_class(x_data_segregated)
 
     x_data = x_data_segregated[0][:maxdata_class, :, :]
     y_data = y_data_segregated[0][:maxdata_class, :]
@@ -94,7 +82,7 @@ def equalize_classes(x_data: np.ndarray, y_data: np.ndarray, max_data: int) \
 
     return x_data, y_data
 
-def apply_normalisation(choice: str, x_data: np.array) -> np.array:
+def apply_normalisation(choice: str, x_data: np.ndarray) -> np.ndarray:
     """Choose the type of normalisation to apply to the data.
 
     Args:
@@ -141,22 +129,25 @@ def segregate_data(x_data: np.array, y_data: np.array)\
 
     return x_data_segregated, y_data_segregated
 
-def check_max_data_consitency(x_data_segregated: np.ndarray, max_data: np.ndarray):
-    """Checks if the desired amount of data is consistent with the size of the data
-    set that is under consideration.
+def get_min_data_per_class(x_data_segregated: np.ndarray):
+    """Get the amount of data the class with the lowest representation has.
     """
     num_classes = len(x_data_segregated)
     num_datapoints_per_class = [len(x_data_class) for x_data_class in x_data_segregated]
-
-    if max_data == -1:
-        desired_datapoints_per_class = min(num_datapoints_per_class)
-    else:
-        desired_datapoints_per_class = int(max_data/num_classes)
-
-    if False in num_datapoints_per_class < desired_datapoints_per_class:
-        raise RuntimeError("Not enough data per class to satisfy given max_data!")
+    desired_datapoints_per_class = min(num_datapoints_per_class)
 
     return desired_datapoints_per_class
+
+def format_output_filename(input_name: str, norm_name: str) -> str:
+    """Formats the name of the output file given a certain convention so the data
+    loading for the ml models is easier.
+    """
+    input_name_separated = os.path.basename(input_name).split("_")
+    input_base_name = input_name_separated[1:-1]
+
+    output_filename = "_".join(input_base_name)
+
+    return output_filename + "_" + norm_name
 
 def print_jets_per_class(y_data: np.array):
     print(f'Number of gluon jets: {np.sum(np.argmax(y_data, axis=1)==0)}')
