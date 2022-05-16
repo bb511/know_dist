@@ -13,7 +13,11 @@ def main(args):
 
     jet_data = data.Data(args["data_folder"], args["data_hyperparams"], args["norm"],
                          args["train_events"], 0, seed=seed)
-    jet_data.shuffle_constituents("train")
+    jet_data = data.Data.shuffled(args["data_folder"], args["data_hyperparams"],
+                                  args["norm"], args["train_events"], 0, seed=seed)
+
+
+
 
 
 
