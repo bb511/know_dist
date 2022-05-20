@@ -5,6 +5,7 @@ import numpy as np
 
 from .terminal_colors import tcols
 
+
 class Data:
     """Data class to store the data to be used in training the interaction network.
 
@@ -16,6 +17,7 @@ class Data:
         test_events: Number of events for the testing sample.
         seed: The seed used in any shuffling that is done to the data.
     """
+
     def __init__(
         self,
         data_folder: str,
@@ -23,7 +25,8 @@ class Data:
         norm_name: str,
         train_events: int,
         test_events: int,
-        seed: int = None):
+        seed: int = None,
+    ):
         """Initialise sampleclass with unshuffled constituents."""
 
         self.data_folder = data_folder
@@ -53,22 +56,41 @@ class Data:
         norm_name: str,
         train_events: int,
         test_events: int,
-        seed: int = None):
+        seed: int = None,
+    ):
         """Initialise sampleclass with shuffled constituents."""
 
         data = cls(data_folder, hyperparams, norm_name, train_events, test_events, seed)
 
         print("Shuffling constituents...")
-        rng = np.random.default_rng(self.seed)
-        tr_seeds = rng.integers(low=0, high=100, size=self.ntrain_jets)
-        te_seeds = rng.integers(low=0, high=100, size=self.ntest_jets)
+        rng = np.random.default_rng(seed)
+        tr_seeds = rng.integers(low=0, high=100, size=data.ntrain_jets)
+        te_seeds = rng.integers(low=0, high=100, size=data.ntest_jets)
 
-        for jet_idx, seed in enumerate(jet_seeds):
-            shuffling = np.random.RandomState(seed=seed).permutation(self.ncons)
-            data.tr_data[jet_idx, :] = data.tr_data[jet_idx, shuffling]
-            data.te_data[jet_idx, :] = data.te_data[jet_idx, shuffling]
+        cls._shuffle_constituents(data.tr_data, tr_seeds, "training")
+        cls._shuffle_constituents(data.te_data, te_seeds, "testing")
 
-        print(tcols.OKGREEN + "Shuffle done! \U0001F0CF" + tcols.ENDC)
+        return data
+
+    @classmethod
+    def _shuffle_constituents(cls, data: np.ndarray, seeds: np.ndarray, dtype: str):
+        """Shuffle the constituents of a jet given an array of seeds equal in length
+        to the number of jets in your data set.
+
+        Args:
+            data: Array containing the jet, constituents, and features.
+            seeds: Array containing the seeds, equal in number to the jets.
+            dtype: The type of data to shuffle, training or testing.
+        """
+
+        if data.shape[0] == 0:
+            return data
+
+        for jet_idx, seed in enumerate(seeds):
+            shuffling = np.random.RandomState(seed=seed).permutation(data.shape[1])
+            data[jet_idx, :] = data[jet_idx, shuffling]
+
+        print(tcols.OKGREEN + f"Shuffled the {dtype} data! \U0001F0CF\n" + tcols.ENDC)
 
         return data
 
@@ -101,25 +123,42 @@ class Data:
         elif data_type == "test":
             return self.test_events
         else:
-            raise TypeError("Nevents error: type of data provided does not exist! "
-                            "Choose either 'train' or 'test'.")
+            raise TypeError(
+                "Nevents error: type of data provided does not exist! "
+                "Choose either 'train' or 'test'."
+            )
 
     def _get_data_filename(self, data_type) -> str:
         return (
-            "x_jet_images" + "_c" + self.hyperparams["nconstituents"] +
-            "_pt" + self.hyperparams["pt_min"] + "_" +
-            self.norm_name + "_" + data_type + ".npy"
+            "x_jet_images"
+            + "_c"
+            + self.hyperparams["nconstituents"]
+            + "_pt"
+            + self.hyperparams["pt_min"]
+            + "_"
+            + self.norm_name
+            + "_"
+            + data_type
+            + ".npy"
         )
 
     def _get_target_filename(self, data_type) -> str:
         return (
-            "y_jet_images" + "_c" + self.hyperparams["nconstituents"] +
-            "_pt" + self.hyperparams["pt_min"] + "_" +
-            self.norm_name + "_" + data_type + ".npy"
+            "y_jet_images"
+            + "_c"
+            + self.hyperparams["nconstituents"]
+            + "_pt"
+            + self.hyperparams["pt_min"]
+            + "_"
+            + self.norm_name
+            + "_"
+            + data_type
+            + ".npy"
         )
 
-    def _segregate_data(self, x_data: np.array, y_data: np.array
-        ) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    def _segregate_data(
+        self, x_data: np.array, y_data: np.array
+    ) -> tuple[list[np.ndarray], list[np.ndarray]]:
         """Separates the data into separate arrays for each class.
 
         Args:
@@ -141,14 +180,21 @@ class Data:
 
         return x_data_segregated, y_data_segregated
 
-    def _trim_data(self, x: np.ndarray, y: np.ndarray, maxdata: int, seed: int
-        ) -> tuple[np.ndarray, np.ndarray]:
+    def _trim_data(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        maxdata: int,
+        seed: int,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Cut the imported data and target and form new data sets with
         equal numbers of events per each class.
 
         Args:
-            @x: Numpy array containing the data.
-            @y: Numpy array containing the corresponding target (one-hot).
+            x: Numpy array containing the data.
+            y: Numpy array containing the corresponding target (one-hot).
+            maxdata: Maximum number of jets to load.
+            seed: Seed to used in shuffling the jets after trimming.
 
         Returns:
             Two numpy arrays, one with data and one with target,
@@ -178,4 +224,3 @@ class Data:
         print(f"Training data size: {self.tr_data.shape[0]:.2e}")
         print(f"Test data size: {self.te_data.shape[0]:.2e}")
         print("----------------\n")
-

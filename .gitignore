@@ -127,3 +127,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Output
+trained_intnets/
+
+# Slurm submit files.
+*slurm*
+
+# Logs
+logs/
+*.logs
+*.out

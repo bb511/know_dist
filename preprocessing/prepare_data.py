@@ -14,16 +14,32 @@ import numpy as np
 from terminal_colors import tcols
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('data_file_dir', type=str,
-                    help='Path to directory with .h5 files containing jet image data.')
-parser.add_argument('output_dir', type=str,
-                    help='Directory to save the processed data in.')
-parser.add_argument('--min_pt', type=float, default=2,
-                    help='Maximum transverse momentum that the data should have.')
-parser.add_argument('--max_constituents', type=int, default=8,
-                    help='Maximum number of jet constituents data should have.')
-parser.add_argument('--flag', type=str, default='',
-                    help='Attach a string to the end of the output file name.')
+parser.add_argument(
+    "data_file_dir",
+    type=str,
+    help="Path to directory with .h5 files containing jet image data.",
+)
+parser.add_argument(
+    "output_dir", type=str, help="Directory to save the processed data in."
+)
+parser.add_argument(
+    "--min_pt",
+    type=float,
+    default=2,
+    help="Maximum transverse momentum that the data should have.",
+)
+parser.add_argument(
+    "--max_constituents",
+    type=int,
+    default=8,
+    help="Maximum number of jet constituents data should have.",
+)
+parser.add_argument(
+    "--flag",
+    type=str,
+    default="",
+    help="Attach a string to the end of the output file name.",
+)
 
 
 def main(args):
@@ -47,9 +63,12 @@ def main(args):
     np.save(x_output_file, x_data)
     np.save(y_output_file, y_data)
 
-    print(tcols.OKGREEN +
-          f"Successfully saved processed data to {args.output_dir} \U0001F370" +
-          tcols.ENDC)
+    print(
+        tcols.OKGREEN
+        + f"Successfully saved processed data to {args.output_dir} \U0001F370"
+        + tcols.ENDC
+    )
+
 
 def select_features(data_file_path: str) -> tuple([np.ndarray, np.ndarray]):
     """Selects (pT, etarel, phirel) features from an .h5 jet data file and puts
@@ -64,10 +83,11 @@ def select_features(data_file_path: str) -> tuple([np.ndarray, np.ndarray]):
         Data and target arrays with selected features.
     """
     data = h5py.File(data_file_path)
-    x_data = data['jetConstituentList'][:,:,[5,8,11]]
-    y_data = data['jets'][:,-6:-1]
+    x_data = data["jetConstituentList"][:, :, [5, 8, 11]]
+    y_data = data["jets"][:, -6:-1]
 
     return x_data, y_data
+
 
 def get_file_paths(data_file_dir: str) -> list:
     """Gets path to the data files inside a given directory.
@@ -83,8 +103,10 @@ def get_file_paths(data_file_dir: str) -> list:
 
     return file_paths
 
-def cut_transverse_momentum(x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float)\
-    -> tuple([list, np.ndarray]):
+
+def cut_transverse_momentum(
+    x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float
+) -> tuple([list, np.ndarray]):
     """Reject constituents that are below a certain transverse momentum.
     If a jet has not constituents with a momentum above the given threshold, then
     the whole jet is removed.
@@ -104,6 +126,7 @@ def cut_transverse_momentum(x_data: np.ndarray, y_data: np.ndarray, minimum_pt: 
     y_data = y_data[structure_memory > 0]
 
     return x_data, y_data
+
 
 def restrict_nb_constituents(x_data: np.ndarray, max_constituents: int) -> np.ndarray:
     """Force each jet to have an equal number of constituents. If the jet has more,
@@ -126,15 +149,16 @@ def restrict_nb_constituents(x_data: np.ndarray, max_constituents: int) -> np.nd
 
     return np.array(x_data)
 
+
 def print_data_dimensions(data: np.ndarray):
-    """Prints the dimensions of the data explicitely.
-    """
+    """Prints the dimensions of the data explicitely."""
     print(tcols.OKGREEN + "The processed data has dimensions: " + tcols.ENDC)
-    print('--------------')
-    print(f'Number of jets = {data.shape[0]}')
-    print(f'Number of constituents = {data.shape[1]}')
-    print(f'Number of features = {data.shape[2]}')
-    print('--------------\n')
+    print("--------------")
+    print(f"Number of jets = {data.shape[0]}")
+    print(f"Number of constituents = {data.shape[1]}")
+    print(f"Number of features = {data.shape[2]}")
+    print("--------------\n")
+
 
 if __name__ == "__main__":
     args = parser.parse_args()

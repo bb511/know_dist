@@ -6,20 +6,27 @@ import sys
 sys.path.append("..")
 
 from int_net.train import main
+from int_net import util
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data_folder", type=str, default='../../kd_data/intnet_input',
                     help="The folder where the data is stored on the system..")
 parser.add_argument("--norm", type=str, default='nonorm',
                     help="The name of the normalisation that you'll to use.")
-parser.add_argument("--train_events", type=str, default=-1,
+parser.add_argument("--train_events", type=int, default=-1,
                     help="The exact number of training events to use.")
-parser.add_argument('--lr', type=float, default=2e-03,
+parser.add_argument('--lr', type=float, default=0.0005,
                     help="The learning rate.")
-parser.add_argument("--batch", type=int, default=128,
+parser.add_argument("--batch", type=int, default=512,
                     help="The batch size.")
-parser.add_argument("--epochs", type=int, default=85,
+parser.add_argument("--epochs", type=int, default=100,
                     help="The number of training epochs.")
+parser.add_argument("--optimiser", type=str, default="adam",
+                    help="Name of the optimiser you want to use.")
+parser.add_argument("--loss", type=str, default="categorical_crossentropy",
+                    help="Name of the loss you want to use.")
+parser.add_argument("--metrics", type=str, default="categorical_accuracy",
+                    help="Name of the success metric you want to use.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
@@ -27,6 +34,19 @@ args = parser.parse_args()
 data_hyperparams = {
     "pt_min": "2.0",
     "nconstituents": "8"
+}
+
+inet_compilation_hyperparams = {
+    "optimizer": util.choose_optimiser(args.optimiser, args.lr),
+    "loss": args.loss,
+    "metrics": [args.metrics],
+}
+
+inet_hyperparams = {
+    "fr_structure": [],
+    "fo_structure": [],
+    "fc_structure": [],
+    "compilation": inet_compilation_hyperparams,
 }
 
 args = {
@@ -38,6 +58,7 @@ args = {
     "lr":               args.lr,
     "epochs":           args.epochs,
     "outdir":           args.outdir,
+    "inet_hyperparams": inet_hyperparams,
 }
 
 main(args)

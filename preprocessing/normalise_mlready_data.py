@@ -10,16 +10,36 @@ from sklearn.model_selection import train_test_split
 from terminal_colors import tcols
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--x_data_paths', type=str, nargs='+', required=True,
-                    help='Path to the data files to process.')
-parser.add_argument('--y_data_paths', type=str, nargs='+', required=True,
-                    help='Paths to the target files corresponding to the data.')
-parser.add_argument('--output_dir', type=str, required=True,
-                    help='Path to the output folder.')
-parser.add_argument('--norm', type=str, default='nonorm',
-                    help='The type of normalisation to apply to the data.')
-parser.add_argument('--test_split', type=float, default=0.33,
-                    help='The percentage of data to be used as validation.')
+parser.add_argument(
+    "--x_data_paths",
+    type=str,
+    nargs="+",
+    required=True,
+    help="Path to the data files to process.",
+)
+parser.add_argument(
+    "--y_data_paths",
+    type=str,
+    nargs="+",
+    required=True,
+    help="Paths to the target files corresponding to the data.",
+)
+parser.add_argument(
+    "--output_dir", type=str, required=True, help="Path to the output folder."
+)
+parser.add_argument(
+    "--norm",
+    type=str,
+    default="nonorm",
+    help="The type of normalisation to apply to the data.",
+)
+parser.add_argument(
+    "--test_split",
+    type=float,
+    default=0.33,
+    help="The percentage of data to be used as validation.",
+)
+
 
 def main(args):
 
@@ -33,9 +53,9 @@ def main(args):
     x_data, y_data = equalize_classes(x_data, y_data)
     x_data = apply_normalisation(args.norm, x_data)
 
-    x_data_train, x_data_test, y_data_train, y_data_test = \
-        train_test_split(x_data, y_data, test_size=args.test_split, random_state=7,
-                         stratify=y_data)
+    x_data_train, x_data_test, y_data_train, y_data_test = train_test_split(
+        x_data, y_data, test_size=args.test_split, random_state=7, stratify=y_data
+    )
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
@@ -46,20 +66,25 @@ def main(args):
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_train"), y_data_train)
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_test"), y_data_test)
 
-    print('\n')
+    print("\n")
     print(tcols.HEADER + "Training data" + tcols.ENDC)
     print_jets_per_class(y_data_train)
-    print('\n')
+    print("\n")
     print(tcols.HEADER + "Test data" + tcols.ENDC)
     print_jets_per_class(y_data_test)
 
-    print("\n" + tcols.OKGREEN +
-          f"Saved equalized and normalised data at {args.output_dir}" +
-          " \U0001F370\U00002728" +
-          tcols.ENDC)
+    print(
+        "\n"
+        + tcols.OKGREEN
+        + f"Saved equalized and normalised data at {args.output_dir}"
+        + " \U0001F370\U00002728"
+        + tcols.ENDC
+    )
 
-def equalize_classes(x_data: np.ndarray, y_data: np.ndarray) \
-    ->  tuple([np.array, np.array]):
+
+def equalize_classes(
+    x_data: np.ndarray, y_data: np.ndarray
+) -> tuple([np.array, np.array]):
     """Equalize the number of events each class has in the data file.
 
     Args:
@@ -82,6 +107,7 @@ def equalize_classes(x_data: np.ndarray, y_data: np.ndarray) \
 
     return x_data, y_data
 
+
 def apply_normalisation(choice: str, x_data: np.ndarray) -> np.ndarray:
     """Choose the type of normalisation to apply to the data.
 
@@ -92,7 +118,7 @@ def apply_normalisation(choice: str, x_data: np.ndarray) -> np.ndarray:
     Returns:
         Normalised x_data.
     """
-    if choice == 'nonorm':
+    if choice == "nonorm":
         print("Skipping normalisation...")
         return x_data
 
@@ -101,13 +127,17 @@ def apply_normalisation(choice: str, x_data: np.ndarray) -> np.ndarray:
     x_data = switcher.get(choice, lambda: None)()
 
     if x_data is None:
-        raise NameError("Type of normalisation does not exist! Please choose from "
-                        f"the following list: {list(switcher.keys())}")
+        raise NameError(
+            "Type of normalisation does not exist! Please choose from "
+            f"the following list: {list(switcher.keys())}"
+        )
 
     return x_data
 
-def segregate_data(x_data: np.array, y_data: np.array)\
-     -> tuple([list[np.ndarray], list[np.ndarray]]):
+
+def segregate_data(
+    x_data: np.array, y_data: np.array
+) -> tuple([list[np.ndarray], list[np.ndarray]]):
     """Separates the data into separate arrays for each class.
 
     Args:
@@ -129,14 +159,15 @@ def segregate_data(x_data: np.array, y_data: np.array)\
 
     return x_data_segregated, y_data_segregated
 
+
 def get_min_data_per_class(x_data_segregated: np.ndarray):
-    """Get the amount of data the class with the lowest representation has.
-    """
+    """Get the amount of data the class with the lowest representation has."""
     num_classes = len(x_data_segregated)
     num_datapoints_per_class = [len(x_data_class) for x_data_class in x_data_segregated]
     desired_datapoints_per_class = min(num_datapoints_per_class)
 
     return desired_datapoints_per_class
+
 
 def format_output_filename(input_name: str, norm_name: str) -> str:
     """Formats the name of the output file given a certain convention so the data
@@ -149,12 +180,14 @@ def format_output_filename(input_name: str, norm_name: str) -> str:
 
     return output_filename + "_" + norm_name
 
+
 def print_jets_per_class(y_data: np.array):
-    print(f'Number of gluon jets: {np.sum(np.argmax(y_data, axis=1)==0)}')
-    print(f'Number of quark jets: {np.sum(np.argmax(y_data, axis=1)==1)}')
-    print(f'Number of W jets: {np.sum(np.argmax(y_data, axis=1)==2)}')
-    print(f'Number of Z jets: {np.sum(np.argmax(y_data, axis=1)==3)}')
-    print(f'Number of top jets: {np.sum(np.argmax(y_data, axis=1)==4)}')
+    print(f"Number of gluon jets: {np.sum(np.argmax(y_data, axis=1)==0)}")
+    print(f"Number of quark jets: {np.sum(np.argmax(y_data, axis=1)==1)}")
+    print(f"Number of W jets: {np.sum(np.argmax(y_data, axis=1)==2)}")
+    print(f"Number of Z jets: {np.sum(np.argmax(y_data, axis=1)==3)}")
+    print(f"Number of top jets: {np.sum(np.argmax(y_data, axis=1)==4)}")
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
