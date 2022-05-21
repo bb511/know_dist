@@ -1,0 +1,84 @@
+# Methods to plot the results of a model tested on some data.
+
+import matplotlib.pyplot as plt
+from sklearn import metrics
+
+def loss_vs_epochs(outdir: str, train_loss: np.ndarray, valid_loss: np.ndarray):
+    """Plots the loss for each epoch for the training and validation data
+    and saves it to the same directory the model is saved in.
+    """
+    plt.plot(train_loss, color="gray", label="Training Loss")
+    plt.plot(valid_loss, color="navy", label="Validation Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.text(
+        0,
+        np.max(train_loss),
+        f"Min: {np.min(valid_loss):.2e}",
+        verticalalignment="top",
+        horizontalalignment="left",
+        color="blue",
+        fontsize=15,
+        bbox={"facecolor": "white", "alpha": 0.8, "pad": 5},
+    )
+    plt.legend()
+    plt.savefig(os.path.join(outdir, "loss_epochs.pdf"))
+    plt.close()
+    print(f"Loss vs epochs plot saved to {outdir}.")
+
+def accuracy_vs_epochs(outdir: str, train_acc: np.ndarray, valid_acc: np.ndarray):
+    """Plots the accuracy for each epoch for the training and validation data
+    and saves it to the same directory the model is saved in.
+    """
+    plt.plot(train_acc, color="gray", label="Training Accuracy")
+    plt.plot(valid_acc, color="navy", label="Validation Accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.text(
+        0,
+        np.max(train_acc),
+        f"Min: {np.min(valid_acc):.2e}",
+        verticalalignment="top",
+        horizontalalignment="left",
+        color="blue",
+        fontsize=15,
+        bbox={"facecolor": "white", "alpha": 0.8, "pad": 5},
+    )
+    plt.legend()
+    plt.savefig(os.path.join(outdir, "accuracy_epochs.pdf"))
+    plt.close()
+    print(f"Accuracy vs epochs plot saved to {outdir}.")
+
+def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
+    """Plot the ROC curves for the labels of the jet data set."""
+    labels = ["Gluon", "Quark", "W", "Z", "Top"]
+    cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
+    for idx, label in enumerate(labels):
+        fpr, tpr, thr = metrics.roc_curve(y_pred[:, idx], y_test[:, idx])
+        auc = metrics.auc(fpr, tpr)
+        plt.plot(tpr, fpr, color=cols[idx], label=f"{label}: AUC = {auc*100:.1f}%")
+
+    plt.xlabel("True Positive Rate")
+    plt.ylabel("False Positive Rate")
+    plt.set_ylim(0.001, 1)
+
+    plt.legend()
+    plt.savefig(os.path.join(outdir, "roc_curves.pdf"))
+    plt.close()
+    print(f"ROC curves plot saved to {outdir}.")
+
+def dnn_output(outdir: str, y_pred: np.ndarray):
+    """Plots the output of the last part (fc) of the interaction network."""
+    labels = ["Gluon", "Quark", "W", "Z", "Top"]
+    cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
+    bins = np.linspace(0.0, 1.0, 20)
+    for idx, label in enumerate(labels):
+        plt.hist(y_pred, bins=bins, label=label, histtype='step', color=cols[idx])
+
+    plt.semilogy()
+    plt.xlabel(f"$f_c(x)$ DNN Output")
+    plt.legend()
+
+    plt.savefig(os.path.join(outdir, "fc_output_histos.pdf"))
+    plt.close()
+    print(f"DNN output histograms plot saved to {outdir}.")

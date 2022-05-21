@@ -2,13 +2,12 @@
 
 import numpy as np
 import itertools
+import matplotlib.pyplot as plt
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers as KL
 import qkeras
-
 
 class QConvIntNet(Model):
     """Interaction network implemented with convolutional layers.

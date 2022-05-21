@@ -17,7 +17,6 @@ class Data:
         test_events: Number of events for the testing sample.
         seed: The seed used in any shuffling that is done to the data.
     """
-
     def __init__(
         self,
         data_folder: str,
@@ -27,7 +26,6 @@ class Data:
         test_events: int,
         seed: int = None,
     ):
-        """Initialise sampleclass with unshuffled constituents."""
 
         self.data_folder = data_folder
         self.norm_name = norm_name
@@ -58,7 +56,6 @@ class Data:
         test_events: int,
         seed: int = None,
     ):
-        """Initialise sampleclass with shuffled constituents."""
 
         data = cls(data_folder, hyperparams, norm_name, train_events, test_events, seed)
 

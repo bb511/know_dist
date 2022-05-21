@@ -5,6 +5,7 @@ import os
 from tensorflow.keras import callbacks
 
 from . import util
+from . import plots
 from .data import Data
 from .model import QConvIntNet
 from .terminal_colors import tcols
@@ -36,7 +37,7 @@ def main(args):
 
     print(tcols.HEADER + "\nTraining the model... \U0001F4AA" + tcols.ENDC)
     callbacks = get_callbacks()
-    model.fit(
+    history = model.fit(
         jet_data.tr_data,
         jet_data.tr_target,
         epochs=args["epochs"],
@@ -48,6 +49,13 @@ def main(args):
 
     print(tcols.OKGREEN + "\nSaving model to: " + tcols.ENDC, outdir)
     model.save(outdir, save_format="tf")
+    plots.loss_vs_epochs(outdir, history.history["loss"], history.history["val_loss"])
+    plots.accuracy_vs_epochs(
+        outdir,
+        history.history["categorical_accuracy"],
+        history.history["val_categorical_accuracy"],
+    )
+
     print(tcols.OKGREEN + "Done! \U0001F370\U00002728" + tcols.ENDC)
 
 
