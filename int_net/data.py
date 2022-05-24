@@ -61,8 +61,8 @@ class Data:
 
         print("Shuffling constituents...")
         rng = np.random.default_rng(seed)
-        tr_seeds = rng.integers(low=0, high=100, size=data.ntrain_jets)
-        te_seeds = rng.integers(low=0, high=100, size=data.ntest_jets)
+        tr_seeds = rng.integers(low=0, high=10000, size=data.ntrain_jets)
+        te_seeds = rng.integers(low=0, high=10000, size=data.ntest_jets)
 
         cls._shuffle_constituents(data.tr_data, tr_seeds, "training")
         cls._shuffle_constituents(data.te_data, te_seeds, "testing")

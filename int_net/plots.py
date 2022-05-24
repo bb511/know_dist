@@ -1,7 +1,10 @@
 # Methods to plot the results of a model tested on some data.
 
+import os
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import metrics
+
 
 def loss_vs_epochs(outdir: str, train_loss: np.ndarray, valid_loss: np.ndarray):
     """Plots the loss for each epoch for the training and validation data
@@ -54,13 +57,14 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
     for idx, label in enumerate(labels):
-        fpr, tpr, thr = metrics.roc_curve(y_pred[:, idx], y_test[:, idx])
+        fpr, tpr, thr = metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
         auc = metrics.auc(fpr, tpr)
         plt.plot(tpr, fpr, color=cols[idx], label=f"{label}: AUC = {auc*100:.1f}%")
 
     plt.xlabel("True Positive Rate")
     plt.ylabel("False Positive Rate")
-    plt.set_ylim(0.001, 1)
+    plt.ylim(0.001, 1)
+    plt.semilogy()
 
     plt.legend()
     plt.savefig(os.path.join(outdir, "roc_curves.pdf"))
@@ -73,7 +77,7 @@ def dnn_output(outdir: str, y_pred: np.ndarray):
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
     bins = np.linspace(0.0, 1.0, 20)
     for idx, label in enumerate(labels):
-        plt.hist(y_pred, bins=bins, label=label, histtype='step', color=cols[idx])
+        plt.hist(y_pred[:, idx], bins, label=label, histtype='step', color=cols[idx])
 
     plt.semilogy()
     plt.xlabel(f"$f_c(x)$ DNN Output")

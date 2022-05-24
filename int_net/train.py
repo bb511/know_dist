@@ -2,7 +2,7 @@
 
 import os
 
-from tensorflow.keras import callbacks
+from tensorflow import keras
 
 from . import util
 from . import plots
@@ -15,7 +15,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    seed = 123
+    seed = 321
     outdir = "./trained_intnets/" + args["outdir"] + "/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -49,6 +49,7 @@ def main(args):
 
     print(tcols.OKGREEN + "\nSaving model to: " + tcols.ENDC, outdir)
     model.save(outdir, save_format="tf")
+
     plots.loss_vs_epochs(outdir, history.history["loss"], history.history["val_loss"])
     plots.accuracy_vs_epochs(
         outdir,
@@ -60,11 +61,11 @@ def main(args):
 
 
 def get_callbacks():
-    """Perpare the callbacks for the training."""
-    early_stopping = callbacks.EarlyStopping(
+    """Prepare the callbacks for the training."""
+    early_stopping = keras.callbacks.EarlyStopping(
         monitor="val_categorical_accuracy", patience=10
     )
-    learning = callbacks.ReduceLROnPlateau(
+    learning = keras.callbacks.ReduceLROnPlateau(
         monitor="val_categorical_accuracy", factor=0.2, patience=10
     )
 
