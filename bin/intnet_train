@@ -13,6 +13,8 @@ parser.add_argument("--data_folder", type=str, default='../../kd_data/intnet_inp
                     help="The folder where the data is stored on the system..")
 parser.add_argument("--norm", type=str, default='nonorm',
                     help="The name of the normalisation that you'll to use.")
+parser.add_argument("--seed", type=int, default=321,
+                    help="Seed to use in any random thing that is done.")
 parser.add_argument("--train_events", type=int, default=-1,
                     help="The exact number of training events to use.")
 parser.add_argument('--lr', type=float, default=0.0005,
@@ -59,6 +61,7 @@ args = {
     "epochs":           args.epochs,
     "outdir":           args.outdir,
     "inet_hyperparams": inet_hyperparams,
+    "seed":             args.seed,
 }
 
 main(args)

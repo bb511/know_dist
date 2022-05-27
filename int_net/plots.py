@@ -56,6 +56,10 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     """Plot the ROC curves for the labels of the jet data set."""
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
+    roc_arrays_dir = os.path.join(outdir, "roc_arrays")
+    if not os.path.exists(roc_arrays_dir):
+        os.makedirs(roc_arrays_dir)
+
     for idx, label in enumerate(labels):
         fpr, tpr, thr = metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
         auc = metrics.auc(fpr, tpr)

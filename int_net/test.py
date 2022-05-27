@@ -2,6 +2,7 @@
 
 import os
 
+import tensorflow as tf
 from tensorflow import keras
 
 from . import plots
@@ -15,6 +16,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 def main(args):
     seed = 123
 
+    tf.random.set_seed(seed)
     jet_data = Data.shuffled(
         args["data_folder"],
         args["data_hyperparams"],

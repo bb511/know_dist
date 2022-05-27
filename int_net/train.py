@@ -2,6 +2,7 @@
 
 import os
 
+import tensorflow as tf
 from tensorflow import keras
 
 from . import util
@@ -15,7 +16,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    seed = 321
+    tf.random.set_seed(args["seed"])
     outdir = "./trained_intnets/" + args["outdir"] + "/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -26,7 +27,7 @@ def main(args):
         args["norm"],
         args["train_events"],
         0,
-        seed=seed,
+        seed=args["seed"],
     )
 
     model = QConvIntNet(jet_data.tr_data.shape[1], jet_data.tr_data.shape[2])
