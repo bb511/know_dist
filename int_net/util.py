@@ -23,6 +23,7 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers:
 
     return optimiser
 
+
 def print_model_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
     hyperparams = args["inet_hyperparams"]

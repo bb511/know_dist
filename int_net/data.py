@@ -17,6 +17,7 @@ class Data:
         test_events: Number of events for the testing sample.
         seed: The seed used in any shuffling that is done to the data.
     """
+
     def __init__(
         self,
         data_folder: str,

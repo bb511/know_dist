@@ -29,6 +29,7 @@ def loss_vs_epochs(outdir: str, train_loss: np.ndarray, valid_loss: np.ndarray):
     plt.close()
     print(f"Loss vs epochs plot saved to {outdir}.")
 
+
 def accuracy_vs_epochs(outdir: str, train_acc: np.ndarray, valid_acc: np.ndarray):
     """Plots the accuracy for each epoch for the training and validation data
     and saves it to the same directory the model is saved in.
@@ -51,6 +52,7 @@ def accuracy_vs_epochs(outdir: str, train_acc: np.ndarray, valid_acc: np.ndarray
     plt.savefig(os.path.join(outdir, "accuracy_epochs.pdf"))
     plt.close()
     print(f"Accuracy vs epochs plot saved to {outdir}.")
+
 
 def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     """Plot the ROC curves for the labels of the jet data set."""
@@ -75,13 +77,14 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     plt.close()
     print(f"ROC curves plot saved to {outdir}.")
 
+
 def dnn_output(outdir: str, y_pred: np.ndarray):
     """Plots the output of the last part (fc) of the interaction network."""
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
     bins = np.linspace(0.0, 1.0, 20)
     for idx, label in enumerate(labels):
-        plt.hist(y_pred[:, idx], bins, label=label, histtype='step', color=cols[idx])
+        plt.hist(y_pred[:, idx], bins, label=label, histtype="step", color=cols[idx])
 
     plt.semilogy()
     plt.xlabel(f"$f_c(x)$ DNN Output")

@@ -16,7 +16,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    tf.random.set_seed(args["seed"])
+    tf.random.set_seed(123)
     outdir = "./trained_intnets/" + args["outdir"] + "/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)

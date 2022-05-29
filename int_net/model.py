@@ -10,6 +10,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers as KL
 import qkeras
 
+
 class QConvIntNet(Model):
     """Interaction network implemented with convolutional layers.
 
@@ -235,7 +236,6 @@ class QConvIntNet(Model):
         # Pass the dynamics matrix through the fc neural net.
 
         fc_input = tf.reduce_sum(fo_output, 1)
-        # fc_input = KL.Flatten()(fo_output)
         del fo_output
         fc_output = self._fc(fc_input)
 
