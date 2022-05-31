@@ -217,13 +217,14 @@ class QConvIntNet(Model):
         # Construct the receiver-sender matrix from which effects are computed.
         rs_matrix = KL.Concatenate(axis=1)([receivers, senders])
         del receivers, senders
+        rs_matrix = KL.Permute((2, 1), input_shape=rs_matrix.shape[1:])(rs_matrix)
 
         # Pass receiver-sender matrix through the fr neural net.
-        fr_input = KL.Permute((2, 1), input_shape=rs_matrix.shape[1:])(rs_matrix)
+        fr_input = rs_matrix
         fr_output = self._fr(fr_input)
-        fr_output = KL.Permute((2, 1))(fr_output)
 
         # Multiply the effects matrix with the receiver binary matrix.
+        fr_output = KL.Permute((2, 1))(fr_output)
         effects_matrix = self._em(fr_output)
         del fr_output
 
@@ -234,8 +235,8 @@ class QConvIntNet(Model):
         fo_output = self._fo(fo_input)
 
         # Pass the dynamics matrix through the fc neural net.
-
         fc_input = tf.reduce_sum(fo_output, 1)
+        # fc_input = KL.Flatten()(fo_output)
         del fo_output
         fc_output = self._fc(fc_input)
 
