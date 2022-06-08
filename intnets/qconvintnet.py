@@ -54,7 +54,7 @@ class QConvIntNet(Model):
         summation: bool = True,
     ):
 
-        super().__init__()
+        super(QConvIntNet, self).__init__()
 
         self.nconst = nconst
         self.nedges = nconst * (nconst - 1)

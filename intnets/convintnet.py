@@ -24,8 +24,8 @@ class ConvIntNet(Model):
 
     Attributes:
         nconst: Number of constituents the jet data has.
-        nclasses: Number of classes the data has.
         nfeats: Number of features the data has.
+        nclasses: Number of classes the data has.
         *_structure: List containing the number of nodes for each hidden layer.
             If they are empty, they default to on hidden layer with nfeats/2 nodes.
         neffects: Number of effects for your system, i.e., the dimension of the
@@ -53,7 +53,7 @@ class ConvIntNet(Model):
         summation: bool = True,
     ):
 
-        super().__init__()
+        super(ConvIntNet, self).__init__()
 
         self.nconst = nconst
         self.nedges = nconst * (nconst - 1)
@@ -137,7 +137,7 @@ class ConvIntNet(Model):
         return fc
 
     def _tmul(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Makes matrix multiplication of shape (I * J * K)(K * L) -> I * J * L."""
+        """Do matrix multiplication of shape (I * J * K)(K * L) -> I * J * L."""
         x_shape = tf.shape(x)
         y_shape = tf.shape(y)
         return tf.reshape(
