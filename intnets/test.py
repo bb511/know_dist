@@ -14,9 +14,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    seed = 123
+    seed = 321
 
-    tf.random.set_seed(seed)
+    tf.random.set_seed(123)
     jet_data = Data.shuffled(
         args["data_folder"],
         args["data_hyperparams"],

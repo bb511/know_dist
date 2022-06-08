@@ -1,6 +1,7 @@
 # Training of the model defined in the model.py file.
 
 import os
+import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
@@ -8,7 +9,7 @@ from tensorflow import keras
 from . import util
 from . import plots
 from .data import Data
-from .model import QConvIntNet
+from .qconvintnet import QConvIntNet
 from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
@@ -30,10 +31,10 @@ def main(args):
         seed=args["seed"],
     )
 
-    model = QConvIntNet(jet_data.tr_data.shape[1], jet_data.tr_data.shape[2])
-    model.compile(**args["inet_hyperparams"]["compilation"])
-    model.build(jet_data.tr_data.shape)
-    model.summary(expand_nested=True)
+    nconst = jet_data.tr_data.shape[1]
+    nfeats = jet_data.tr_data.shape[2]
+
+    model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
     util.print_model_attributes(model, args)
 
     print(tcols.HEADER + "\nTraining the model... \U0001F4AA" + tcols.ENDC)
@@ -59,7 +60,6 @@ def main(args):
     )
 
     print(tcols.OKGREEN + "Done! \U0001F370\U00002728" + tcols.ENDC)
-
 
 def get_callbacks():
     """Prepare the callbacks for the training."""

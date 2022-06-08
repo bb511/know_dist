@@ -51,6 +51,7 @@ class QConvIntNet(Model):
         fo_activation: str = "relu",
         fc_activation: str = "relu",
         nbits: int = 8,
+        summation: bool = True,
     ):
 
         super().__init__()
@@ -63,6 +64,7 @@ class QConvIntNet(Model):
         self._fr_structure = fr_structure
         self._fo_structure = fo_structure
         self._fc_structure = fc_structure
+        self._summation = summation
 
         self._neffects = neffects
         self._ndynamic = ndynamics
@@ -235,8 +237,11 @@ class QConvIntNet(Model):
         fo_output = self._fo(fo_input)
 
         # Pass the dynamics matrix through the fc neural net.
-        fc_input = tf.reduce_sum(fo_output, 1)
-        # fc_input = KL.Flatten()(fo_output)
+        if self._summation == True:
+            fc_input = tf.reduce_sum(fo_output, 1)
+        else:
+            fc_input = KL.Flatten()(fo_output)
+
         del fo_output
         fc_output = self._fc(fc_input)
 
