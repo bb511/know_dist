@@ -3,8 +3,8 @@
 import os
 import numpy as np
 
-import tensorflow as tf
 from tensorflow import keras
+keras.utils.set_random_seed(123)
 
 from . import util
 from . import plots
@@ -17,7 +17,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    tf.random.set_seed(123)
     outdir = "./trained_intnets/" + args["outdir"] + "/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)

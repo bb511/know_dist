@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.models i
-mport Model
+from tensorflow.keras.models import Model
 from tensorflow.keras import layers as KL
 import qkeras
 
