@@ -237,7 +237,7 @@ class QConvIntNet(Model):
         fo_output = self._fo(fo_input)
 
         # Pass the dynamics matrix through the fc neural net.
-        if self._summation == True:
+        if self._summation:
             fc_input = tf.reduce_sum(fo_output, 1)
         else:
             fc_input = KL.Flatten()(fo_output)

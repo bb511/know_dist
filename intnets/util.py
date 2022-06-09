@@ -40,7 +40,6 @@ def print_model_attributes(model: keras.models.Model, args: dict):
 
 def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
-
     switcher = {
         "qconv": lambda: QConvIntNet(nconst, nfeats, summation=args["summation"]),
         "conv": lambda: ConvIntNet(nconst, nfeats, summation=args["summation"]),
