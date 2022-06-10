@@ -8,7 +8,7 @@ from .terminal_colors import tcols
 from .qconvintnet import QConvIntNet
 from .convintnet import ConvIntNet
 
-def choose_optimiser(choice: str, lr: float) -> keras.optimizers:
+def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.
     """
@@ -26,8 +26,7 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers:
 
     return optimiser
 
-
-def print_model_attributes(model: keras.models.Model, args: dict):
+def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
     hyperparams = args["inet_hyperparams"]
     print(tcols.OKGREEN + "Optimiser: " + tcols.ENDC, model.optimizer.get_config())

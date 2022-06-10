@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+# Run the training of the interaction network..
+import argparse
+import sys
+sys.path.append("..")
+
+from students.train import main
+from students import util
+from intnets import util as intutil
+parser = argparse.ArgumentParser(formatter_class=argparse.
+                                 ArgumentDefaultsHelpFormatter)
+parser.add_argument("--data_folder", type=str, default='../../kd_data/intnet_input',
+                    help="The folder where the data is stored on the system..")
+parser.add_argument("--norm", type=str, default='nonorm',
+                    help="The name of the normalisation that you'll to use.")
+parser.add_argument("--train_events", type=int, default=-1,
+                    help="The exact number of training events to use.")
+parser.add_argument("--seed", type=int, default=321,
+                    help="Seed to use in any random thing that is done.")
+parser.add_argument('--lr', type=float, default=0.0005,
+                    help="The learning rate.")
+parser.add_argument("--batch", type=int, default=512,
+                    help="The batch size.")
+parser.add_argument("--epochs", type=int, default=100,
+                    help="The number of training epochs.")
+parser.add_argument("--optimizer", type=str, default="adam",
+                    help="Name of the optimiser you want to use.")
+parser.add_argument("--student_loss", type=str, default="categorical_crossentropy",
+                    help="Name of the loss function for the student.")
+parser.add_argument("--distillation_loss", type=str, default="kl_divergence",
+                    help="Name of the loss for student-teacher differences.")
+parser.add_argument("--metrics", type=str, default="categorical_accuracy",
+                    help="Name of the success metric you want to use.")
+parser.add_argument("--student_type", type=str, default="unistudent",
+                    help="The type of student to instantiate.")
+parser.add_argument("--alpha", type=float, default=0.1,
+                    help="Weight for the distillation loss function.")
+parser.add_argument("--temperature", type=int, default=10,
+                    help="Name of the optimiser you want to use.")
+parser.add_argument("--outdir", type=str, default="test",
+                    help="The output directory name.")
+args = parser.parse_args()
+
+
+data_hyperparams = {
+    "data_folder":   args.data_folder,
+    "norm":          args.norm,
+    "train_events":  args.train_events
+    "pt_min":        "2.0",
+    "nconstituents": "8",
+}
+
+training_hyperparams = {
+    "batch":  args.batch,
+    "lr":     args.lr,
+    "epochs": args.epochs,
+}
+
+student_hyperparams = {
+    "type": args.student_type,
+}
+
+distiller_hyperparams = {
+    "optimizer":            intutil.choose_optimiser(args.optimiser, args.lr),
+    "metrics":              [args.metrics],
+    "student_loss_fn":      util.choose_loss(args.student_loss),
+    "distillation_loss_fn": util.choose_loss(args.distillation_loss),
+    "alpha":                args.alpha,
+    "temperature":          args.temperature,
+}
+
+args = {
+    "data_hyperparams":     data_hyperparams,
+    "training_hyperparams": training_hyperparams,
+    "student":              student_hyperparams,
+    "distill":              distiller_hyperparams,
+    "outdir":               args.outdir,
+    "seed":                 args.seed,
+}
+
+main(args)

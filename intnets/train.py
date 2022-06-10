@@ -33,7 +33,7 @@ def main(args):
     nfeats = jet_data.tr_data.shape[2]
 
     model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
-    util.print_model_attributes(model, args)
+    util.print_training_attributes(model, args)
 
     print(tcols.HEADER + "\nTraining the model... \U0001F4AA" + tcols.ENDC)
     callbacks = get_callbacks()

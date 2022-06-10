@@ -23,9 +23,9 @@ class Distiller(keras.Model):
         optimizer: keras.optimizers,
         metrics: keras.metrics,
         student_loss_fn: callable,
-        distillation_loss_fn: callable,
+        distill_loss_fn: callable,
         alpha: float = 0.1,
-        temperature: int = 3,
+        temperature: int = 10,
         ):
         """Configure the distiller.
 
@@ -42,7 +42,7 @@ class Distiller(keras.Model):
         """
         super(Distiller, self).compile(optimizer=optimizer, metrics=metrics)
         self.student_loss_fn = student_loss_fn
-        self.distillation_loss_fn = distillation_loss_fn
+        self.distillation_loss_fn = distill_loss_fn
         self.alpha = alpha
         self.temperature = temperature
 
