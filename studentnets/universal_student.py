@@ -51,10 +51,3 @@ class UniversalStudent(keras.Model):
         """
         flat_data = KL.Flatten()(inputs)
         norm_data = self._batch_norm(flat_data)
-
-
-
-
-
-
-

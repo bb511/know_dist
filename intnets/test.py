@@ -3,7 +3,7 @@
 import os
 
 from tensorflow import keras
-keras.random.set_random_seed(123)
+keras.utils.set_random_seed(123)
 
 from . import plots
 from .data import Data
