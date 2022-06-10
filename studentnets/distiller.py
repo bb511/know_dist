@@ -13,7 +13,6 @@ class Distiller(keras.Model):
         student: Student network, usually small and basic.
         teacher: Teacher network, usually big.
     """
-
     def __init__(self, student: keras.Model, teacher: keras.Model):
         super(Distiller, self).__init__()
         self.teacher = teacher

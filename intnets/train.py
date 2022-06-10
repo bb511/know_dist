@@ -9,7 +9,6 @@ keras.utils.set_random_seed(123)
 from . import util
 from . import plots
 from .data import Data
-from .qconvintnet import QConvIntNet
 from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
