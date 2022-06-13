@@ -2,6 +2,7 @@
 
 import numpy as np
 
+import tensorflow as tf
 from tensorflow import keras
 
 
@@ -50,12 +51,10 @@ class Distiller(keras.Model):
         """Train the student network through one feed forward."""
         x, y = data
 
-        loss = self.__compute_loss(x, y)
+        student_loss, distillation_loss, student_predictions, gradients = \
+            self.__compute_loss(x, y)
 
-        trainable_vars = self.student.trainable_variables
-        gradients = tape.gradient(loss, trainable_vars)
-
-        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+        self.optimizer.apply_gradients(zip(gradients, self.student.trainable_variables))
         self.compiled_metrics.update_state(y, student_predictions)
 
         results = {m.name: m.result() for m in self.metrics}
@@ -77,6 +76,10 @@ class Distiller(keras.Model):
                 tf.nn.softmax(student_predictions / self.temperature, axis=1),
             )
             loss = self.alpha * student_loss + (1 - self.alpha) * distillation_loss
+
+        gradients = tape.gradient(loss, self.student.trainable_variables)
+
+        return student_loss, distillation_loss, student_predictions, gradients
 
     def test_step(self, data: np.ndarray):
         """Test the student network."""

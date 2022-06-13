@@ -38,37 +38,43 @@ parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
 
+
 data_hyperparams = {
-    "pt_min": "2.0",
-    "nconstituents": "8"
+    "data_folder":   args.data_folder,
+    "norm":          args.norm,
+    "train_events":  args.train_events,
+    "test_events":   0,
+    "pt_min":        "2",
+    "nconstituents": "8",
+}
+
+training_hyperparams = {
+    "batch":  args.batch,
+    "lr":     args.lr,
+    "epochs": args.epochs,
 }
 
 inet_compilation_hyperparams = {
     "optimizer": util.choose_optimiser(args.optimiser, args.lr),
-    "loss": args.loss,
-    "metrics": [args.metrics],
+    "loss":      args.loss,
+    "metrics":   [args.metrics],
 }
 
 inet_hyperparams = {
-    "type": args.intnet_type,
+    "type":         args.intnet_type,
     "fr_structure": [],
     "fo_structure": [],
     "fc_structure": [],
-    "compilation": inet_compilation_hyperparams,
-    "summation": args.summation,
+    "compilation":  inet_compilation_hyperparams,
+    "summation":    args.summation,
 }
 
 args = {
-    "data_folder":      args.data_folder,
-    "data_hyperparams": data_hyperparams,
-    "norm":             args.norm,
-    "train_events":     args.train_events,
-    "batch":            args.batch,
-    "lr":               args.lr,
-    "epochs":           args.epochs,
-    "outdir":           args.outdir,
-    "inet_hyperparams": inet_hyperparams,
-    "seed":             args.seed,
+    "data_hyperparams":     data_hyperparams,
+    "training_hyperparams": training_hyperparams,
+    "outdir":               args.outdir,
+    "inet_hyperparams":     inet_hyperparams,
+    "seed":                 args.seed,
 }
 
 main(args)

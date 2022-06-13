@@ -20,30 +20,24 @@ def main(args):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    jet_data = Data.shuffled(
-        args["data_folder"],
-        args["data_hyperparams"],
-        args["norm"],
-        args["train_events"],
-        0,
-        seed=args["seed"],
-    )
+    data_hyperparams = args["data_hyperparams"]
+    jet_data = Data.shuffled(data_hyperparams, seed=args["seed"])
 
     nconst = jet_data.tr_data.shape[1]
     nfeats = jet_data.tr_data.shape[2]
 
     model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
-    util.print_training_attributes(model, args)
 
     print(tcols.HEADER + "\nTraining the model... \U0001F4AA" + tcols.ENDC)
-    callbacks = get_callbacks()
+    util.print_training_attributes(model, args)
+    training_hyperparams = args["training_hyperparams"]
     history = model.fit(
         jet_data.tr_data,
         jet_data.tr_target,
-        epochs=args["epochs"],
-        batch_size=args["batch"],
+        epochs=training_hyperparams["epochs"],
+        batch_size=training_hyperparams["batch"],
         verbose=2,
-        callbacks=callbacks,
+        callbacks=get_callbacks(),
         validation_split=0.3,
     )
 

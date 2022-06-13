@@ -18,22 +18,15 @@ class Data:
         seed: The seed used in any shuffling that is done to the data.
     """
 
-    def __init__(
-        self,
-        data_folder: str,
-        hyperparams: dict,
-        norm_name: str,
-        train_events: int,
-        test_events: int,
-        seed: int = None,
-    ):
+    def __init__(self, hyperparams: dict, seed: int = None):
 
-        self.data_folder = data_folder
-        self.norm_name = norm_name
-        self.hyperparams = hyperparams
+        self.data_folder = hyperparams["data_folder"]
+        self.norm_name = hyperparams["norm"]
+        self.nconstituents = hyperparams["nconstituents"]
+        self.minpt = hyperparams["pt_min"]
 
-        self.train_events = train_events
-        self.test_events = test_events
+        self.train_events = hyperparams["train_events"]
+        self.test_events = hyperparams["test_events"]
 
         self.seed = seed
 
@@ -48,17 +41,9 @@ class Data:
         self._success_message()
 
     @classmethod
-    def shuffled(
-        cls,
-        data_folder: str,
-        hyperparams: dict,
-        norm_name: str,
-        train_events: int,
-        test_events: int,
-        seed: int = None,
-    ):
+    def shuffled(cls, hyperparams: dict, seed: int = None):
 
-        data = cls(data_folder, hyperparams, norm_name, train_events, test_events, seed)
+        data = cls(hyperparams, seed)
 
         print("Shuffling constituents...")
         rng = np.random.default_rng(seed)
@@ -130,9 +115,9 @@ class Data:
         return (
             "x_jet_images"
             + "_c"
-            + self.hyperparams["nconstituents"]
+            + self.nconstituents
             + "_pt"
-            + self.hyperparams["pt_min"]
+            + self.minpt
             + "_"
             + self.norm_name
             + "_"
@@ -144,9 +129,9 @@ class Data:
         return (
             "y_jet_images"
             + "_c"
-            + self.hyperparams["nconstituents"]
+            + self.nconstituents
             + "_pt"
-            + self.hyperparams["pt_min"]
+            + self.minpt
             + "_"
             + self.norm_name
             + "_"

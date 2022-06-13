@@ -5,8 +5,8 @@ import argparse
 import sys
 sys.path.append("..")
 
-from students.train import main
-from students import util
+from studentnets.train import main
+from studentnets import util
 from intnets import util as intutil
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
@@ -28,10 +28,12 @@ parser.add_argument("--optimizer", type=str, default="adam",
                     help="Name of the optimiser you want to use.")
 parser.add_argument("--student_loss", type=str, default="categorical_crossentropy",
                     help="Name of the loss function for the student.")
-parser.add_argument("--distillation_loss", type=str, default="kl_divergence",
+parser.add_argument("--distill_loss", type=str, default="kl_divergence",
                     help="Name of the loss for student-teacher differences.")
 parser.add_argument("--metrics", type=str, default="categorical_accuracy",
                     help="Name of the success metric you want to use.")
+parser.add_argument("--teacher", type=str, default="./trained_intnets/teacher_intnet",
+                    help="Path to a tensorflow trained network to use as teacher.")
 parser.add_argument("--student_type", type=str, default="unistudent",
                     help="The type of student to instantiate.")
 parser.add_argument("--alpha", type=float, default=0.1,
@@ -46,8 +48,9 @@ args = parser.parse_args()
 data_hyperparams = {
     "data_folder":   args.data_folder,
     "norm":          args.norm,
-    "train_events":  args.train_events
-    "pt_min":        "2.0",
+    "train_events":  args.train_events,
+    "test_events":   0,
+    "pt_min":        "2",
     "nconstituents": "8",
 }
 
@@ -62,17 +65,18 @@ student_hyperparams = {
 }
 
 distiller_hyperparams = {
-    "optimizer":            intutil.choose_optimiser(args.optimiser, args.lr),
-    "metrics":              [args.metrics],
-    "student_loss_fn":      util.choose_loss(args.student_loss),
-    "distillation_loss_fn": util.choose_loss(args.distillation_loss),
-    "alpha":                args.alpha,
-    "temperature":          args.temperature,
+    "optimizer":       intutil.choose_optimiser(args.optimizer, args.lr),
+    "metrics":         [args.metrics],
+    "student_loss_fn": util.choose_loss(args.student_loss, True),
+    "distill_loss_fn": util.choose_loss(args.distill_loss, False),
+    "alpha":           args.alpha,
+    "temperature":     args.temperature,
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
+    "teacher":              args.teacher,
     "student":              student_hyperparams,
     "distill":              distiller_hyperparams,
     "outdir":               args.outdir,

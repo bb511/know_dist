@@ -13,6 +13,9 @@ from intnets.data import Data
 from intnets import plots
 from .terminal_colors import tcols
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 
 def main(args):
 
@@ -21,14 +24,7 @@ def main(args):
         os.makedirs(outdir)
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(
-        data_hyperparams["data_folder"],
-        data_hyperparams["data_hyperparams"],
-        data_hyperparams["norm"],
-        data_hyperparams["train_events"],
-        0,
-        seed=args["seed"],
-    )
+    jet_data = Data.shuffled(data_hyperparams, seed=args["seed"])
 
 
     print("Importing the teacher network model...")
@@ -38,22 +34,24 @@ def main(args):
           tcols.ENDC)
 
     print("Instantiating the student network model...")
-    student = util.choose_student(args["student"])
+    student = util.choose_student(args["student"], jet_data.tr_data.shape)
     print(tcols.OKGREEN + "Student spawned! \U0001f468\u200D\U0001f393\U00002728\n" +
           tcols.ENDC)
 
     print("Making the distiller...")
-    distiller_hyperparams = args["distiller"]
-    distiller = Distiller(intnet, student)
+    distiller_hyperparams = args["distill"]
+    distiller = Distiller(teacher, student)
     distiller.compile(**distiller_hyperparams)
     print(tcols.OKGREEN + "Ready for knowledge transfer! \U0001F34E \n" + tcols.ENDC)
 
-    print("Teaching the student...")
+    print(tcols.HEADER + "Teaching the student..." + tcols.ENDC)
+    training_hyperparams = args["training_hyperparams"]
+    util.print_training_attributes(training_hyperparams, distiller_hyperparams)
     history = distiller.fit(
         jet_data.tr_data,
         jet_data.tr_target,
-        epochs=args["epochs"],
-        batch_size=args["batch"],
+        epochs=training_hyperparams["epochs"],
+        batch_size=training_hyperparams["batch"],
         verbose=2,
         callbacks=get_callbacks(),
         validation_split=0.3,
@@ -62,7 +60,11 @@ def main(args):
     print(tcols.OKGREEN + "\nSaving student model to: " + tcols.ENDC, outdir)
     student.save(outdir, save_format="tf")
 
-    plots.loss_vs_epochs(outdir, history.history["loss"], history.history["val_loss"])
+    plots.loss_vs_epochs(
+        outdir,
+        history.history["student_loss"],
+        history.history["val_student_loss"]
+    )
     plots.accuracy_vs_epochs(
         outdir,
         history.history["categorical_accuracy"],

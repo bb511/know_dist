@@ -52,8 +52,7 @@ class QConvIntNet(Model):
         fc_activation: str = "relu",
         nbits: int = 8,
         summation: bool = True,
-    ):
-
+        ):
         super(QConvIntNet, self).__init__()
 
         self.nconst = nconst

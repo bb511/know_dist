@@ -29,12 +29,13 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
 def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
     hyperparams = args["inet_hyperparams"]
+    train_hyperparams = args["training_hyperparams"]
     print(tcols.OKGREEN + "Optimiser: " + tcols.ENDC, model.optimizer.get_config())
 
     print(tcols.HEADER + "\nTRAINING PARAMETERS" + tcols.ENDC)
     print("-------------------")
-    print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, args["batch"])
-    print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, args["epochs"])
+    print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, train_hyperparams["batch"])
+    print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hyperparams["epochs"])
     print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, hyperparams["compilation"]["loss"])
 
 def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:

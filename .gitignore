@@ -130,6 +130,7 @@ dmypy.json
 
 # Output
 trained_intnets/
+trained_students/
 
 # Slurm submit files.
 *slurm*

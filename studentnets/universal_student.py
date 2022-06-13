@@ -21,10 +21,11 @@ class UniversalStudent(keras.Model):
         name: Name of this network.
     """
     def __init__(
+        self,
         node_size: int = 64,
         activ: str = "relu",
         nclasses: int = 5,
-        name: str = "Universal Student",
+        name: str = "UniversalStudent",
         ):
         super(UniversalStudent, self).__init__(name=name)
 
@@ -37,18 +38,18 @@ class UniversalStudent(keras.Model):
 
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
-        self._batch_norma_1 = KL.BatchNormalization(name="Initial Batch Normalisation")
-        self._dense_layer_1 = KL.Dense(self.node_size, name="Dense Layer 1")
-        self._batch_norma_2 = KL.BatchNormalization(name="Second Batch Normalisation")
-        self._activ_funct_1 = KL.Activation(self.activ, name="Activation 1")
-        self._dense_layer_2 = KL.Dense(self.node_size/2, name="Dense Layer 2")
-        self._batch_norma_3 = KL.BatchNormalization(name="Third Batch Normalisation")
-        self._activ_funct_2 = KL.Activation(self.activ, name="Activation 2")
-        self._dense_layer_3 = KL.Dense(self.node_size/2, name="Dense Layer 3")
-        self._batch_norma_4 = KL.BatchNormalization(name="Fourth Batch Normalisation")
-        self._activ_funct_3 = KL.Activation(self.activ, name="Activation 3")
-        self._dense_layer_4 = KL.Dense(5, name="Dense Layer 4")
-        self._activ_funct_4 = KL.Activation(self.activ, name="Activation 4")
+        self._batch_norma_1 = KL.BatchNormalization(name="initial_batch_normalisation")
+        self._dense_layer_1 = KL.Dense(self.node_size, name="dense_layer_1")
+        self._batch_norma_2 = KL.BatchNormalization(name="second_batch_normalisation")
+        self._activ_funct_1 = KL.Activation(self.activ, name="activation_1")
+        self._dense_layer_2 = KL.Dense(self.node_size/2, name="dense_layer_2")
+        self._batch_norma_3 = KL.BatchNormalization(name="third_batch_normalisation")
+        self._activ_funct_2 = KL.Activation(self.activ, name="activation_2")
+        self._dense_layer_3 = KL.Dense(self.node_size/2, name="dense_layer_3")
+        self._batch_norma_4 = KL.BatchNormalization(name="fourth_batch_normalisation")
+        self._activ_funct_3 = KL.Activation(self.activ, name="activation_3")
+        self._dense_layer_4 = KL.Dense(5, name="dense_layer_4")
+        self._activ_funct_4 = KL.Activation(self.activ, name="activation_4")
 
     def call(self, inputs: np.ndarray, **kwargs):
         """Define the physiology of the universal student. Guide the input through the
