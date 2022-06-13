@@ -37,6 +37,7 @@ def print_training_attributes(model: keras.models.Model, args: dict):
     print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, train_hyperparams["batch"])
     print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hyperparams["epochs"])
     print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, hyperparams["compilation"]["loss"])
+    print("")
 
 def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
