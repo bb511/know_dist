@@ -14,6 +14,7 @@ class Distiller(keras.Model):
         student: Student network, usually small and basic.
         teacher: Teacher network, usually big.
     """
+
     def __init__(self, student: keras.Model, teacher: keras.Model):
         super(Distiller, self).__init__()
         self.teacher = teacher
@@ -27,7 +28,7 @@ class Distiller(keras.Model):
         distill_loss_fn: callable,
         alpha: float = 0.1,
         temperature: int = 10,
-        ):
+    ):
         """Configure the distiller.
 
         Args:
@@ -51,8 +52,12 @@ class Distiller(keras.Model):
         """Train the student network through one feed forward."""
         x, y = data
 
-        student_loss, distillation_loss, student_predictions, gradients = \
-            self.__compute_loss(x, y)
+        (
+            student_loss,
+            distillation_loss,
+            student_predictions,
+            gradients,
+        ) = self.__compute_loss(x, y)
 
         self.optimizer.apply_gradients(zip(gradients, self.student.trainable_variables))
         self.compiled_metrics.update_state(y, student_predictions)

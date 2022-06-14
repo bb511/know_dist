@@ -4,6 +4,7 @@ import os
 import numpy as np
 
 from tensorflow import keras
+
 keras.utils.set_random_seed(123)
 
 from . import util
@@ -26,17 +27,22 @@ def main(args):
     data_hyperparams = args["data_hyperparams"]
     jet_data = Data.shuffled(data_hyperparams, seed=args["seed"])
 
-
     print("Importing the teacher network model...")
     teacher = keras.models.load_model(args["teacher"])
     print(teacher.summary())
-    print(tcols.OKGREEN + "Teacher loaded! \U0001f468\u200D\U0001f3eb\U00002728\n" +
-          tcols.ENDC)
+    print(
+        tcols.OKGREEN
+        + "Teacher loaded! \U0001f468\u200D\U0001f3eb\U00002728\n"
+        + tcols.ENDC
+    )
 
     print("Instantiating the student network model...")
     student = util.choose_student(args["student"], jet_data.tr_data.shape)
-    print(tcols.OKGREEN + "Student spawned! \U0001f468\u200D\U0001f393\U00002728\n" +
-          tcols.ENDC)
+    print(
+        tcols.OKGREEN
+        + "Student spawned! \U0001f468\u200D\U0001f393\U00002728\n"
+        + tcols.ENDC
+    )
 
     print("Making the distiller...")
     distiller_hyperparams = args["distill"]
@@ -61,15 +67,14 @@ def main(args):
     student.save(outdir, save_format="tf")
 
     plots.loss_vs_epochs(
-        outdir,
-        history.history["student_loss"],
-        history.history["val_student_loss"]
+        outdir, history.history["student_loss"], history.history["val_student_loss"]
     )
     plots.accuracy_vs_epochs(
         outdir,
         history.history["categorical_accuracy"],
         history.history["val_categorical_accuracy"],
     )
+
 
 def get_callbacks():
     """Prepare the callbacks for the training."""

@@ -2,11 +2,22 @@
 
 import numpy as np
 
+import tensorflow as tf
 from tensorflow import keras
 
 from .terminal_colors import tcols
 from .qconvintnet import QConvIntNet
 from .convintnet import ConvIntNet
+
+
+def device_info():
+    gpu_devices = tf.config.list_physical_devices("GPU")
+    if gpu_devices:
+        details = tf.config.experimental.get_device_details(gpu_devices[0])
+        print(tcols.OKCYAN + f"\nGPU: {details.get('device_name')}" + tcols.ENDC)
+    else:
+        print(tcols.WARNING + "\nNo GPU detected. Running on CPU." + tcols.ENDC)
+
 
 def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
     """Construct a keras optimiser object with a certain learning rate given a string
@@ -26,21 +37,24 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
 
     return optimiser
 
+
 def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
     hyperparams = args["inet_hyperparams"]
     train_hyperparams = args["training_hyperparams"]
-    print(tcols.OKGREEN + "Optimiser: " + tcols.ENDC, model.optimizer.get_config())
 
-    print(tcols.HEADER + "\nTRAINING PARAMETERS" + tcols.ENDC)
+    print("\nTraining parameters")
     print("-------------------")
+    print(tcols.OKGREEN + "Optimiser: \t" + tcols.ENDC, model.optimizer.get_config())
     print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, train_hyperparams["batch"])
     print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hyperparams["epochs"])
     print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, hyperparams["compilation"]["loss"])
     print("")
 
+
 def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
+    print("Instantiating model...")
     switcher = {
         "qconv": lambda: QConvIntNet(nconst, nfeats, summation=args["summation"]),
         "conv": lambda: ConvIntNet(nconst, nfeats, summation=args["summation"]),
@@ -49,8 +63,8 @@ def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
     model = switcher.get(args["type"], lambda: None)()
 
     model.compile(**args["compilation"])
-    model.build((100, nconst, nfeats))
-    model.summary(expand_nested=True)
+    model.build((None, nconst, nfeats))
+    print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
 
     if args["type"] == "qconv":
         set_matrix_multiplication_hack_weights(model)
@@ -59,6 +73,7 @@ def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
         raise TypeError("Given interaction network model type is not implemented!")
 
     return model
+
 
 def set_matrix_multiplication_hack_weights(model: keras.models.Model):
     """Set the weights of the QKeras convolutional layers that are used to do

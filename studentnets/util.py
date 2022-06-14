@@ -18,9 +18,12 @@ def choose_student(args: dict, data_shape: tuple[int]) -> keras.models.Model:
     if model is None:
         raise TypeError("Given interaction network model type is not implemented!")
 
-    print(tcols.WARNING + "Cannot display structure of student since compilation "
-          "happens in the distiller class." + tcols.ENDC)
+    print(
+        tcols.WARNING + "Cannot display structure of student since compilation "
+        "happens in the distiller class." + tcols.ENDC
+    )
     return model
+
 
 def choose_loss(choice: str, from_logits: bool) -> keras.losses.Loss:
     """Construct a keras optimiser object with a certain learning rate given a string
@@ -28,8 +31,9 @@ def choose_loss(choice: str, from_logits: bool) -> keras.losses.Loss:
     """
 
     switcher = {
-        "categorical_crossentropy":
-            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
+        "categorical_crossentropy": lambda: keras.losses.CategoricalCrossentropy(
+            from_logits=from_logits
+        ),
         "kl_divergence": lambda: keras.losses.KLDivergence(),
     }
 
@@ -38,6 +42,7 @@ def choose_loss(choice: str, from_logits: bool) -> keras.losses.Loss:
         raise TypeError("The given loss name is not implemented in the wrapper yet!")
 
     return loss
+
 
 def print_training_attributes(train_hp: dict, dist_hp: dict):
     """Prints model attributes so all interesting infromation is printed."""
@@ -49,4 +54,3 @@ def print_training_attributes(train_hp: dict, dist_hp: dict):
     print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hp["epochs"])
     print(tcols.OKGREEN + "Loss student: \t\t" + tcols.ENDC, dist_hp["student_loss_fn"])
     print(tcols.OKGREEN + "Loss distill: \t\t" + tcols.ENDC, dist_hp["distill_loss_fn"])
-

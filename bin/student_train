@@ -10,7 +10,7 @@ from studentnets import util
 from intnets import util as intutil
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
-parser.add_argument("--data_folder", type=str, default='../../kd_data/intnet_input',
+parser.add_argument("--data_folder", type=str, default='../../ki_data/intnet_input',
                     help="The folder where the data is stored on the system..")
 parser.add_argument("--norm", type=str, default='nonorm',
                     help="The name of the normalisation that you'll to use.")

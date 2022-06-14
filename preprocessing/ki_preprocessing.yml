@@ -1,4 +1,4 @@
-name: kdint_preprocessing
+name: ki_preprocessing
 channels:
   - anaconda
   - conda-forge
@@ -47,4 +47,4 @@ dependencies:
   - wheel=0.37.1=pyhd3eb1b0_0
   - xz=5.2.5=h7f8727e_1
   - zlib=1.2.12=h7f8727e_2
-prefix: /work/deodagiu/miniconda/envs/kdint_preprocessing
+prefix: /work/deodagiu/miniconda/envs/ki_preprocessing

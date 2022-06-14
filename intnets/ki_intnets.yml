@@ -1,4 +1,4 @@
-name: kdint_net
+name: ki_intnets
 channels:
   - conda-forge
   - defaults
@@ -154,4 +154,4 @@ dependencies:
     - qkeras==0.9.0
     - scikit-learn==1.1.1
     - tensorflow-model-optimization==0.7.2
-prefix: /work/deodagiu/miniconda/envs/kdint_net
+prefix: /work/deodagiu/miniconda/envs/ki_intnets

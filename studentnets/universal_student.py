@@ -20,19 +20,19 @@ class UniversalStudent(keras.Model):
         activ: Activation function to use between the dense layers.
         name: Name of this network.
     """
+
     def __init__(
         self,
         node_size: int = 64,
         activ: str = "relu",
         nclasses: int = 5,
         name: str = "UniversalStudent",
-        ):
+    ):
         super(UniversalStudent, self).__init__(name=name)
 
         self.activ = activ
         self.nclasses = nclasses
         self.node_size = node_size
-
 
         self.__build_network()
 
@@ -42,10 +42,10 @@ class UniversalStudent(keras.Model):
         self._dense_layer_1 = KL.Dense(self.node_size, name="dense_layer_1")
         self._batch_norma_2 = KL.BatchNormalization(name="second_batch_normalisation")
         self._activ_funct_1 = KL.Activation(self.activ, name="activation_1")
-        self._dense_layer_2 = KL.Dense(self.node_size/2, name="dense_layer_2")
+        self._dense_layer_2 = KL.Dense(self.node_size / 2, name="dense_layer_2")
         self._batch_norma_3 = KL.BatchNormalization(name="third_batch_normalisation")
         self._activ_funct_2 = KL.Activation(self.activ, name="activation_2")
-        self._dense_layer_3 = KL.Dense(self.node_size/2, name="dense_layer_3")
+        self._dense_layer_3 = KL.Dense(self.node_size / 2, name="dense_layer_3")
         self._batch_norma_4 = KL.BatchNormalization(name="fourth_batch_normalisation")
         self._activ_funct_3 = KL.Activation(self.activ, name="activation_3")
         self._dense_layer_4 = KL.Dense(5, name="dense_layer_4")

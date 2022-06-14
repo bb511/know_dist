@@ -8,7 +8,7 @@ sys.path.append("..")
 from intnets.test import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
-parser.add_argument("--data_folder", type=str, default='../../kd_data/intnet_input',
+parser.add_argument("--data_folder", type=str, default='../../ki_data/intnet_input',
                     help="The folder where the data is stored on the system..")
 parser.add_argument("--norm", type=str, default='nonorm',
                     help="The name of the normalisation that you'll to use.")
@@ -19,15 +19,16 @@ parser.add_argument("--model_dir", type=str, default="./trained_intnets/intnet",
 args = parser.parse_args()
 
 data_hyperparams = {
-    "pt_min": "2.0",
-    "nconstituents": "8"
+    "data_folder":   args.data_folder,
+    "norm":          args.norm,
+    "train_events":  0,
+    "test_events":   args.test_events,
+    "pt_min":        "2",
+    "nconstituents": "128"
 }
 
 args = {
-    "data_folder":      args.data_folder,
     "data_hyperparams": data_hyperparams,
-    "norm":             args.norm,
-    "test_events":      args.test_events,
     "model_dir":        args.model_dir,
 }
 
