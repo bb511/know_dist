@@ -18,10 +18,6 @@ def choose_student(args: dict, data_shape: tuple[int]) -> keras.models.Model:
     if model is None:
         raise TypeError("Given interaction network model type is not implemented!")
 
-    print(
-        tcols.WARNING + "Cannot display structure of student since compilation "
-        "happens in the distiller class." + tcols.ENDC
-    )
     return model
 
 
@@ -46,11 +42,11 @@ def choose_loss(choice: str, from_logits: bool) -> keras.losses.Loss:
 
 def print_training_attributes(train_hp: dict, dist_hp: dict):
     """Prints model attributes so all interesting infromation is printed."""
-    print(tcols.OKGREEN + "Distillation optimiser: " + tcols.ENDC, dist_hp["optimizer"])
-
-    print(tcols.HEADER + "\nTRAINING PARAMETERS" + tcols.ENDC)
+    print("\nTraining Parameters")
     print("-------------------")
-    print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, train_hp["batch"])
-    print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hp["epochs"])
+    print(tcols.OKGREEN + "Distillation optimiser: " + tcols.ENDC, dist_hp["optimizer"])
+    print(tcols.OKGREEN + "Batch size: \t\t" + tcols.ENDC, train_hp["batch"])
+    print(tcols.OKGREEN + "Training epochs:\t" + tcols.ENDC, train_hp["epochs"])
     print(tcols.OKGREEN + "Loss student: \t\t" + tcols.ENDC, dist_hp["student_loss_fn"])
     print(tcols.OKGREEN + "Loss distill: \t\t" + tcols.ENDC, dist_hp["distill_loss_fn"])
+    print("")

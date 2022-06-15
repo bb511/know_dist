@@ -19,17 +19,16 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-
+    intnet_util.device_info()
     outdir = "./trained_students/" + args["outdir"] + "/"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(data_hyperparams, seed=args["seed"])
+    jet_data = Data.shuffled(**data_hyperparams, seed=args["seed"])
 
     print("Importing the teacher network model...")
     teacher = keras.models.load_model(args["teacher"])
-    print(teacher.summary())
     print(
         tcols.OKGREEN
         + "Teacher loaded! \U0001f468\u200D\U0001f3eb\U00002728\n"
@@ -50,7 +49,8 @@ def main(args):
     distiller.compile(**distiller_hyperparams)
     print(tcols.OKGREEN + "Ready for knowledge transfer! \U0001F34E \n" + tcols.ENDC)
 
-    print(tcols.HEADER + "Teaching the student..." + tcols.ENDC)
+    print(tcols.HEADER + "\nTEACHING THE STUDENT \U0001F4AA" + tcols.ENDC)
+    print("====================")
     training_hyperparams = args["training_hyperparams"]
     util.print_training_attributes(training_hyperparams, distiller_hyperparams)
     history = distiller.fit(
@@ -63,7 +63,9 @@ def main(args):
         validation_split=0.3,
     )
 
-    print(tcols.OKGREEN + "\nSaving student model to: " + tcols.ENDC, outdir)
+    print(tcols.HEADER + "\nSAVING RESULTS" + tcols.ENDC)
+    print("==============")
+    print(tcols.OKGREEN + "Saving student model to: " + tcols.ENDC, outdir)
     student.save(outdir, save_format="tf")
 
     plots.loss_vs_epochs(
