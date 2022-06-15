@@ -24,6 +24,7 @@ parser.add_argument("--batch", type=int, default=512,
 parser.add_argument("--epochs", type=int, default=100,
                     help="The number of training epochs.")
 parser.add_argument("--optimiser", type=str, default="adam",
+                    choices=["adam"],
                     help="Name of the optimiser you want to use.")
 parser.add_argument("--loss", type=str, default="categorical_crossentropy",
                     help="Name of the loss you want to use.")
@@ -33,6 +34,7 @@ parser.add_argument("--summation", action='store_true',
                     help="Whether the interaction network should have a summation "
                          "layer before the last classifier (perm invariant) or not.")
 parser.add_argument("--intnet_type", type=str, default="qconv",
+                    choices=["qconv", "conv"],
                     help="The type of interaction network to instantiate.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")

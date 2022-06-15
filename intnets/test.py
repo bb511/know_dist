@@ -6,6 +6,7 @@ from tensorflow import keras
 
 keras.utils.set_random_seed(123)
 
+from . import util
 from . import plots
 from .data import Data
 from .terminal_colors import tcols
@@ -15,10 +16,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def main(args):
-    seed = 321
+    util.device_info()
+    seed = args["seed"]
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(data_hyperparams, seed=seed)
+    jet_data = Data.shuffled(**data_hyperparams, seed=seed)
 
     print("Importing the model...")
     model = keras.models.load_model(args["model_dir"])

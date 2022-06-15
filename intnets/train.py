@@ -27,7 +27,7 @@ def main(args):
         os.makedirs(outdir)
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(data_hyperparams, seed=args["seed"])
+    jet_data = Data.shuffled(**data_hyperparams, seed=args["seed"])
 
     nconst = jet_data.tr_data.shape[1]
     nfeats = jet_data.tr_data.shape[2]

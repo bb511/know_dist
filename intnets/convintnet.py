@@ -1,4 +1,4 @@
-# Interaction net implementation in tensorflow using quantised convolutional layers.
+# Interaction net implementation in tensorflow using convolutional layers.
 
 import numpy as np
 import itertools
@@ -6,14 +6,108 @@ import matplotlib.pyplot as plt
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.models import Model
 from tensorflow.keras import layers as KL
 
 
-class ConvIntNet(Model):
-    """Interaction network implemented with convolutional layers.
+class EffectsMLP(KL.Layer):
+    """The first MLP of the interaction network, that receives the concatenated
+    receiver, sender, and relation attributes (not used in this work) matrix and
+    outputs the so-called effects matrix, supposed to encode the effects of the
+    interactions between the constituents of the considered system.
 
-    See the following github repositories for more details:
+    In the publications:
+    https://arxiv.org/abs/1612.00222
+    https://arxiv.org/abs/1908.05318
+    this network is denoted f_r.
+    """
+
+    def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
+
+        super(EffectsMLP, self).__init__(name="fr", **kwargs)
+        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"eff_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"eff_activ_1")
+        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"eff_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"eff_activ_2")
+        self._output_layer = KL.Conv1D(neffects, kernel_size=1, name=f"eff_layer_3")
+        self._activ_3 = KL.Activation(activ, name=f"eff_activ_3")
+
+    def call(self, inputs):
+        proc_data = self._input_layer(inputs)
+        proc_data = self._activ_1(proc_data)
+        proc_data = self._hid_layer(proc_data)
+        proc_data = self._activ_2(proc_data)
+        proc_data = self._output_layer(proc_data)
+        effects = self._activ_3(proc_data)
+
+        return effects
+
+
+class DynamicsMLP(KL.Layer):
+    """The second MLP of the interaction network, that receives the effects matrix
+    times the transpose of the receiver matrix and outputs the so-called dynamics
+    matrix, which encodes the manifestation of the effects on the constituents.
+
+    In the publications:
+    https://arxiv.org/abs/1612.00222
+    https://arxiv.org/abs/1908.05318
+    this network is denoted f_o.
+    """
+
+    def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
+
+        super(DynamicsMLP, self).__init__(name="fo", **kwargs)
+        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"dyn_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"dyn_activ_1")
+        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"dyn_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"dyn_activ_2")
+        self._out_layer = KL.Conv1D(ndynamics, kernel_size=1, name=f"dyn_layer_3")
+        self._activ_3 = KL.Activation(activ, name=f"dyn_activ_3")
+
+    def call(self, inputs):
+        proc_data = self._input_layer(inputs)
+        proc_data = self._activ_1(proc_data)
+        proc_data = self._hid_layer(proc_data)
+        proc_data = self._activ_2(proc_data)
+        proc_data = self._out_layer(proc_data)
+        dynamics = self._activ_3(proc_data)
+
+        return dynamics
+
+
+class AbstractMLP(KL.Layer):
+    """Final and optional MLP of the interaction network. This MLP takes the dynamics
+    and computes abstract quantities about the system, e.g., for gravitational
+    interaction it would compute the potential energy of the system.
+
+    In the publications:
+    https://arxiv.org/abs/1612.00222
+    https://arxiv.org/abs/1908.05318
+    this network is not denoted in a specific way, but some people use f_c.
+    """
+
+    def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
+
+        super(AbstractMLP, self).__init__(name="fc", **kwargs)
+        self._input_layer = KL.Dense(nnodes, name=f"abs_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"abs_activ_1")
+        self._output_layer = KL.Dense(nabs_quant, name=f"abs_layer_2")
+        self._activ_2 = KL.Activation("softmax", name=f"abs_activ_2")
+
+    def call(self, inputs):
+        proc_data = self._input_layer(inputs)
+        proc_data = self._activ_1(proc_data)
+        proc_data = self._output_layer(proc_data)
+        abstract_quantities = self._activ_2(proc_data)
+
+        return abstract_quantities
+
+
+class ConvIntNet(keras.Model):
+    """Interaction network implemented with convolutional layers. Use it to
+    tag jets by inferring abstract quantities from the relations between the jet
+    constituents.
+
+    See the following githubrepositories for more details:
     https://bit.ly/3PhpTcB
     https://bit.ly/39qPL55
     https://bit.ly/3FNQRUI
@@ -24,17 +118,12 @@ class ConvIntNet(Model):
 
     Attributes:
         nconst: Number of constituents the jet data has.
-        nfeats: Number of features the data has.
         nclasses: Number of classes the data has.
-        *_structure: List containing the number of nodes for each hidden layer.
-            If they are empty, they default to on hidden layer with nfeats/2 nodes.
-        neffects: Number of effects for your system, i.e., the dimension of the
-            output of the fr network.
-        ndynamics: Number of dynamical variables in your system, i.e., the output
-            dimension for the fo network.
-        *_activation: The activation function after each layer for each network.
-        summation: Whether a summation layer should be used before the final classifier
-            of the network (True) or the 'dynamics' matrix is just flattened (False).
+        nfeats: Number of features the data has.
+        *_nnodes: Number of nodes that a component network should have in first layer.
+        neffects: Number of effects to compute.
+        ndynamics: Number of dynamical variables to compute.
+        *_activ: The activation function after each layer for a component networkk.
     """
 
     def __init__(
@@ -42,46 +131,31 @@ class ConvIntNet(Model):
         nconst: int,
         nfeats: int,
         nclasses: int = 5,
-        fr_structure: list = [30, 15],
-        fo_structure: list = [45, 22],
-        fc_structure: list = [48],
+        effects_nnodes: list = 30,
+        dynamic_nnodes: list = 45,
+        abstrac_nnodes: list = 48,
         neffects: int = 6,
         ndynamics: int = 6,
-        fr_activation: str = "relu",
-        fo_activation: str = "relu",
-        fc_activation: str = "relu",
+        effects_activ: str = "relu",
+        dynamic_activ: str = "relu",
+        abstrac_activ: str = "relu",
         summation: bool = True,
+        **kwargs,
     ):
 
-        super(ConvIntNet, self).__init__()
+        super(ConvIntNet, self).__init__(name="conv_intnet", **kwargs)
 
         self.nconst = nconst
         self.nedges = nconst * (nconst - 1)
         self.nfeats = nfeats
         self.nclass = nclasses
 
-        self._fr_structure = fr_structure
-        self._fo_structure = fo_structure
-        self._fc_structure = fc_structure
         self._summation = summation
-
-        self._neffects = neffects
-        self._ndynamic = ndynamics
-
-        self._fr_activation = fr_activation
-        self._fo_activation = fo_activation
-        self._fc_activation = fc_activation
-
+        self._batchnorm = KL.BatchNormalization()
         self._receiver_matrix, self._sender_matrix = self._build_relation_matrices()
-        self._build_intnet()
-
-    def _build_intnet(self):
-        # First, pass data through batch normalisation layer.
-        self._batch_norm = KL.BatchNormalization()
-        # Build the MLPs.
-        self._fr = self._build_fr()
-        self._fo = self._build_fo()
-        self._fc = self._build_fc()
+        self._effects_mlp = EffectsMLP(neffects, effects_nnodes, effects_activ)
+        self._dynamics_mlp = DynamicsMLP(neffects, dynamic_nnodes, dynamic_activ)
+        self._abstract_mlp = AbstractMLP(nclasses, abstrac_nnodes, abstrac_activ)
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
@@ -99,43 +173,6 @@ class ConvIntNet(Model):
 
         return receiver_matrix, sender_matrix
 
-    def _build_fr(self) -> keras.Sequential:
-        """Construct the MLP that computes the effects from the relations of nodes."""
-        self._fr_structure.append(self._neffects)
-
-        fr = keras.Sequential(name="fr")
-        for idx, layer_nodes in enumerate(self._fr_structure):
-            fr.add(KL.Conv1D(layer_nodes, kernel_size=1))
-            fr.add(KL.Activation(self._fr_activation))
-
-        return fr
-
-    def _build_fo(self) -> keras.Sequential:
-        """Construct the MLP that computes the dynamics from the effects of nodes."""
-        self._fo_structure.append(self._ndynamic)
-
-        fo = keras.Sequential(name="fo")
-        for idx, layer_nodes in enumerate(self._fo_structure):
-            fo.add(KL.Conv1D(layer_nodes, kernel_size=1))
-            fo.add(KL.Activation(self._fo_activation))
-
-        return fo
-
-    def _build_fc(self) -> keras.Sequential:
-        """Construct the MLP that maps the dynamics to a certain target class."""
-        self._fc_structure.append(self.nclass)
-
-        fc = keras.Sequential(name="fc")
-        for idx, layer_nodes in enumerate(self._fc_structure):
-            fc.add(KL.Dense(layer_nodes))
-            if idx == len(self._fc_structure) - 1:
-                break
-            fc.add(KL.Activation(self._fc_activation))
-
-        fc.add(KL.Activation("softmax"))
-
-        return fc
-
     def _tmul(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Do matrix multiplication of shape (I * J * K)(K * L) -> I * J * L."""
         x_shape = tf.shape(x)
@@ -145,44 +182,41 @@ class ConvIntNet(Model):
         )
 
     def call(self, inputs, **kwargs):
-        """Construct the network and direct the flow of the input."""
-        # Determine input shape and normalise the input data.
-        batch_norm = self._batch_norm(inputs)
-        batch_norm = KL.Permute((2, 1), input_shape=batch_norm.shape[1:])(batch_norm)
 
-        # Construct the receiver and sender states matrices by multiplying the input
-        # states with the receiver and sender matrices. Need to use convolutional layers
-        # to do matrix multiplication since QKeras does not have quantized matrix mul.
-        receiver_matrix = self._tmul(batch_norm, self._receiver_matrix)
-        sender_matrix = self._tmul(batch_norm, self._sender_matrix)
+        norm_constituents = self._batchnorm(inputs)
+        norm_constituents = KL.Permute((2, 1), input_shape=norm_constituents.shape[1:])(
+            norm_constituents
+        )
 
-        # Construct the receiver-sender matrix from which effects are computed.
-        rs_matrix = KL.Concatenate(axis=1)([receiver_matrix, sender_matrix])
-        del receiver_matrix, sender_matrix
+        rec_matrix = self._tmul(norm_constituents, self._receiver_matrix)
+        sen_matrix = self._tmul(norm_constituents, self._sender_matrix)
 
-        # Pass receiver-sender matrix through the fr neural net.
-        fr_input = KL.Permute((2, 1), input_shape=rs_matrix.shape[1:])(rs_matrix)
-        fr_output = self._fr(fr_input)
+        rs_matrix = KL.Concatenate(axis=1)([rec_matrix, sen_matrix])
+        rs_matrix = KL.Permute((2, 1), input_shape=rs_matrix.shape[1:])(rs_matrix)
+        del rec_matrix, sen_matrix
 
-        # Multiply the effects matrix with the receiver binary matrix.
-        fr_output = KL.Permute((2, 1))(fr_output)
+        effects = self._effects_mlp(rs_matrix)
+        del rs_matrix
+
+        effects = KL.Permute((2, 1))(effects)
         transpose_receiver_matrix = tf.transpose(self._receiver_matrix)
-        effects_matrix = self._tmul(fr_output, transpose_receiver_matrix)
-        del fr_output
+        effects_reduced = self._tmul(effects, transpose_receiver_matrix)
+        constituents_effects_matrix = KL.Concatenate(axis=1)(
+            [norm_constituents, effects_reduced]
+        )
+        constituents_effects_matrix = KL.Permute(
+            (2, 1), input_shape=constituents_effects_matrix.shape[1:]
+        )(constituents_effects_matrix)
+        del effects
+        del effects_reduced
 
-        # Pass the effects matrix through the fo neural net.
-        fo_input = KL.Concatenate(axis=1)([batch_norm, effects_matrix])
-        del effects_matrix
-        fo_input = KL.Permute((2, 1), input_shape=fo_input.shape[1:])(fo_input)
-        fo_output = self._fo(fo_input)
+        dynamics = self._dynamics_mlp(constituents_effects_matrix)
 
-        # Pass the dynamics matrix through the fc neural net.
-        if self._summation == True:
-            fc_input = tf.reduce_sum(fo_output, 1)
+        if self._summation:
+            dynamics = tf.reduce_sum(dynamics, 1)
         else:
-            fc_input = KL.Flatten()(fo_output)
+            dynamics = KL.Flatten()(dynamics)
 
-        del fo_output
-        fc_output = self._fc(fc_input)
+        abstract_quantities = self._abstract_mlp(dynamics)
 
-        return fc_output
+        return abstract_quantities
