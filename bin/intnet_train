@@ -63,19 +63,22 @@ inet_compilation_hyperparams = {
 }
 
 inet_hyperparams = {
-    "type":         args.intnet_type,
-    "fr_structure": [],
-    "fo_structure": [],
-    "fc_structure": [],
-    "compilation":  inet_compilation_hyperparams,
-    "summation":    args.summation,
+    "type":           args.intnet_type,
+    "effects_nnodes": 30,
+    "dynamic_nnodes": 45,
+    "abstrac_nnodes": 48,
+    "effects_activ":  "relu",
+    "dynamic_activ":  "relu",
+    "abstrac_activ":  "relu",
+    "summation":      args.summation,
+    "compilation":    inet_compilation_hyperparams,
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "outdir":               args.outdir,
     "inet_hyperparams":     inet_hyperparams,
+    "outdir":               args.outdir,
     "seed":                 args.seed,
 }
 
