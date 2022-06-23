@@ -2,6 +2,7 @@
 
 # Run the training of the interaction network..
 import argparse
+import os
 import sys
 sys.path.append("..")
 
@@ -36,10 +37,14 @@ parser.add_argument("--summation", action='store_true',
 parser.add_argument("--intnet_type", type=str, default="qconv",
                     choices=["qconv", "conv"],
                     help="The type of interaction network to instantiate.")
+parser.add_argument("--gpu", type=str, default="0",
+                    help="Sets the number of the GPU to run on.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
 
+
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
     "data_folder":   args.data_folder,
@@ -47,7 +52,7 @@ data_hyperparams = {
     "train_events":  args.train_events,
     "test_events":   0,
     "pt_min":        "2",
-    "nconstituents": "8",
+    "nconstituents": "128",
 }
 
 training_hyperparams = {

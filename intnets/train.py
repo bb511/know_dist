@@ -22,6 +22,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def main(args):
     util.device_info()
+
     outdir = os.path.join("trained_intnets", args["outdir"])
     if not os.path.exists(outdir):
         os.makedirs(outdir)
