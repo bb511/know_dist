@@ -33,6 +33,8 @@ def main(args):
     nconst = jet_data.tr_data.shape[1]
     nfeats = jet_data.tr_data.shape[2]
 
+    print(tcols.OKGREEN + f"Number of constituents: {nconst}\n" + tcols.ENDC)
+
     model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
 
     print(tcols.HEADER + "\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
