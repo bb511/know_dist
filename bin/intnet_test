@@ -3,6 +3,7 @@
 # Run the testing of the interaction network.
 import argparse
 import sys
+import os
 sys.path.append("..")
 
 from intnets.test import main
