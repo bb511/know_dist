@@ -37,14 +37,15 @@ parser.add_argument("--summation", action='store_true',
 parser.add_argument("--intnet_type", type=str, default="qconv",
                     choices=["qconv", "conv"],
                     help="The type of interaction network to instantiate.")
-parser.add_argument("--gpu", type=str, default="0",
+parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+if args.gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
     "data_folder":   args.data_folder,
