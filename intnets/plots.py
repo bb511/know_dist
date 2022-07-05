@@ -58,10 +58,13 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     """Plot the ROC curves for the labels of the jet data set."""
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
-
+    tpr_baseline = np.linspace(0.025, 0.99, 100)
     for idx, label in enumerate(labels):
         fpr, tpr, thr = metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
         auc = metrics.auc(fpr, tpr)
+        fpr_baseline = np.interp(tpr_baseline, tpr, fpr)
+        fpr_baseline.astype('float32').tofile(os.path.join(outdir, f"fpr_{label}.dat"))
+        tpr_baseline.astype('float32').tofile(os.path.join(outdir, f"tpr_{label}.dat"))
         plt.plot(tpr, fpr, color=cols[idx], label=f"{label}: AUC = {auc*100:.1f}%")
 
     plt.xlabel("True Positive Rate")
