@@ -36,6 +36,6 @@ def main(args):
     plots.dnn_output(plots_dir, y_pred)
 
     print(tcols.OKGREEN + "\nSaving predictions array.\n" + tcols.ENDC)
-    y_pred.astype('float32').tofile(os.path.join(plots_dir, "y_pred.dat"))
+    y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
 
     print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)

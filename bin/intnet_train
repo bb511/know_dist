@@ -16,6 +16,8 @@ parser.add_argument("--norm", type=str, default='nonorm',
                     help="The name of the normalisation that you'll to use.")
 parser.add_argument("--train_events", type=int, default=-1,
                     help="The exact number of training events to use.")
+parser.add_argument("--jet_seed", type=int, default=123,
+                    help="Seed to use in shuffling the jets.")
 parser.add_argument("--seed", type=int, default=123,
                     help="Seed to use in any random thing that is done.")
 parser.add_argument('--lr', type=float, default=0.0005,
@@ -85,6 +87,7 @@ args = {
     "training_hyperparams": training_hyperparams,
     "inet_hyperparams":     inet_hyperparams,
     "outdir":               args.outdir,
+    "jet_seed":             args.jet_seed,
     "seed":                 args.seed,
 }
 

@@ -17,6 +17,7 @@ class Data:
         norm_name: How the data was normalised (nonorm if unnormalised).
         train_events: Number of events for the training sample.
         test_events: Number of events for the testing sample.
+        jet_seed: Seed used in shuffling the jets.
         seed: The seed used in any shuffling that is done to the data.
     """
 
@@ -28,6 +29,7 @@ class Data:
         test_events: int = -1,
         pt_min: str = "2",
         nconstituents: str = "128",
+        jet_seed: int = None,
         seed: int = None,
     ):
 
@@ -39,6 +41,7 @@ class Data:
         self.train_events = train_events
         self.test_events = test_events
 
+        self.jet_seed = jet_seed
         self.seed = seed
 
         self.tr_data, self.tr_target = self._load_data("train")
@@ -60,11 +63,19 @@ class Data:
         test_events: int = -1,
         pt_min: str = "2",
         nconstituents: str = "128",
+        jet_seed: int = None,
         seed: int = None,
     ):
-
+        """Shuffles the constituents. The jets are shuffled regardless."""
         data = cls(
-            data_folder, norm, train_events, test_events, pt_min, nconstituents, seed
+            data_folder,
+            norm,
+            train_events,
+            test_events,
+            pt_min,
+            nconstituents,
+            jet_seed,
+            seed,
         )
 
         print("Shuffling constituents...")
@@ -118,7 +129,7 @@ class Data:
         y = np.load(targetfile_path)
 
         nevents = self._get_nevents(data_type)
-        x, y = self._trim_data(x, y, nevents, self.seed)
+        x, y = self._trim_data(x, y, nevents, self.jet_seed)
 
         return x, y
 
@@ -215,6 +226,7 @@ class Data:
 
         x = x_segregated[0][:maxdata_class, :, :]
         y = y_segregated[0][:maxdata_class, :]
+
         for x_class, y_class in zip(x_segregated[1:], y_segregated[1:]):
             x = np.concatenate((x, x_class[:maxdata_class, :, :]), axis=0)
             y = np.concatenate((y, y_class[:maxdata_class, :]), axis=0)

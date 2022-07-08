@@ -7,6 +7,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 keras.utils.set_random_seed(123)
+
 import absl.logging
 
 absl.logging.set_verbosity(absl.logging.ERROR)
@@ -28,19 +29,45 @@ def main(args):
         os.makedirs(outdir)
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(**data_hyperparams, seed=args["seed"])
+    jet_data = Data.shuffled(
+        **data_hyperparams, jet_seed=args["jet_seed"], seed=args["seed"]
+    )
 
     nconst = jet_data.tr_data.shape[1]
     nfeats = jet_data.tr_data.shape[2]
 
-    print(tcols.OKGREEN + f"Number of constituents: {nconst}\n" + tcols.ENDC)
+    print(tcols.OKGREEN + f"Number of constituents: {nconst}" + tcols.ENDC)
 
     model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
 
     print(tcols.HEADER + "\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     print("==================")
-    util.print_training_attributes(model, args)
+    # util.print_training_attributes(model, args)
     training_hyperparams = args["training_hyperparams"]
+
+    optimizer = keras.optimizers.Adam(learning_rate=0.0005)
+    loss = keras.losses.CategoricalCrossentropy()
+
+    train_dataset = tf.data.Dataset.from_tensor_slices(
+        (jet_data.tr_data, jet_data.tr_target)
+    )
+    train_dataset = train_dataset.shuffle(buffer_size=1024).batch(
+        training_hyperparams["batch"]
+    )
+
+    # for epoch in range(training_hyperparams["epochs"]):
+    #     print(f"\nStart of epoch {epoch}")
+    #     for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
+    #         with tf.GradientTape() as tape:
+    #             logits = model(x_batch_train, training=True)
+    #             loss_value = loss(y_batch_train, logits)
+
+    #         grads = tape.gradient(loss_value, model.trainable_weights)
+    #         print(grads[1])
+    #         optimizer.apply_gradients(zip(grads, model.trainable_weights))
+
+    #         print(f"Training loss at step {step}: {loss_value:.2f}")
+
     history = model.fit(
         jet_data.tr_data,
         jet_data.tr_target,

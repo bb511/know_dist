@@ -294,6 +294,7 @@ class QConvIntNet(keras.Model):
         dynamics = self._dynamics_mlp(constituents_effects_matrix)
 
         if self._summation:
+            print("Summation layer on!")
             dynamics = tf.reduce_sum(dynamics, 1)
         else:
             dynamics = KL.Flatten()(dynamics)
