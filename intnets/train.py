@@ -55,19 +55,6 @@ def main(args):
         training_hyperparams["batch"]
     )
 
-    # for epoch in range(training_hyperparams["epochs"]):
-    #     print(f"\nStart of epoch {epoch}")
-    #     for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-    #         with tf.GradientTape() as tape:
-    #             logits = model(x_batch_train, training=True)
-    #             loss_value = loss(y_batch_train, logits)
-
-    #         grads = tape.gradient(loss_value, model.trainable_weights)
-    #         print(grads[1])
-    #         optimizer.apply_gradients(zip(grads, model.trainable_weights))
-
-    #         print(f"Training loss at step {step}: {loss_value:.2f}")
-
     history = model.fit(
         jet_data.tr_data,
         jet_data.tr_target,

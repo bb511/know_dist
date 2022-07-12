@@ -151,8 +151,8 @@ class ConvIntNet(keras.Model):
         self.nclass = nclasses
 
         self._summation = summation
-        self._batchnorm = KL.BatchNormalization()
         self._receiver_matrix, self._sender_matrix = self._build_relation_matrices()
+        self._batchnorm = KL.BatchNormalization()
         self._effects_mlp = EffectsMLP(neffects, effects_nnodes, effects_activ)
         self._dynamics_mlp = DynamicsMLP(neffects, dynamic_nnodes, dynamic_activ)
         self._abstract_mlp = AbstractMLP(nclasses, abstrac_nnodes, abstrac_activ)
