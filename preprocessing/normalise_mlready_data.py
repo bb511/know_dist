@@ -151,8 +151,8 @@ def minmax(x: np.ndarray, feature_range: tuple = (0, 1)) -> np.ndarray:
     """
     min_feats = x.min(axis=0).min(axis=0)
     max_feats = x.max(axis=0).max(axis=0)
-    x_std = (x - min_feats)/(max_feats - min_feats)
-    x_scl = x_std * (feature_range[1] - feature_range[0]) + feature_range[0]
+    x_norm = (x - min_feats)/(max_feats - min_feats)
+    x_norm = x_norm * (feature_range[1] - feature_range[0]) + feature_range[0]
 
     return x_scl
 
@@ -162,10 +162,6 @@ def robust(x: np.ndarray) -> np.ndarray:
     subtracted from every respective sample belonging to that feature and then each
     feature is scaled with respect to the respective inter-quantile range between
     the 1st and 3rd quantiles.
-
-    The median of this implementation is systematically skewed with respect to the
-    median determined by the sklearn implementation. However, this should not
-    be important for the use scope employed here.
     """
     x_median = []
     interquantile_range = []
@@ -179,6 +175,7 @@ def robust(x: np.ndarray) -> np.ndarray:
     x_norm = (x - x_median)/interquantile_range
 
     return x_norm
+
 
 def standard(x: np.ndarray) -> np.ndarray:
     """Applies standard normalisation to the data, i.e., the mean of each feature is
