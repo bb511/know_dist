@@ -54,7 +54,7 @@ data_hyperparams = {
     "norm":          args.norm,
     "train_events":  args.train_events,
     "test_events":   0,
-    "pt_min":        "2",
+    "pt_min":        "2.0",
     "nconstituents": "8",
 }
 

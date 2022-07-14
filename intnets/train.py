@@ -42,18 +42,18 @@ def main(args):
 
     print(tcols.HEADER + "\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     print("==================")
-    # util.print_training_attributes(model, args)
+    util.print_training_attributes(model, args)
     training_hyperparams = args["training_hyperparams"]
 
-    optimizer = keras.optimizers.Adam(learning_rate=0.0005)
-    loss = keras.losses.CategoricalCrossentropy()
+    # optimizer = keras.optimizers.Adam(learning_rate=0.0005)
+    # loss = keras.losses.CategoricalCrossentropy()
 
-    train_dataset = tf.data.Dataset.from_tensor_slices(
-        (jet_data.tr_data, jet_data.tr_target)
-    )
-    train_dataset = train_dataset.shuffle(buffer_size=1024).batch(
-        training_hyperparams["batch"]
-    )
+    # train_dataset = tf.data.Dataset.from_tensor_slices(
+    #     (jet_data.tr_data, jet_data.tr_target)
+    # )
+    # train_dataset = train_dataset.shuffle(buffer_size=1024).batch(
+    #     training_hyperparams["batch"]
+    # )
 
     # for epoch in range(training_hyperparams["epochs"]):
     #     print(f"\nStart of epoch {epoch}")
@@ -63,7 +63,7 @@ def main(args):
     #             loss_value = loss(y_batch_train, logits)
 
     #         grads = tape.gradient(loss_value, model.trainable_weights)
-    #         print(grads[7])
+    #         print(grads[-2])
     #         optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
     #         print(f"Training loss at step {step}: {loss_value:.2f}")
