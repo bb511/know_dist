@@ -159,8 +159,8 @@ class ConvIntNet(keras.Model):
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
-        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
-        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
+        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
+        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
         receiver_sender_list = [
             node
             for node in itertools.product(range(self.nconst), range(self.nconst))

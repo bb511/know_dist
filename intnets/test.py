@@ -2,6 +2,7 @@
 
 import os
 
+import tensorflow as tf
 from tensorflow import keras
 
 keras.utils.set_random_seed(123)
@@ -13,7 +14,7 @@ from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
+tf.keras.backend.set_floatx('float64')
 
 def main(args):
     util.device_info()
@@ -23,7 +24,7 @@ def main(args):
         os.makedirs(plots_dir)
 
     data_hyperparams = args["data_hyperparams"]
-    jet_data = Data.shuffled(**data_hyperparams, seed=seed)
+    jet_data = Data.shuffled(**data_hyperparams, jet_seed=args["jet_seed"], seed=seed)
 
     print("Importing the model...")
     model = keras.models.load_model(args["model_dir"])
@@ -36,6 +37,6 @@ def main(args):
     plots.dnn_output(plots_dir, y_pred)
 
     print(tcols.OKGREEN + "\nSaving predictions array.\n" + tcols.ENDC)
-    y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
+    y_pred.astype("float64").tofile(os.path.join(plots_dir, "y_pred.dat"))
 
     print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)

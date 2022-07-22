@@ -21,6 +21,8 @@ parser.add_argument("--gpu", type=str, default="0",
                     help="Sets the number of the GPU to run on.")
 parser.add_argument("--seed", type=int, default=321,
                     help="Seed to use in shuffling the data and any other thing.")
+parser.add_argument("--jet_seed", type=int, default=123,
+                    help="Seed to use in shuffling the jets.")
 args = parser.parse_args()
 
 
@@ -32,13 +34,14 @@ data_hyperparams = {
     "train_events":  0,
     "test_events":   args.test_events,
     "pt_min":        "2.0",
-    "nconstituents": "128"
+    "nconstituents": "8"
 }
 
 args = {
     "data_hyperparams": data_hyperparams,
     "model_dir":        args.model_dir,
     "seed":             args.seed,
+    "jet_seed":         args.jet_seed,
 }
 
 main(args)

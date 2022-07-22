@@ -19,7 +19,7 @@ from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
+tf.keras.backend.set_floatx('float64')
 
 def main(args):
     util.device_info()
@@ -33,12 +33,18 @@ def main(args):
         **data_hyperparams, jet_seed=args["jet_seed"], seed=args["seed"]
     )
 
+    # jet_data_1 = Data.shuffled(
+    #     **data_hyperparams, jet_seed=args["jet_seed"], seed=273
+    # )
+
     nconst = jet_data.tr_data.shape[1]
     nfeats = jet_data.tr_data.shape[2]
 
     print(tcols.OKGREEN + f"Number of constituents: {nconst}" + tcols.ENDC)
 
     model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
+    # model_1 = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
+    # model_1.set_weights(model.get_weights())
 
     print(tcols.HEADER + "\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     print("==================")
@@ -46,27 +52,47 @@ def main(args):
     training_hyperparams = args["training_hyperparams"]
 
     # optimizer = keras.optimizers.Adam(learning_rate=0.0005)
+    # optimizer_1 = keras.optimizers.Adam(learning_rate=0.0005)
+
     # loss = keras.losses.CategoricalCrossentropy()
+    # loss_1 = keras.losses.CategoricalCrossentropy()
 
     # train_dataset = tf.data.Dataset.from_tensor_slices(
     #     (jet_data.tr_data, jet_data.tr_target)
     # )
-    # train_dataset = train_dataset.shuffle(buffer_size=1024).batch(
+    # train_dataset = train_dataset.batch(
+    #     training_hyperparams["batch"]
+    # )
+
+    # train_dataset_1 = tf.data.Dataset.from_tensor_slices(
+    #     (jet_data_1.tr_data, jet_data_1.tr_target)
+    # )
+    # train_dataset_1 = train_dataset_1.batch(
     #     training_hyperparams["batch"]
     # )
 
     # for epoch in range(training_hyperparams["epochs"]):
     #     print(f"\nStart of epoch {epoch}")
-    #     for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
+    #     for (x_batch_train, y_batch_train), (x_batch_train_1, y_batch_train_1) in zip(train_dataset, train_dataset_1):
+
     #         with tf.GradientTape() as tape:
     #             logits = model(x_batch_train, training=True)
     #             loss_value = loss(y_batch_train, logits)
 
-    #         grads = tape.gradient(loss_value, model.trainable_weights)
-    #         print(grads[-2])
-    #         optimizer.apply_gradients(zip(grads, model.trainable_weights))
+    #         with tf.GradientTape() as tape_1:
+    #             logits_1 = model_1(x_batch_train_1, training=True)
+    #             loss_value_1 = loss_1(y_batch_train_1, logits_1)
 
-    #         print(f"Training loss at step {step}: {loss_value:.2f}")
+    #         grads = tape.gradient(loss_value, model.trainable_weights)
+    #         grads_1 = tape_1.gradient(loss_value_1, model_1.trainable_weights)
+            # for idx in range(len(grads)):
+                # print(tf.reduce_all(tf.equal(grads[idx], grads_1[idx])))
+            # print(grads[-1])
+            # print(grads_1[-1])
+            # print()
+
+            # optimizer.apply_gradients(zip(grads, model.trainable_weights))
+            # optimizer_1.apply_gradients(zip(grads_1, model_1.trainable_weights))
 
     history = model.fit(
         jet_data.tr_data,
@@ -76,6 +102,7 @@ def main(args):
         verbose=2,
         callbacks=get_callbacks(),
         validation_split=0.3,
+        shuffle=False
     )
 
     print(tcols.HEADER + "\nSAVING RESULTS" + tcols.ENDC)

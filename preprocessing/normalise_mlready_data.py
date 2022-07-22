@@ -157,11 +157,16 @@ def minmax(x: np.ndarray, feature_range: tuple = (0, 1)) -> np.ndarray:
     return x_scl
 
 
-def robust(x: np.ndarray) -> np.ndarray:
+def robust(x: np.ndarray, percentiles: list = [95, 5]) -> np.ndarray:
     """Applies robust normalisation to the data, i.e., the median of every feature is
     subtracted from every respective sample belonging to that feature and then each
     feature is scaled with respect to the respective inter-quantile range between
     the 1st and 3rd quantiles.
+
+    Args:
+        x: Data array.
+        percentiles: Between which percentiles to normalise. The default is from the
+            google interaction network paper. The sklearn standard is [75, 25].
     """
     x_median = []
     interquantile_range = []
@@ -169,8 +174,8 @@ def robust(x: np.ndarray) -> np.ndarray:
     for feature_idx in range(x.shape[-1]):
         x_feature = x[:, :, feature_idx].flatten()
         x_median.append(np.nanmedian(x_feature, axis=0))
-        quantile75, quantile25 = np.nanpercentile(x_feature, [75, 25])
-        interquantile_range.append(quantile75 - quantile25)
+        quantile_high, quantile_low = np.nanpercentile(x_feature, percentiles)
+        interquantile_range.append(quantile_high - quantile_low)
 
     x_norm = (x - x_median)/interquantile_range
 
