@@ -10,99 +10,125 @@ from tensorflow.keras import layers as KL
 
 
 class EffectsMLP(KL.Layer):
-    """The first MLP of the interaction network, that receives the concatenated
-    receiver, sender, and relation attributes (not used in this work) matrix and
-    outputs the so-called effects matrix, supposed to encode the effects of the
-    interactions between the constituents of the considered system.
+    """First MLP component of the interaction network, i.e., relational model.
 
-    In the publications:
+    Receives the concatenated receiver, sender, and relation attributes
+    (not used in this work) matrix and outputs the so-called effects matrix,
+    supposed to encode the effects of the interactions between the constituents of the
+    considered system.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is denoted f_r.
+
+    THIS NETWORK IS DENOTED $f_R$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
 
-        super(EffectsMLP, self).__init__(name="fr", **kwargs)
-        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"eff_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"eff_activ_1")
-        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"eff_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"eff_activ_2")
-        self._output_layer = KL.Conv1D(neffects, kernel_size=1, name=f"eff_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"eff_activ_3")
+        super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
+        self._hid_layer_1 = KL.Dense(nnodes, name=f"relnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
+        self._hid_layer_2 = KL.Dense(nnodes, name=f"relnet_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"relnet_activ_2")
+        self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
+        self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
+        self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
+        self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
+        self._output_layer = KL.Dense(neffects, name=f"relnet_output")
+        self._output_activ = KL.Activation(activ, name=f"relnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._hid_layer(proc_data)
-        proc_data = self._activ_2(proc_data)
-        proc_data = self._output_layer(proc_data)
-        effects = self._activ_3(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
+        x = self._hid_layer_3(x)
+        x = self._activ_3(x)
+        x = self._hid_layer_4(x)
+        x = self._activ_4(x)
+        x = self._output_layer(x)
+
+        effects = self._output_activ(x)
 
         return effects
 
 
 class DynamicsMLP(KL.Layer):
-    """The second MLP of the interaction network, that receives the effects matrix
-    times the transpose of the receiver matrix and outputs the so-called dynamics
-    matrix, which encodes the manifestation of the effects on the constituents.
+    """Second MLP component of the interaction network, i.e., the object model.
 
-    In the publications:
+    Receives the effects matrix times the transpose of the receiver matrix and outputs
+    the so-called dynamics matrix, which encodes the manifestation of the effects on
+    the constituents.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is denoted f_o.
+
+    THIS NETWORK IS DENOTED $f_O$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
 
-        super(DynamicsMLP, self).__init__(name="fo", **kwargs)
-        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"dyn_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"dyn_activ_1")
-        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"dyn_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"dyn_activ_2")
-        self._out_layer = KL.Conv1D(ndynamics, kernel_size=1, name=f"dyn_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"dyn_activ_3")
+        super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
+        self._hid_layer_1 = KL.Dense(nnodes, name=f"objnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"objnet_activ_1")
+        self._hid_layer_2 = KL.Dense(nnodes, name=f"objnet_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"objnet_activ_2")
+        self._output_layer = KL.Dense(ndynamics, name=f"objnet_output_layer")
+        self._output_activ = KL.Activation(activ, name=f"objnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._hid_layer(proc_data)
-        proc_data = self._activ_2(proc_data)
-        proc_data = self._out_layer(proc_data)
-        dynamics = self._activ_3(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
+        x = self._output_layer(x)
+
+        dynamics = self._output_activ(x)
 
         return dynamics
 
 
 class AbstractMLP(KL.Layer):
-    """Final and optional MLP of the interaction network. This MLP takes the dynamics
-    and computes abstract quantities about the system, e.g., for gravitational
-    interaction it would compute the potential energy of the system.
+    """Third MLP component of the interaction network, i.e., the classifier model.
 
-    In the publications:
+    This is an optional component. It is used to distinguish the abstract quantities
+    of a system. The classifier model takes the dynamics and computes abstract
+    quantities about the system, e.g., for gravitational interaction it would compute
+    the potential energy of the system.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is not denoted in a specific way, but some people use f_c.
+
+    THIS NETWORK IS DENOTED $f_A$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
 
-        super(AbstractMLP, self).__init__(name="fc", **kwargs)
-        self._input_layer = KL.Dense(nnodes, name=f"abs_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"abs_activ_1")
-        self._output_layer = KL.Dense(nabs_quant, name=f"abs_layer_2")
-        self._activ_2 = KL.Activation("softmax", name=f"abs_activ_2")
+        super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
+        self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
+        self._hid_layer_2 = KL.Dense(nnodes, name=f"classnet_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
+
+        self._output_layer = KL.Dense(nabs_quant, name=f"classnet_output_layer")
+        self._output_activ = KL.Activation("softmax", name=f"classnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._output_layer(proc_data)
-        abstract_quantities = self._activ_2(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
+        x = self._output_layer(x)
+
+        abstract_quantities = self._output_activ(x)
 
         return abstract_quantities
 
 
-class ConvIntNet(keras.Model):
+class DensIntNet(keras.Model):
     """Interaction network implemented with convolutional layers. Use it to
     tag jets by inferring abstract quantities from the relations between the jet
     constituents.
@@ -131,11 +157,11 @@ class ConvIntNet(keras.Model):
         nconst: int,
         nfeats: int,
         nclasses: int = 5,
-        effects_nnodes: int = 30,
-        dynamic_nnodes: int = 45,
-        abstrac_nnodes: int = 48,
-        neffects: int = 6,
-        ndynamics: int = 6,
+        effects_nnodes: int = 150,
+        dynamic_nnodes: int = 100,
+        abstrac_nnodes: int = 50,
+        neffects: int = 15,
+        ndynamics: int = 15,
         effects_activ: str = "relu",
         dynamic_activ: str = "relu",
         abstrac_activ: str = "relu",
@@ -143,7 +169,7 @@ class ConvIntNet(keras.Model):
         **kwargs,
     ):
 
-        super(ConvIntNet, self).__init__(name="conv_intnet", **kwargs)
+        super(DensIntNet, self).__init__(name="dens_intnet", **kwargs)
 
         self.nconst = nconst
         self.nedges = nconst * (nconst - 1)
@@ -159,8 +185,8 @@ class ConvIntNet(keras.Model):
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
-        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
-        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
+        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
+        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
         receiver_sender_list = [
             node
             for node in itertools.product(range(self.nconst), range(self.nconst))
@@ -174,7 +200,7 @@ class ConvIntNet(keras.Model):
         return receiver_matrix, sender_matrix
 
     def _tmul(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Do matrix multiplication of shape (I * J * K)(K * L) -> I * J * L."""
+        """Does matrix multiplication of shape (I * J * K)(K * L) -> I * J * L."""
         x_shape = tf.shape(x)
         y_shape = tf.shape(y)
         return tf.reshape(

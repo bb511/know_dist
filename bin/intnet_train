@@ -26,6 +26,8 @@ parser.add_argument("--batch", type=int, default=512,
                     help="The batch size.")
 parser.add_argument("--epochs", type=int, default=100,
                     help="The number of training epochs.")
+parser.add_argument("--valid_split", type=float, default=0.3,
+                    help="Fraction of events that are used for validation.")
 parser.add_argument("--optimiser", type=str, default="adam",
                     choices=["adam"],
                     help="Name of the optimiser you want to use.")
@@ -36,15 +38,14 @@ parser.add_argument("--metrics", type=str, default="categorical_accuracy",
 parser.add_argument("--summation", action='store_true',
                     help="Whether the interaction network should have a summation "
                          "layer before the last classifier (perm invariant) or not.")
-parser.add_argument("--intnet_type", type=str, default="qconv",
-                    choices=["qconv", "conv"],
+parser.add_argument("--intnet_type", type=str, default="dens",
+                    choices=["qconv", "dens"],
                     help="The type of interaction network to instantiate.")
 parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
-
 
 if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -59,9 +60,10 @@ data_hyperparams = {
 }
 
 training_hyperparams = {
-    "batch":  args.batch,
-    "lr":     args.lr,
-    "epochs": args.epochs,
+    "batch":        args.batch,
+    "lr":           args.lr,
+    "epochs":       args.epochs,
+    "valid_split":  args.valid_split,
 }
 
 inet_compilation_hyperparams = {

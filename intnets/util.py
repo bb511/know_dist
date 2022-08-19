@@ -1,13 +1,30 @@
 # Utility methods for the interaction network training, testing, etc...
 
 import numpy as np
+import os
 
 import tensorflow as tf
 from tensorflow import keras
 
 from .terminal_colors import tcols
 from .qconvintnet import QConvIntNet
-from .convintnet import ConvIntNet
+from .densintnet import DensIntNet
+
+
+def make_output_directory(location: str, outdir: str) -> str:
+    """Create the output directory in a designated location."""
+    outdir = os.path.join(location, outdir)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    return outdir
+
+
+def print_data_deets(data_hyperparams: dict):
+    """Logs useful details about the data used to train the interaction network."""
+    print(tcols.HEADER + "\nDATA DETAILS" + tcols.ENDC)
+    for key in data_hyperparams:
+        print(f"{key}: {data_hyperparams[key]}")
 
 
 def device_info():
@@ -57,7 +74,7 @@ def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
     print("Instantiating model...")
     switcher = {
         "qconv": lambda: QConvIntNet(nconst, nfeats, summation=args["summation"]),
-        "conv": lambda: ConvIntNet(nconst, nfeats, summation=args["summation"]),
+        "dens": lambda: DensIntNet(nconst, nfeats, summation=args["summation"]),
     }
 
     model = switcher.get(args["type"], lambda: None)()
