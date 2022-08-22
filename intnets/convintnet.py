@@ -10,15 +10,18 @@ from tensorflow.keras import layers as KL
 
 
 class EffectsMLP(KL.Layer):
-    """The first MLP of the interaction network, that receives the concatenated
-    receiver, sender, and relation attributes (not used in this work) matrix and
-    outputs the so-called effects matrix, supposed to encode the effects of the
-    interactions between the constituents of the considered system.
+    """First MLP component of the interaction network, i.e., relational model.
 
-    In the publications:
+    Receives the concatenated receiver, sender, and relation attributes
+    (not used in this work) matrix and outputs the so-called effects matrix,
+    supposed to encode the effects of the interactions between the constituents of the
+    considered system.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is denoted f_r.
+
+    THIS NETWORK IS DENOTED $f_R$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
@@ -43,14 +46,17 @@ class EffectsMLP(KL.Layer):
 
 
 class DynamicsMLP(KL.Layer):
-    """The second MLP of the interaction network, that receives the effects matrix
-    times the transpose of the receiver matrix and outputs the so-called dynamics
-    matrix, which encodes the manifestation of the effects on the constituents.
+    """Second MLP component of the interaction network, i.e., the object model.
 
-    In the publications:
+    Receives the effects matrix times the transpose of the receiver matrix and outputs
+    the so-called dynamics matrix, which encodes the manifestation of the effects on
+    the constituents.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is denoted f_o.
+
+    THIS NETWORK IS DENOTED $f_O$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
@@ -75,14 +81,18 @@ class DynamicsMLP(KL.Layer):
 
 
 class AbstractMLP(KL.Layer):
-    """Final and optional MLP of the interaction network. This MLP takes the dynamics
-    and computes abstract quantities about the system, e.g., for gravitational
-    interaction it would compute the potential energy of the system.
+    """Third MLP component of the interaction network, i.e., the classifier model.
 
-    In the publications:
+    This is an optional component. It is used to distinguish the abstract quantities
+    of a system. The classifier model takes the dynamics and computes abstract
+    quantities about the system, e.g., for gravitational interaction it would compute
+    the potential energy of the system.
+
+    Related publications:
     https://arxiv.org/abs/1612.00222
     https://arxiv.org/abs/1908.05318
-    this network is not denoted in a specific way, but some people use f_c.
+
+    THIS NETWORK IS DENOTED $f_A$ IN THESE PUBLICATIONS.
     """
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
@@ -103,11 +113,12 @@ class AbstractMLP(KL.Layer):
 
 
 class ConvIntNet(keras.Model):
-    """Interaction network implemented with convolutional layers. Use it to
-    tag jets by inferring abstract quantities from the relations between the jet
-    constituents.
+    """Interaction network implemented with dense layers and a classifier.
 
-    See the following githubrepositories for more details:
+    Interaction network used to tag jets by inferring an abstract quantity, the jet
+    type, from the relations between the jet constituents.
+
+    See the following github repositories for more details:
     https://bit.ly/3PhpTcB
     https://bit.ly/39qPL55
     https://bit.ly/3FNQRUI
@@ -118,12 +129,12 @@ class ConvIntNet(keras.Model):
 
     Attributes:
         nconst: Number of constituents the jet data has.
-        nclasses: Number of classes the data has.
         nfeats: Number of features the data has.
-        *_nnodes: Number of nodes that a component network should have in first layer.
-        neffects: Number of effects to compute.
-        ndynamics: Number of dynamical variables to compute.
-        *_activ: The activation function after each layer for a component networkk.
+        *_nnodes: Number of nodes that a component network has in its hidden layers.
+        *_activ: The activation function after each layer for a component network.
+        neffects: Number of effects, i.e., nb of output nodes for the relational net.
+        ndynamics: Number of dynamical variables, i.e., output nodes for object net.
+        nclasses: Number of classes, i.e., types of jets, i.e., output of the classif.
     """
 
     def __init__(
