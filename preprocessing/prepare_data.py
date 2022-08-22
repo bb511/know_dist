@@ -108,7 +108,7 @@ def cut_transverse_momentum(
     x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float
 ) -> tuple([list, np.ndarray]):
     """Reject constituents that are below a certain transverse momentum.
-    If a jet has not constituents with a momentum above the given threshold, then
+    If a jet has no constituents with a momentum above the given threshold, then
     the whole jet is removed.
 
     Args:

@@ -29,12 +29,12 @@ class EffectsMLP(KL.Layer):
         super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes, name=f"relnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
-        self._hid_layer_2 = KL.Dense(nnodes, name=f"relnet_layer_2")
+        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"relnet_layer_2")
         self._activ_2 = KL.Activation(activ, name=f"relnet_activ_2")
-        self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
-        self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
-        self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
+        # self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
+        # self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
+        # self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
+        # self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
         self._output_layer = KL.Dense(neffects, name=f"relnet_output")
         self._output_activ = KL.Activation(activ, name=f"relnet_output_activ")
 
@@ -43,10 +43,10 @@ class EffectsMLP(KL.Layer):
         x = self._activ_1(x)
         x = self._hid_layer_2(x)
         x = self._activ_2(x)
-        x = self._hid_layer_3(x)
-        x = self._activ_3(x)
-        x = self._hid_layer_4(x)
-        x = self._activ_4(x)
+        # x = self._hid_layer_3(x)
+        # x = self._activ_3(x)
+        # x = self._hid_layer_4(x)
+        # x = self._activ_4(x)
         x = self._output_layer(x)
 
         effects = self._output_activ(x)
@@ -73,7 +73,7 @@ class DynamicsMLP(KL.Layer):
         super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes, name=f"objnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"objnet_activ_1")
-        self._hid_layer_2 = KL.Dense(nnodes, name=f"objnet_layer_2")
+        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"objnet_layer_2")
         self._activ_2 = KL.Activation(activ, name=f"objnet_activ_2")
         self._output_layer = KL.Dense(ndynamics, name=f"objnet_output_layer")
         self._output_activ = KL.Activation(activ, name=f"objnet_output_activ")
@@ -83,8 +83,8 @@ class DynamicsMLP(KL.Layer):
         x = self._activ_1(x)
         x = self._hid_layer_2(x)
         x = self._activ_2(x)
-        x = self._output_layer(x)
 
+        x = self._output_layer(x)
         dynamics = self._output_activ(x)
 
         return dynamics
@@ -110,8 +110,8 @@ class AbstractMLP(KL.Layer):
         super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
-        self._hid_layer_2 = KL.Dense(nnodes, name=f"classnet_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
+        # self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"classnet_layer_2")
+        # self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
 
         self._output_layer = KL.Dense(nabs_quant, name=f"classnet_output_layer")
         self._output_activ = KL.Activation("softmax", name=f"classnet_output_activ")
@@ -119,8 +119,8 @@ class AbstractMLP(KL.Layer):
     def call(self, inputs):
         x = self._hid_layer_1(inputs)
         x = self._activ_1(x)
-        x = self._hid_layer_2(x)
-        x = self._activ_2(x)
+        # x = self._hid_layer_2(x)
+        # x = self._activ_2(x)
         x = self._output_layer(x)
 
         abstract_quantities = self._output_activ(x)
@@ -129,11 +129,12 @@ class AbstractMLP(KL.Layer):
 
 
 class DensIntNet(keras.Model):
-    """Interaction network implemented with convolutional layers. Use it to
-    tag jets by inferring abstract quantities from the relations between the jet
-    constituents.
+    """Interaction network implemented with dense layers and a classifier.
 
-    See the following githubrepositories for more details:
+    Interaction network used to tag jets by inferring an abstract quantity, the jet
+    type, from the relations between the jet constituents.
+
+    See the following github repositories for more details:
     https://bit.ly/3PhpTcB
     https://bit.ly/39qPL55
     https://bit.ly/3FNQRUI
@@ -144,27 +145,27 @@ class DensIntNet(keras.Model):
 
     Attributes:
         nconst: Number of constituents the jet data has.
-        nclasses: Number of classes the data has.
         nfeats: Number of features the data has.
-        *_nnodes: Number of nodes that a component network should have in first layer.
-        neffects: Number of effects to compute.
-        ndynamics: Number of dynamical variables to compute.
-        *_activ: The activation function after each layer for a component networkk.
+        *_nnodes: Number of nodes that a component network has in its hidden layers.
+        *_activ: The activation function after each layer for a component network.
+        neffects: Number of effects, i.e., nb of output nodes for the relational net.
+        ndynamics: Number of dynamical variables, i.e., output nodes for object net.
+        nclasses: Number of classes, i.e., types of jets, i.e., output of the classif.
     """
 
     def __init__(
         self,
         nconst: int,
         nfeats: int,
-        nclasses: int = 5,
         effects_nnodes: int = 150,
         dynamic_nnodes: int = 100,
         abstrac_nnodes: int = 50,
-        neffects: int = 15,
-        ndynamics: int = 15,
         effects_activ: str = "relu",
         dynamic_activ: str = "relu",
         abstrac_activ: str = "relu",
+        ndynamics: int = 15,
+        neffects: int = 15,
+        nclasses: int = 5,
         summation: bool = True,
         **kwargs,
     ):
@@ -185,8 +186,8 @@ class DensIntNet(keras.Model):
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
-        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
-        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
+        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
+        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
         receiver_sender_list = [
             node
             for node in itertools.product(range(self.nconst), range(self.nconst))

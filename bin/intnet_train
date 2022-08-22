@@ -20,9 +20,9 @@ parser.add_argument("--jet_seed", type=int, default=123,
                     help="Seed to use in shuffling the jets.")
 parser.add_argument("--seed", type=int, default=123,
                     help="Seed to use in any random thing that is done.")
-parser.add_argument('--lr', type=float, default=0.0005,
+parser.add_argument('--lr', type=float, default=0.0001,
                     help="The learning rate.")
-parser.add_argument("--batch", type=int, default=512,
+parser.add_argument("--batch", type=int, default=100,
                     help="The batch size.")
 parser.add_argument("--epochs", type=int, default=100,
                     help="The number of training epochs.")
@@ -66,28 +66,30 @@ training_hyperparams = {
     "valid_split":  args.valid_split,
 }
 
-inet_compilation_hyperparams = {
+intnet_compilation_hyperparams = {
     "optimizer": util.choose_optimiser(args.optimiser, args.lr),
     "loss":      args.loss,
     "metrics":   [args.metrics],
 }
 
-inet_hyperparams = {
-    "type":           args.intnet_type,
+intnet_hyperparams = {
     "effects_nnodes": 30,
     "dynamic_nnodes": 45,
     "abstrac_nnodes": 48,
     "effects_activ":  "relu",
     "dynamic_activ":  "relu",
     "abstrac_activ":  "relu",
+    "ndynamics":      6,
+    "neffects":       6,
     "summation":      args.summation,
-    "compilation":    inet_compilation_hyperparams,
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "inet_hyperparams":     inet_hyperparams,
+    "intnet_type":          args.intnet_type,
+    "intnet_hyperparams":   intnet_hyperparams,
+    "intnet_compilation":   intnet_compilation_hyperparams,
     "outdir":               args.outdir,
     "jet_seed":             args.jet_seed,
     "seed":                 args.seed,

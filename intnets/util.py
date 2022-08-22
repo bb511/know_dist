@@ -8,6 +8,7 @@ from tensorflow import keras
 
 from .terminal_colors import tcols
 from .qconvintnet import QConvIntNet
+from .convintnet import ConvIntNet
 from .densintnet import DensIntNet
 
 
@@ -57,33 +58,39 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
 
 def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
-    hyperparams = args["inet_hyperparams"]
+    compilation_hyperparams = args["intnet_compilation"]
     train_hyperparams = args["training_hyperparams"]
 
     print("\nTraining parameters")
     print("-------------------")
     print(tcols.OKGREEN + "Optimiser: \t" + tcols.ENDC, model.optimizer.get_config())
     print(tcols.OKGREEN + "Batch size: \t" + tcols.ENDC, train_hyperparams["batch"])
+    print(tcols.OKGREEN + "Learning rate: \t" + tcols.ENDC, train_hyperparams["lr"])
     print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hyperparams["epochs"])
-    print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, hyperparams["compilation"]["loss"])
+    print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, compilation_hyperparams["loss"])
     print("")
 
 
-def choose_intnet(args: dict, nconst: int, nfeats: int) -> keras.models.Model:
+def choose_intnet(intnet_type: str, nconst: int, nfeats: int, hyperparams: dict,
+    compilation_hyperparams) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
-    print("Instantiating model...")
+    print("Instantiating model with the hyperparameters:")
+    for key in hyperparams:
+        print(f"{key}: {hyperparams[key]}")
+
     switcher = {
-        "qconv": lambda: QConvIntNet(nconst, nfeats, summation=args["summation"]),
-        "dens": lambda: DensIntNet(nconst, nfeats, summation=args["summation"]),
+        "qconv": lambda: QConvIntNet(nconst, nfeats, **hyperparams),
+        "dens":  lambda: DensIntNet(nconst, nfeats, **hyperparams),
+        "conv":  lambda: ConvIntNet(nconst, nfeats, **hyperparams),
     }
 
-    model = switcher.get(args["type"], lambda: None)()
+    model = switcher.get(intnet_type, lambda: None)()
 
-    model.compile(**args["compilation"])
+    model.compile(**compilation_hyperparams)
     model.build((None, nconst, nfeats))
     print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
 
-    if args["type"] == "qconv":
+    if intnet_type == "qconv":
         set_matrix_multiplication_hack_weights(model)
 
     if model is None:

@@ -19,7 +19,7 @@ from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx('float32')
 
 def main(args):
     util.device_info()
@@ -29,9 +29,13 @@ def main(args):
     util.print_data_deets(data_hp)
     jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
-    nconst = jet_data.tr_data.shape[1]
-    nfeats = jet_data.tr_data.shape[2]
-    model = util.choose_intnet(args["inet_hyperparams"], nconst, nfeats)
+    model = util.choose_intnet(
+        args["intnet_type"],
+        jet_data.tr_data.shape[1],
+        jet_data.tr_data.shape[2],
+        args["intnet_hyperparams"],
+        args["intnet_compilation"],
+    )
 
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     util.print_training_attributes(model, args)

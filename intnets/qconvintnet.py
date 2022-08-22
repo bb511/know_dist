@@ -161,12 +161,12 @@ class QConvIntNet(keras.Model):
 
     Attributes:
         nconst: Number of constituents the jet data has.
-        nclasses: Number of classes the data has.
         nfeats: Number of features the data has.
-        *_nnodes: Number of nodes that a component network should have in first layer.
-        neffects: Number of effects to compute.
-        ndynamics: Number of dynamical variables to compute.
-        *_activ: The activation function after each layer for a component networkk.
+        *_nnodes: Number of nodes that a component network has in its hidden layers.
+        *_activ: The activation function after each layer for a component network.
+        neffects: Number of effects, i.e., nb of output nodes for the relational net.
+        ndynamics: Number of dynamical variables, i.e., output nodes for object net.
+        nclasses: Number of classes, i.e., types of jets, i.e., output of the classif.
         nbits: The number of bits to quantise the floats to.
     """
 
@@ -178,11 +178,11 @@ class QConvIntNet(keras.Model):
         effects_nnodes: int = 30,
         dynamic_nnodes: int = 45,
         abstrac_nnodes: int = 48,
-        neffects: int = 6,
-        ndynamics: int = 6,
         effects_activ: str = "relu",
         dynamic_activ: str = "relu",
         abstrac_activ: str = "relu",
+        neffects: int = 6,
+        ndynamics: int = 6,
         nbits: int = 8,
         summation: bool = True,
         **kwargs,
