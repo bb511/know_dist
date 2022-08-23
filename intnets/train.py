@@ -19,7 +19,7 @@ from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-tf.keras.backend.set_floatx('float32')
+tf.keras.backend.set_floatx('float64')
 
 def main(args):
     util.device_info()

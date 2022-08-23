@@ -35,6 +35,12 @@ parser.add_argument(
     help="Maximum number of jet constituents data should have.",
 )
 parser.add_argument(
+    "--type",
+    type=str,
+    default="andre",
+    help="The type of feature selection to be employed.",
+)
+parser.add_argument(
     "--flag",
     type=str,
     default="",
@@ -45,18 +51,21 @@ parser.add_argument(
 def main(args):
     data_file_paths = get_file_paths(args.data_file_dir)
 
-    x_data, y_data = select_features(data_file_paths[0])
+    x_data, y_data = select_features(args.type, data_file_paths[0])
 
     for file_path in data_file_paths[1:]:
-        add_x_data, add_y_data = select_features(file_path)
+        add_x_data, add_y_data = select_features(args.type, file_path)
         x_data = np.concatenate((x_data, add_x_data), axis=0)
         y_data = np.concatenate((y_data, add_y_data), axis=0)
 
-    x_data, y_data = cut_transverse_momentum(x_data, y_data, args.min_pt)
+    pt_idx = get_pt_index(args.type)
+    x_data, y_data = cut_transverse_momentum(x_data, y_data, args.min_pt, pt_idx)
     x_data = restrict_nb_constituents(x_data, args.max_constituents)
     print_data_dimensions(x_data)
 
-    out_file_name = f"jet_images_c{args.max_constituents}_pt{args.min_pt}_{args.flag}"
+    out_file_name = (
+        f"jet_images_c{args.max_constituents}_pt{args.min_pt}_{args.type}_{args.flag}"
+    )
     x_output_file = os.path.join(args.output_dir, f"x_{out_file_name}")
     y_output_file = os.path.join(args.output_dir, f"y_{out_file_name}")
 
@@ -70,7 +79,27 @@ def main(args):
     )
 
 
-def select_features(data_file_path: str) -> tuple([np.ndarray, np.ndarray]):
+def get_pt_index(selection_type: str):
+    """Returns the position of the pt in the data array."""
+    if selection_type == "jedinet": return 5
+    if selection_type == "andre": return 0
+
+
+def select_features(choice: str, data_path: str) -> tuple([np.ndarray, np.ndarray]):
+    """Choose what feature selection to employ on the data."""
+    switcher = {
+        "andre":   lambda: select_features_andre(data_path),
+        "jedinet": lambda: select_features_jedinet(data_path),
+    }
+
+    data = switcher.get(choice, lambda: None)()
+    if data is None:
+        raise TypeError("Feature selection name not valid!")
+
+    return data
+
+
+def select_features_andre(data_file_path: str) -> tuple([np.ndarray, np.ndarray]):
     """Selects (pT, etarel, phirel) features from an .h5 jet data file and puts
     them into a numpy array. Selects the target (either if the jet comes from a gluon,
     quark, W, Z, or top) corresponding to each event and puts it into a separate
@@ -84,6 +113,24 @@ def select_features(data_file_path: str) -> tuple([np.ndarray, np.ndarray]):
     """
     data = h5py.File(data_file_path)
     x_data = data["jetConstituentList"][:, :, [5, 8, 11]]
+    y_data = data["jets"][:, -6:-1]
+
+    return x_data, y_data
+
+
+def select_features_jedinet(data_file_path) -> tuple([np.ndarray, np.ndarray]):
+    """Selects (px, py, pz, E, pT, eta, phi, deltaR, Erel, pTrel, phirel, etarel,
+    cos(theta), cos(thetarel)) features from an .h5 jet data file and puts them into a numpy array. Selects the target (either if the jet comes from a gluon, quark, W, Z,
+    or top) corresponding to each event and puts it into a separate numpy array.
+
+    Args:
+        data_file_path: Path to .h5 file containing jet data.
+
+    Returns:
+        Data and target arrays with selected features.
+    """
+    data = h5py.File(data_file_path)
+    x_data = data["jetConstituentList"][:, :, :]
     y_data = data["jets"][:, -6:-1]
 
     return x_data, y_data
@@ -105,7 +152,7 @@ def get_file_paths(data_file_dir: str) -> list:
 
 
 def cut_transverse_momentum(
-    x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float
+    x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float, pt_index: int,
 ) -> tuple([list, np.ndarray]):
     """Reject constituents that are below a certain transverse momentum.
     If a jet has no constituents with a momentum above the given threshold, then
@@ -119,7 +166,7 @@ def cut_transverse_momentum(
     Returns:
         The processed data array together with the processed target.
     """
-    boolean_mask = x_data[:, :, 0] > minimum_pt
+    boolean_mask = x_data[:, :, pt_index] > minimum_pt
     structure_memory = boolean_mask.sum(axis=1)
     x_data = np.split(x_data[boolean_mask, :], np.cumsum(structure_memory)[:-1])
     x_data = [jet_const for jet_const in x_data if jet_const.size > 0]

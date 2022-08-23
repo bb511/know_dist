@@ -26,21 +26,24 @@ class EffectsMLP(KL.Layer):
 
     def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
 
-        super(EffectsMLP, self).__init__(name="fr", **kwargs)
-        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"eff_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"eff_activ_1")
-        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"eff_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"eff_activ_2")
-        self._output_layer = KL.Conv1D(neffects, kernel_size=1, name=f"eff_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"eff_activ_3")
+        super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
+        self._hid_layer_1 = KL.Conv1D(nnodes, kernel_size=1, name=f"relnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
+        self._hid_layer_2 = KL.Conv1D(
+            int(nnodes / 2), kernel_size=1, name=f"relnet_layer_2"
+        )
+        self._activ_2 = KL.Activation(activ, name=f"relnet_activ_2")
+        self._output_layer = KL.Conv1D(neffects, kernel_size=1, name=f"relnet_output")
+        self._output_activ = KL.Activation(activ, name=f"relnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._hid_layer(proc_data)
-        proc_data = self._activ_2(proc_data)
-        proc_data = self._output_layer(proc_data)
-        effects = self._activ_3(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
+        x = self._output_layer(x)
+
+        effects = self._output_activ(x)
 
         return effects
 
@@ -61,21 +64,24 @@ class DynamicsMLP(KL.Layer):
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
 
-        super(DynamicsMLP, self).__init__(name="fo", **kwargs)
-        self._input_layer = KL.Conv1D(nnodes, kernel_size=1, name=f"dyn_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"dyn_activ_1")
-        self._hid_layer = KL.Conv1D(int(nnodes / 2), kernel_size=1, name=f"dyn_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"dyn_activ_2")
-        self._out_layer = KL.Conv1D(ndynamics, kernel_size=1, name=f"dyn_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"dyn_activ_3")
+        super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
+        self._hid_layer_1 = KL.Conv1D(nnodes, kernel_size=1, name=f"objnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"objnet_activ_1")
+        self._hid_layer_2 = KL.Conv1D(
+            int(nnodes / 2), kernel_size=1, name=f"objnet_layer_2"
+        )
+        self._activ_2 = KL.Activation(activ, name=f"objnet_activ_2")
+        self._output_layer = KL.Conv1D(ndynamics, kernel_size=1, name=f"objnet_output")
+        self._output_activ = KL.Activation(activ, name=f"objnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._hid_layer(proc_data)
-        proc_data = self._activ_2(proc_data)
-        proc_data = self._out_layer(proc_data)
-        dynamics = self._activ_3(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
+        x = self._output_layer(x)
+
+        dynamics = self._output_activ(x)
 
         return dynamics
 
@@ -97,17 +103,18 @@ class AbstractMLP(KL.Layer):
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
 
-        super(AbstractMLP, self).__init__(name="fc", **kwargs)
-        self._input_layer = KL.Dense(nnodes, name=f"abs_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"abs_activ_1")
-        self._output_layer = KL.Dense(nabs_quant, name=f"abs_layer_2")
-        self._activ_2 = KL.Activation("softmax", name=f"abs_activ_2")
+        super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
+        self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
+        self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
+        self._output_layer = KL.Dense(nabs_quant, name=f"classnet_output")
+        self._output_activ = KL.Activation("softmax", name=f"classnet_output_activ")
 
     def call(self, inputs):
-        proc_data = self._input_layer(inputs)
-        proc_data = self._activ_1(proc_data)
-        proc_data = self._output_layer(proc_data)
-        abstract_quantities = self._activ_2(proc_data)
+        x = self._hid_layer_1(inputs)
+        x = self._activ_1(x)
+        x = self._output_layer(x)
+
+        abstract_quantities = self._output_activ(x)
 
         return abstract_quantities
 
@@ -141,15 +148,15 @@ class ConvIntNet(keras.Model):
         self,
         nconst: int,
         nfeats: int,
-        nclasses: int = 5,
         effects_nnodes: int = 30,
         dynamic_nnodes: int = 45,
         abstrac_nnodes: int = 48,
-        neffects: int = 6,
-        ndynamics: int = 6,
         effects_activ: str = "relu",
         dynamic_activ: str = "relu",
         abstrac_activ: str = "relu",
+        neffects: int = 6,
+        ndynamics: int = 6,
+        nclasses: int = 5,
         summation: bool = True,
         **kwargs,
     ):
@@ -170,8 +177,8 @@ class ConvIntNet(keras.Model):
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
-        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
-        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
+        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
+        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
         receiver_sender_list = [
             node
             for node in itertools.product(range(self.nconst), range(self.nconst))

@@ -24,6 +24,7 @@ def make_output_directory(location: str, outdir: str) -> str:
 def print_data_deets(data_hyperparams: dict):
     """Logs useful details about the data used to train the interaction network."""
     print(tcols.HEADER + "\nDATA DETAILS" + tcols.ENDC)
+    print(tcols.HEADER + "------------" + tcols.ENDC)
     for key in data_hyperparams:
         print(f"{key}: {data_hyperparams[key]}")
 

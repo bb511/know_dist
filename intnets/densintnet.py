@@ -1,4 +1,4 @@
-# Interaction net implementation in tensorflow using convolutional layers.
+# Interaction net implementation in tensorflow using dense layers.
 
 import numpy as np
 import itertools
@@ -31,10 +31,10 @@ class EffectsMLP(KL.Layer):
         self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
         self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"relnet_layer_2")
         self._activ_2 = KL.Activation(activ, name=f"relnet_activ_2")
-        # self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
-        # self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
-        # self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
-        # self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
+        self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
+        self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
+        self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
+        self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
         self._output_layer = KL.Dense(neffects, name=f"relnet_output")
         self._output_activ = KL.Activation(activ, name=f"relnet_output_activ")
 
@@ -43,10 +43,10 @@ class EffectsMLP(KL.Layer):
         x = self._activ_1(x)
         x = self._hid_layer_2(x)
         x = self._activ_2(x)
-        # x = self._hid_layer_3(x)
-        # x = self._activ_3(x)
-        # x = self._hid_layer_4(x)
-        # x = self._activ_4(x)
+        x = self._hid_layer_3(x)
+        x = self._activ_3(x)
+        x = self._hid_layer_4(x)
+        x = self._activ_4(x)
         x = self._output_layer(x)
 
         effects = self._output_activ(x)
@@ -110,8 +110,8 @@ class AbstractMLP(KL.Layer):
         super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
-        # self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"classnet_layer_2")
-        # self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
+        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"classnet_layer_2")
+        self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
 
         self._output_layer = KL.Dense(nabs_quant, name=f"classnet_output_layer")
         self._output_activ = KL.Activation("softmax", name=f"classnet_output_activ")
@@ -119,8 +119,8 @@ class AbstractMLP(KL.Layer):
     def call(self, inputs):
         x = self._hid_layer_1(inputs)
         x = self._activ_1(x)
-        # x = self._hid_layer_2(x)
-        # x = self._activ_2(x)
+        x = self._hid_layer_2(x)
+        x = self._activ_2(x)
         x = self._output_layer(x)
 
         abstract_quantities = self._output_activ(x)
@@ -186,8 +186,8 @@ class DensIntNet(keras.Model):
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
-        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
-        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float32)
+        receiver_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
+        sender_matrix = np.zeros([self.nconst, self.nedges], dtype=np.float64)
         receiver_sender_list = [
             node
             for node in itertools.product(range(self.nconst), range(self.nconst))

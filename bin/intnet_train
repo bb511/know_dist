@@ -18,7 +18,7 @@ parser.add_argument("--train_events", type=int, default=-1,
                     help="The exact number of training events to use.")
 parser.add_argument("--jet_seed", type=int, default=123,
                     help="Seed to use in shuffling the jets.")
-parser.add_argument("--seed", type=int, default=123,
+parser.add_argument("--seed", type=int, default=127,
                     help="Seed to use in any random thing that is done.")
 parser.add_argument('--lr', type=float, default=0.0001,
                     help="The learning rate.")
@@ -39,7 +39,7 @@ parser.add_argument("--summation", action='store_true',
                     help="Whether the interaction network should have a summation "
                          "layer before the last classifier (perm invariant) or not.")
 parser.add_argument("--intnet_type", type=str, default="dens",
-                    choices=["qconv", "dens"],
+                    choices=["qconv", "conv", "dens"],
                     help="The type of interaction network to instantiate.")
 parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
@@ -51,12 +51,13 @@ if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
-    "data_folder":   args.data_folder,
-    "norm":          args.norm,
-    "train_events":  args.train_events,
-    "test_events":   0,
-    "pt_min":        "2.0",
-    "nconstituents": "8",
+    "data_folder":       args.data_folder,
+    "norm":              args.norm,
+    "train_events":      args.train_events,
+    "test_events":       0,
+    "pt_min":            "2.0",
+    "nconstituents":     "16",
+    "feature_selection": "jedinet",
 }
 
 training_hyperparams = {
@@ -73,14 +74,14 @@ intnet_compilation_hyperparams = {
 }
 
 intnet_hyperparams = {
-    "effects_nnodes": 30,
-    "dynamic_nnodes": 45,
-    "abstrac_nnodes": 48,
+    "effects_nnodes": 150,
+    "dynamic_nnodes": 100,
+    "abstrac_nnodes": 50,
     "effects_activ":  "relu",
     "dynamic_activ":  "relu",
     "abstrac_activ":  "relu",
-    "ndynamics":      6,
-    "neffects":       6,
+    "ndynamics":      15,
+    "neffects":       15,
     "summation":      args.summation,
 }
 

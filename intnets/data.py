@@ -9,14 +9,17 @@ from .terminal_colors import tcols
 
 
 class Data:
-    """Data class to store the data to be used in training the interaction network.
+    """Data class to store the data to be used in learning for the interaction network.
 
     Attributes:
         data_folder: Path to the folder where the data is located.
-        hyperparams: The hyperparameters of the data set, e.g., nb. of constituents.
-        norm_name: How the data was normalised (nonorm if unnormalised).
-        train_events: Number of events for the training sample.
-        test_events: Number of events for the testing sample.
+        norm: How the data was normalised (nonorm if unnormalised).
+        train_events: Number of events for the training sample, -1 to use all.
+        test_events: Number of events for the testing sample, -1 to use all.
+        pt_min: Minimum pt for any constituent in the data set.
+        nconstituents: Number of constituents per jet.
+        feature_selection: Type of feature selection scheme used. See the preprocessing
+            module prepare_data.py for more details.
         jet_seed: Seed used in shuffling the jets.
         seed: The seed used in any shuffling that is done to the data.
     """
@@ -29,6 +32,7 @@ class Data:
         test_events: int = -1,
         pt_min: str = "2",
         nconstituents: str = "128",
+        feature_selection: str = "andre",
         jet_seed: int = None,
         seed: int = None,
     ):
@@ -37,6 +41,7 @@ class Data:
         self.norm_name = norm
         self.nconstituents = nconstituents
         self.minpt = pt_min
+        self.feature_selection = feature_selection
 
         self.train_events = train_events
         self.test_events = test_events
@@ -63,6 +68,7 @@ class Data:
         test_events: int = -1,
         pt_min: str = "2",
         nconstituents: str = "128",
+        feature_selection: str = "andre",
         jet_seed: int = None,
         seed: int = None,
     ):
@@ -74,6 +80,7 @@ class Data:
             test_events,
             pt_min,
             nconstituents,
+            feature_selection,
             jet_seed,
             seed,
         )
@@ -152,6 +159,8 @@ class Data:
             + "_pt"
             + self.minpt
             + "_"
+            + self.feature_selection
+            + "_"
             + self.norm_name
             + "_"
             + data_type
@@ -165,6 +174,8 @@ class Data:
             + self.nconstituents
             + "_pt"
             + self.minpt
+            + "_"
+            + self.feature_selection
             + "_"
             + self.norm_name
             + "_"
