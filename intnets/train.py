@@ -5,9 +5,11 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
+
 keras.utils.set_random_seed(123)
 
 import absl.logging
+
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 from . import util
@@ -17,7 +19,7 @@ from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx("float64")
 
 
 def main(args):

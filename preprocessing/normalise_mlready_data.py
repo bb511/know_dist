@@ -57,12 +57,12 @@ def main(args):
 
     print("Loading the files...\n")
     x_data = np.concatenate(
-        (np.load(args.x_data_path_train, 'r'), np.load(args.x_data_path_test, 'r')),
-        axis=0
+        (np.load(args.x_data_path_train, "r"), np.load(args.x_data_path_test, "r")),
+        axis=0,
     )
     y_data = np.concatenate(
-        (np.load(args.y_data_path_train, 'r'), np.load(args.y_data_path_test, 'r')),
-        axis=0
+        (np.load(args.y_data_path_train, "r"), np.load(args.y_data_path_test, "r")),
+        axis=0,
     )
 
     x_data, y_data = equalize_classes(x_data, y_data)
@@ -127,7 +127,9 @@ def equalize_classes(
     return x_data, y_data
 
 
-def apply_normalisation(choice: str, x_data: np.ndarray, feat_range: tuple = (0, 1)) -> np.ndarray:
+def apply_normalisation(
+    choice: str, x_data: np.ndarray, feat_range: tuple = (0, 1)
+) -> np.ndarray:
     """Choose the type of normalisation to apply to the data.
 
     Args:
@@ -143,8 +145,8 @@ def apply_normalisation(choice: str, x_data: np.ndarray, feat_range: tuple = (0,
 
     print(tcols.OKGREEN + f"Applying {choice} normalisation..." + tcols.ENDC)
     switcher = {
-        "minmax": lambda : minmax(x_data, feat_range),
-        "robust": lambda : robust(x_data),
+        "minmax": lambda: minmax(x_data, feat_range),
+        "robust": lambda: robust(x_data),
         "standard": lambda: standard(x_data),
     }
 
@@ -169,7 +171,7 @@ def minmax(x: np.ndarray, feature_range: tuple = (0, 1)) -> np.ndarray:
     """
     min_feats = x.min(axis=0).min(axis=0)
     max_feats = x.max(axis=0).max(axis=0)
-    x_norm = (x - min_feats)/(max_feats - min_feats)
+    x_norm = (x - min_feats) / (max_feats - min_feats)
     x_norm = x_norm * (feature_range[1] - feature_range[0]) + feature_range[0]
 
     return x_norm
@@ -195,7 +197,7 @@ def robust(x: np.ndarray, percentiles: list = [95, 5]) -> np.ndarray:
         quantile_high, quantile_low = np.nanpercentile(x_feature, percentiles)
         interquantile_range.append(quantile_high - quantile_low)
 
-    x_norm = (x - x_median)/interquantile_range
+    x_norm = (x - x_median) / interquantile_range
 
     return x_norm
 
@@ -213,7 +215,7 @@ def standard(x: np.ndarray) -> np.ndarray:
         x_mean.append(x_feature.mean(axis=0))
         x_std.append(x_feature.std(axis=0))
 
-    x_norm = (x - x_mean)/x_std
+    x_norm = (x - x_mean) / x_std
 
     return x_norm
 
@@ -275,16 +277,28 @@ def print_jets_per_class(y_data: np.array):
 def select_feature_labels(filename: str) -> list[str]:
     """Gets the feature labels for a certain type of selection."""
     jedinet_feature_labels = [
-        '$p_x$', '$p_y$', '$p_z$', '$E$', '$E_{rel}$', '$p_T$', '$p_T^{rel}$',
-        '$\\eta$', '$\\eta^\\mathrm{rel}$', '$\\eta^\\mathrm{rot}$', '$\\phi$',
-        '$\\phi^\\mathrm{rel}$', '$\\phi^\\mathrm{rot}$', '$\\Delta_R$',
-        '$\\cos(\\theta)$', '$\\cos(\\theta^\\mathrm{rel}$'
+        "$p_x$",
+        "$p_y$",
+        "$p_z$",
+        "$E$",
+        "$E_{rel}$",
+        "$p_T$",
+        "$p_T^{rel}$",
+        "$\\eta$",
+        "$\\eta^\\mathrm{rel}$",
+        "$\\eta^\\mathrm{rot}$",
+        "$\\phi$",
+        "$\\phi^\\mathrm{rel}$",
+        "$\\phi^\\mathrm{rot}$",
+        "$\\Delta_R$",
+        "$\\cos(\\theta)$",
+        "$\\cos(\\theta^\\mathrm{rel}$",
     ]
-    andre_feature_labels = ['p_T', '\\eta^\\mathrm{rel}', '\\phi^\\mathrm{rel}']
-    choice = filename.split('_')[4]
+    andre_feature_labels = ["p_T", "\\eta^\\mathrm{rel}", "\\phi^\\mathrm{rel}"]
+    choice = filename.split("_")[4]
 
     switcher = {
-        "andre":   lambda: andre_feature_labels,
+        "andre": lambda: andre_feature_labels,
         "jedinet": lambda: jedinet_feature_labels,
     }
 
@@ -297,7 +311,8 @@ def select_feature_labels(filename: str) -> list[str]:
 
 def plot_normalised_data(outdir: str, x_data: np.ndarray, y_data: np.ndarray):
     """Plots the data after it has been normalised."""
-    if not os.path.exists(outdir): os.makedirs(outdir)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
     print("Plotting the normalised data...")
     plt.rc("xtick", labelsize=23)

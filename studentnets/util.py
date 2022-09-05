@@ -28,12 +28,11 @@ def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """
 
     switcher = {
-        "categorical_crossentropy": \
-            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
-        "kl_divergence": \
-            lambda: keras.losses.KLDivergence(),
-        "softmax_with_crossentropy": \
-            lambda: tf.nn.softmax_cross_entropy_with_logits,
+        "categorical_crossentropy": lambda: keras.losses.CategoricalCrossentropy(
+            from_logits=from_logits
+        ),
+        "kl_divergence": lambda: keras.losses.KLDivergence(),
+        "softmax_with_crossentropy": lambda: tf.nn.softmax_cross_entropy_with_logits,
     }
 
     loss = switcher.get(choice, lambda: None)()

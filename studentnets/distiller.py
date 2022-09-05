@@ -7,6 +7,7 @@ from tensorflow import keras
 
 from . import util
 
+
 class Distiller(keras.Model):
     """Train the student using teacher information through knowledge distillation.
 
@@ -62,10 +63,13 @@ class Distiller(keras.Model):
         with tf.GradientTape() as tape:
             student_predictions = self.student(x, training=True)
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
-            distillation_loss = self.distillation_loss_fn(
-                tf.nn.softmax(teacher_predictions / self.temperature, axis=1),
-                tf.nn.softmax(student_predictions / self.temperature, axis=1),
-            ) * self.temperature**2
+            distillation_loss = (
+                self.distillation_loss_fn(
+                    tf.nn.softmax(teacher_predictions / self.temperature, axis=1),
+                    tf.nn.softmax(student_predictions / self.temperature, axis=1),
+                )
+                * self.temperature**2
+            )
             loss = self.alpha * student_loss + (1 - self.alpha) * distillation_loss
 
         grads = tape.gradient(loss, self.student.trainable_variables)
@@ -86,7 +90,7 @@ class Distiller(keras.Model):
             self.student_loss_track,
             self.distill_loss_track,
             self.loss_track,
-            self.categorical_accuracy
+            self.categorical_accuracy,
         ]
 
     def test_step(self, data: np.ndarray):
@@ -100,7 +104,7 @@ class Distiller(keras.Model):
 
         results = {
             "student_loss": self.student_loss_track.result(),
-            "acc": self.categorical_accuracy.result()
+            "acc": self.categorical_accuracy.result(),
         }
 
         return results

@@ -10,8 +10,8 @@ def loss_vs_epochs(
     outdir: str,
     train_loss: np.ndarray,
     valid_loss: np.ndarray,
-    plot_name: str = "loss_epochs"
-    ):
+    plot_name: str = "loss_epochs",
+):
     """Plots the loss for each epoch for the training and validation data
     and saves it to the same directory the model is saved in.
     """

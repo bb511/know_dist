@@ -81,14 +81,16 @@ def main(args):
 
 def get_pt_index(selection_type: str):
     """Returns the position of the pt in the data array."""
-    if selection_type == "jedinet": return 5
-    if selection_type == "andre": return 0
+    if selection_type == "jedinet":
+        return 5
+    if selection_type == "andre":
+        return 0
 
 
 def select_features(choice: str, data_path: str) -> tuple([np.ndarray, np.ndarray]):
     """Choose what feature selection to employ on the data."""
     switcher = {
-        "andre":   lambda: select_features_andre(data_path),
+        "andre": lambda: select_features_andre(data_path),
         "jedinet": lambda: select_features_jedinet(data_path),
     }
 
@@ -154,7 +156,10 @@ def get_file_paths(data_file_dir: str) -> list:
 
 
 def cut_transverse_momentum(
-    x_data: np.ndarray, y_data: np.ndarray, minimum_pt: float, pt_index: int,
+    x_data: np.ndarray,
+    y_data: np.ndarray,
+    minimum_pt: float,
+    pt_index: int,
 ) -> tuple([list, np.ndarray]):
     """Reject constituents that are below a certain transverse momentum.
     If a jet has no constituents with a momentum above the given threshold, then

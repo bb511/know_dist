@@ -74,8 +74,13 @@ def print_training_attributes(model: keras.models.Model, args: dict):
     print("")
 
 
-def choose_intnet(intnet_type: str, nconst: int, nfeats: int, hyperparams: dict,
-    compilation_hyperparams) -> keras.models.Model:
+def choose_intnet(
+    intnet_type: str,
+    nconst: int,
+    nfeats: int,
+    hyperparams: dict,
+    compilation_hyperparams,
+) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
     print("Instantiating model with the hyperparameters:")
     for key in hyperparams:
@@ -83,8 +88,8 @@ def choose_intnet(intnet_type: str, nconst: int, nfeats: int, hyperparams: dict,
 
     switcher = {
         "qconv": lambda: QConvIntNet(nconst, nfeats, **hyperparams),
-        "dens":  lambda: DensIntNet(nconst, nfeats, **hyperparams),
-        "conv":  lambda: ConvIntNet(nconst, nfeats, **hyperparams),
+        "dens": lambda: DensIntNet(nconst, nfeats, **hyperparams),
+        "conv": lambda: ConvIntNet(nconst, nfeats, **hyperparams),
     }
 
     model = switcher.get(intnet_type, lambda: None)()
@@ -113,10 +118,10 @@ def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """
 
     switcher = {
-        "categorical_crossentropy": \
-            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
-        "softmax_with_crossentropy": \
-            lambda: tf.nn.softmax_cross_entropy_with_logits,
+        "categorical_crossentropy": lambda: keras.losses.CategoricalCrossentropy(
+            from_logits=from_logits
+        ),
+        "softmax_with_crossentropy": lambda: tf.nn.softmax_cross_entropy_with_logits,
     }
 
     loss = switcher.get(choice, lambda: None)()
@@ -129,7 +134,7 @@ def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
 def save_hyperparameters_file(hyperparams: dict, outdir: str):
     """Saves the hyperparameters dictionary that defines an net to a file."""
     hyperparams_file_path = os.path.join(outdir, "hyperparameters.json")
-    with open(hyperparams_file_path, 'w') as file:
+    with open(hyperparams_file_path, "w") as file:
         json.dump(hyperparams, file)
 
     print(tcols.OKGREEN + "Saved hyperparameters to json file." + tcols.ENDC)
@@ -141,6 +146,7 @@ def load_hyperparameters_file(model_dir: str):
         hyperparams = json.load(file)
 
     return hyperparams
+
 
 def set_matrix_multiplication_hack_weights(model: keras.models.Model):
     """Set the weights of the QKeras convolutional layers that are used to do
