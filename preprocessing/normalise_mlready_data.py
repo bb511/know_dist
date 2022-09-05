@@ -5,6 +5,7 @@ import os
 import argparse
 
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler
 
@@ -12,18 +13,28 @@ from terminal_colors import tcols
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
-    "--x_data_paths",
+    "--x_data_path_train",
     type=str,
-    nargs="+",
     required=True,
-    help="Path to the data files to process.",
+    help="Path to the training data file to process.",
 )
 parser.add_argument(
-    "--y_data_paths",
+    "--x_data_path_test",
     type=str,
-    nargs="+",
     required=True,
-    help="Paths to the target files corresponding to the data.",
+    help="Path to the training data file to process.",
+)
+parser.add_argument(
+    "--y_data_path_train",
+    type=str,
+    required=True,
+    help="Paths to the training target file corresponding to the data.",
+)
+parser.add_argument(
+    "--y_data_path_test",
+    type=str,
+    required=True,
+    help="Paths to the training target file corresponding to the data.",
 )
 parser.add_argument(
     "--output_dir", type=str, required=True, help="Path to the output folder."
@@ -45,14 +56,21 @@ parser.add_argument(
 def main(args):
 
     print("Loading the files...\n")
-    x_data = np.load(args.x_data_paths[0])
-    y_data = np.load(args.y_data_paths[0])
-    for x_data_path, y_data_path in zip(args.x_data_paths[1:], args.y_data_paths[1:]):
-        x_data = np.concatenate((x_data, np.load(x_data_path)), axis=0)
-        y_data = np.concatenate((y_data, np.load(y_data_path)), axis=0)
+    x_data = np.concatenate(
+        (np.load(args.x_data_path_train, 'r'), np.load(args.x_data_path_test, 'r')),
+        axis=0
+    )
+    y_data = np.concatenate(
+        (np.load(args.y_data_path_train, 'r'), np.load(args.y_data_path_test, 'r')),
+        axis=0
+    )
 
     x_data, y_data = equalize_classes(x_data, y_data)
     x_data = apply_normalisation(args.norm, x_data)
+
+    plots_folder = format_output_filename(args.x_data_paths[0], args.norm)
+    plots_path = os.path.join(args.output_dir, plots_folder)
+    plot_normalised_data(plots_path, x_data, y_data)
 
     x_data_train, x_data_test, y_data_train, y_data_test = train_test_split(
         x_data, y_data, test_size=args.test_split, random_state=7, stratify=y_data
@@ -154,7 +172,7 @@ def minmax(x: np.ndarray, feature_range: tuple = (0, 1)) -> np.ndarray:
     x_norm = (x - min_feats)/(max_feats - min_feats)
     x_norm = x_norm * (feature_range[1] - feature_range[0]) + feature_range[0]
 
-    return x_scl
+    return x_norm
 
 
 def robust(x: np.ndarray, percentiles: list = [95, 5]) -> np.ndarray:
@@ -252,6 +270,73 @@ def print_jets_per_class(y_data: np.array):
     print(f"Number of W jets: {np.sum(np.argmax(y_data, axis=1)==2)}")
     print(f"Number of Z jets: {np.sum(np.argmax(y_data, axis=1)==3)}")
     print(f"Number of top jets: {np.sum(np.argmax(y_data, axis=1)==4)}")
+
+
+def select_feature_labels(filename: str) -> list[str]:
+    """Gets the feature labels for a certain type of selection."""
+    jedinet_feature_labels = [
+        '$p_x$', '$p_y$', '$p_z$', '$E$', '$E_{rel}$', '$p_T$', '$p_T^{rel}$',
+        '$\\eta$', '$\\eta^\\mathrm{rel}$', '$\\eta^\\mathrm{rot}$', '$\\phi$',
+        '$\\phi^\\mathrm{rel}$', '$\\phi^\\mathrm{rot}$', '$\\Delta_R$',
+        '$\\cos(\\theta)$', '$\\cos(\\theta^\\mathrm{rel}$'
+    ]
+    andre_feature_labels = ['p_T', '\\eta^\\mathrm{rel}', '\\phi^\\mathrm{rel}']
+    choice = filename.split('_')[4]
+
+    switcher = {
+        "andre":   lambda: andre_feature_labels,
+        "jedinet": lambda: jedinet_feature_labels,
+    }
+
+    feature_labels = switcher.get(choice, lambda: None)()
+    if feature_labels is None:
+        raise TypeError("Feature labels name not valid!")
+
+    return feature_labels
+
+
+def plot_normalised_data(outdir: str, x_data: np.ndarray, y_data: np.ndarray):
+    """Plots the data after it has been normalised."""
+    if not os.path.exists(outdir): os.makedirs(outdir)
+
+    print("Plotting the normalised data...")
+    plt.rc("xtick", labelsize=23)
+    plt.rc("ytick", labelsize=23)
+    plt.rc("axes", titlesize=25)
+    plt.rc("axes", labelsize=25)
+    plt.rc("legend", fontsize=22)
+
+    x_data_seg, _ = segregate_data(x_data, y_data)
+    colors = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
+    data_classes = ["Gluon", "Quark", "W", "Z", "Top"]
+    feature_labels = select_feature_labels(os.path.basename(outdir))
+
+    for feature in range(x_data_seg[0].shape[2]):
+        plt.xlim(
+            np.amin(x_data_seg[0][:, :, feature]), np.amax(x_data_seg[0][:, :, feature])
+        )
+        plt.figure(figsize=(12, 10))
+
+        for data_class_idx in range(len(x_data_seg)):
+            plt.hist(
+                x=x_data_seg[data_class_idx][:, :, feature].flatten(),
+                bins=60,
+                alpha=0.5,
+                histtype="step",
+                linewidth=2.5,
+                label=data_classes[data_class_idx],
+                density=True,
+                color=colors[data_class_idx],
+            )
+
+        plt.xlabel(feature_labels[feature])
+        plt.ylabel("Probability Density")
+        plt.gca().set_yscale("log")
+        plt.legend()
+        plt.savefig(os.path.join(outdir, feature_labels[feature] + ".pdf"))
+        plt.close()
+
+    print(tcols.OKGREEN + "Plots saved to: " + tcols.ENDC, outdir, "\U0001f4ca")
 
 
 if __name__ == "__main__":

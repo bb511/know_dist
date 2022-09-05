@@ -2,6 +2,7 @@
 
 import numpy as np
 
+import tensorflow as tf
 from tensorflow import keras
 import tensorflow.keras.layers as KL
 
@@ -25,49 +26,44 @@ class UniversalStudent(keras.Model):
         self,
         node_size: int = 64,
         activ: str = "relu",
+        dropout_rate: float = 0.1,
         nclasses: int = 5,
         name: str = "UniversalStudent",
     ):
         super(UniversalStudent, self).__init__(name=name)
 
+        self.node_size = node_size
         self.activ = activ
         self.nclasses = nclasses
-        self.node_size = node_size
+        self.dropout_rate = dropout_rate
 
         self.__build_network()
 
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
-        self._batch_norma_1 = KL.BatchNormalization(name="initial_batch_normalisation")
-        self._dense_layer_1 = KL.Dense(self.node_size, name="dense_layer_1")
-        self._batch_norma_2 = KL.BatchNormalization(name="second_batch_normalisation")
-        self._activ_funct_1 = KL.Activation(self.activ, name="activation_1")
-        self._dense_layer_2 = KL.Dense(self.node_size / 2, name="dense_layer_2")
-        self._batch_norma_3 = KL.BatchNormalization(name="third_batch_normalisation")
-        self._activ_funct_2 = KL.Activation(self.activ, name="activation_2")
-        self._dense_layer_3 = KL.Dense(self.node_size / 2, name="dense_layer_3")
-        self._batch_norma_4 = KL.BatchNormalization(name="fourth_batch_normalisation")
-        self._activ_funct_3 = KL.Activation(self.activ, name="activation_3")
-        self._dense_layer_4 = KL.Dense(5, name="dense_layer_4")
-        self._activ_funct_4 = KL.Activation(self.activ, name="activation_4")
+        self._dense_layer_1 = KL.Dense(self.node_size)
+        self._activ_funct_1 = KL.Activation(self.activ)
+        self._dropo_layer_1 = KL.Dropout(self.dropout_rate)
+        self._dense_layer_2 = KL.Dense(self.node_size)
+        self._activ_funct_2 = KL.Activation(self.activ)
+        self._dropo_layer_2 = KL.Dropout(self.dropout_rate)
+        self._dense_layer_3 = KL.Dense(self.node_size)
+        self._activ_funct_3 = KL.Activation(self.activ)
+        self._dropo_layer_3 = KL.Dropout(self.dropout_rate)
+        self._dense_layer_4 = KL.Dense(self.nclasses)
 
     def call(self, inputs: np.ndarray, **kwargs):
-        """Define the physiology of the universal student. Guide the input through the
-        layers of the network and any other miscellaneous operations, such as matrix
-        multiplications, tranposes, etc..
-        """
-        flat_data = KL.Flatten()(inputs)
-        norm_data = self._batch_norma_1(flat_data)
-        proc_data = self._dense_layer_1(norm_data)
-        proc_data = self._batch_norma_2(proc_data)
-        proc_data = self._activ_funct_1(proc_data)
-        proc_data = self._dense_layer_2(proc_data)
-        proc_data = self._batch_norma_3(proc_data)
-        proc_data = self._activ_funct_2(proc_data)
-        proc_data = self._dense_layer_3(proc_data)
-        proc_data = self._batch_norma_4(proc_data)
-        proc_data = self._activ_funct_3(proc_data)
-        proc_data = self._dense_layer_4(proc_data)
-        proc_data = self._activ_funct_4(proc_data)
+        inputs = KL.Flatten()(inputs)
+        x = self._dense_layer_1(inputs)
+        x = self._activ_funct_1(x)
+        x = self._dropo_layer_1(x)
+        x = self._dense_layer_2(x)
+        x = self._activ_funct_2(x)
+        x = self._dropo_layer_2(x)
+        x = self._dense_layer_3(x)
+        x = self._activ_funct_3(x)
+        x = self._dropo_layer_3(x)
 
-        return proc_data
+        logits = self._dense_layer_4(x)
+
+        return logits

@@ -120,8 +120,10 @@ def select_features_andre(data_file_path: str) -> tuple([np.ndarray, np.ndarray]
 
 def select_features_jedinet(data_file_path) -> tuple([np.ndarray, np.ndarray]):
     """Selects (px, py, pz, E, pT, eta, phi, deltaR, Erel, pTrel, phirel, etarel,
-    cos(theta), cos(thetarel)) features from an .h5 jet data file and puts them into a numpy array. Selects the target (either if the jet comes from a gluon, quark, W, Z,
-    or top) corresponding to each event and puts it into a separate numpy array.
+    cos(theta), cos(thetarel), thetarot, phirot) features from an .h5 jet data file and
+    puts them into a numpy array. Selects the target (either if the jet comes from a
+    gluon, quark, W, Z, or top) corresponding to each event and puts it into a separate
+    numpy array.
 
     Args:
         data_file_path: Path to .h5 file containing jet data.

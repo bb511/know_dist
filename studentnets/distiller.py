@@ -5,25 +5,26 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
+from . import util
 
 class Distiller(keras.Model):
     """Train the student using teacher information through knowledge distillation.
-    Details of this process are in explained http://arxiv.org/abs/1503.02531.
 
     Args:
         student: Student network, usually small and basic.
         teacher: Teacher network, usually big.
+
+    Reference paper: http://arxiv.org/abs/1503.02531.
     """
 
     def __init__(self, student: keras.Model, teacher: keras.Model):
         super(Distiller, self).__init__()
-        self.teacher = teacher
         self.student = student
+        self.teacher = teacher
 
     def compile(
         self,
-        optimizer: keras.optimizers,
-        metrics: keras.metrics,
+        optimizer: str,
         student_loss_fn: callable,
         distill_loss_fn: callable,
         alpha: float = 0.1,
@@ -42,59 +43,64 @@ class Distiller(keras.Model):
             temperature: Temperature for softening probability distributions.
                 Larger temperature gives softer distributions.
         """
-        super(Distiller, self).compile(optimizer=optimizer, metrics=metrics)
-        self.student_loss_fn = student_loss_fn
-        self.distillation_loss_fn = distill_loss_fn
+        super(Distiller, self).compile(optimizer=optimizer)
+        self.student_loss_fn = util.choose_loss(student_loss_fn)
+        self.distillation_loss_fn = util.choose_loss(distill_loss_fn)
         self.alpha = alpha
         self.temperature = temperature
 
-    def train_step(self, data: np.ndarray):
+        self.student_loss_track = tf.keras.metrics.Mean("student_loss")
+        self.distill_loss_track = tf.keras.metrics.Mean("distill_loss")
+        self.loss_track = tf.keras.metrics.Mean("loss")
+        self.categorical_accuracy = tf.keras.metrics.CategoricalAccuracy("acc")
+
+    def train_step(self, data):
         """Train the student network through one feed forward."""
         x, y = data
-
-        (
-            student_loss,
-            distillation_loss,
-            student_predictions,
-            gradients,
-        ) = self.__compute_loss(x, y)
-
-        self.optimizer.apply_gradients(zip(gradients, self.student.trainable_variables))
-        self.compiled_metrics.update_state(y, student_predictions)
-
-        results = {m.name: m.result() for m in self.metrics}
-        results.update(
-            {"student_loss": student_loss, "distillation_loss": distillation_loss}
-        )
-
-        return results
-
-    def __compute_loss(self, x: np.ndarray, y: np.ndarray):
 
         teacher_predictions = self.teacher(x, training=False)
         with tf.GradientTape() as tape:
             student_predictions = self.student(x, training=True)
-
-            student_loss = self.student_loss_fn(y, student_predictions)
+            student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = self.distillation_loss_fn(
                 tf.nn.softmax(teacher_predictions / self.temperature, axis=1),
                 tf.nn.softmax(student_predictions / self.temperature, axis=1),
-            )
+            ) * self.temperature**2
             loss = self.alpha * student_loss + (1 - self.alpha) * distillation_loss
 
-        gradients = tape.gradient(loss, self.student.trainable_variables)
+        grads = tape.gradient(loss, self.student.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.student.trainable_variables))
 
-        return student_loss, distillation_loss, student_predictions, gradients
+        self.categorical_accuracy.update_state(y, student_predictions)
+        self.student_loss_track.update_state(student_loss)
+        self.distill_loss_track.update_state(distillation_loss)
+        self.loss_track.update_state(loss)
+        results = {m.name: m.result() for m in self.metrics}
+
+        return results
+
+    @property
+    def metrics(self):
+        """Metrics to be reseted at each epoch."""
+        return [
+            self.student_loss_track,
+            self.distill_loss_track,
+            self.loss_track,
+            self.categorical_accuracy
+        ]
 
     def test_step(self, data: np.ndarray):
         """Test the student network."""
         x, y = data
         y_prediction = self.student(x, training=False)
-        student_loss = self.student_loss_fn(y, y_prediction)
+        student_loss = tf.reduce_mean(self.student_loss_fn(y, y_prediction))
 
-        self.compiled_metrics.update_state(y, y_prediction)
+        self.student_loss_track.update_state(student_loss)
+        self.categorical_accuracy.update_state(y, y_prediction)
 
-        results = {m.name: m.result() for m in self.metrics}
-        results.update({"student_loss": student_loss})
+        results = {
+            "student_loss": self.student_loss_track.result(),
+            "acc": self.categorical_accuracy.result()
+        }
 
         return results

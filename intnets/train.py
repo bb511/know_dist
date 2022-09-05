@@ -5,11 +5,9 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
-
 keras.utils.set_random_seed(123)
 
 import absl.logging
-
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 from . import util
@@ -21,12 +19,14 @@ from .terminal_colors import tcols
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 tf.keras.backend.set_floatx('float64')
 
+
 def main(args):
     util.device_info()
     outdir = util.make_output_directory("trained_intnets", args["outdir"])
+    util.save_hyperparameters_file(args, outdir)
 
     data_hp = args["data_hyperparams"]
-    util.print_data_deets(data_hp)
+    util.nice_print_dictionary("DATA DEETS", data_hp)
     jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
     model = util.choose_intnet(
@@ -36,9 +36,11 @@ def main(args):
         args["intnet_hyperparams"],
         args["intnet_compilation"],
     )
+    model.summary(expand_nested=True)
 
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     util.print_training_attributes(model, args)
+    model.summary(expand_nested=True)
     training_hyperparams = args["training_hyperparams"]
 
     history = model.fit(
@@ -49,7 +51,7 @@ def main(args):
         verbose=2,
         callbacks=get_tensorflow_callbacks(),
         validation_split=training_hyperparams["valid_split"],
-        shuffle=False,
+        shuffle=True,
     )
 
     model.save(outdir, save_format="tf")
@@ -65,16 +67,16 @@ def plot_model_performance(history: dict, outdir: str):
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
     )
-    print(tcols.OKGREEN + "\nPlots done! \U0001f4ca" + tcols.ENDC)
+    print(tcols.OKGREEN + "\nPlots done! " + tcols.ENDC)
 
 
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""
     early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_categorical_accuracy", patience=10
+        monitor="val_categorical_accuracy", patience=50
     )
     learning = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_categorical_accuracy", factor=0.2, patience=10
+        monitor="val_categorical_accuracy", factor=0.8, patience=40, min_lr=0.0001
     )
 
     return [early_stopping, learning]

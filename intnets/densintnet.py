@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers as KL
+from tensorflow.keras import regularizers as KR
 
 
 class EffectsMLP(KL.Layer):
@@ -24,29 +25,25 @@ class EffectsMLP(KL.Layer):
     THIS NETWORK IS DENOTED $f_R$ IN THESE PUBLICATIONS.
     """
 
-    def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
+    def __init__(self, neffects: int, nnodes: int, activ: str, l2: float, **kwargs):
 
         super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
-        self._hid_layer_1 = KL.Dense(nnodes, name=f"relnet_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
-        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"relnet_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"relnet_activ_2")
-        self._hid_layer_3 = KL.Dense(nnodes, name=f"relnet_layer_3")
-        self._activ_3 = KL.Activation(activ, name=f"relnet_activ_3")
-        self._hid_layer_4 = KL.Dense(nnodes, name=f"relnet_layer_4")
-        self._activ_4 = KL.Activation(activ, name=f"relnet_activ_4")
-        self._output_layer = KL.Dense(neffects, name=f"relnet_output")
-        self._output_activ = KL.Activation(activ, name=f"relnet_output_activ")
+        self._hid_layer_1 = KL.Dense(nnodes)
+        self._activ_1 = KL.Activation(activ)
+        self._hid_layer_2 = KL.Dense(int(nnodes)/2)
+        self._activ_2 = KL.Activation(activ)
+        # self._hid_layer_3 = KL.Dense(nnodes)
+        # self._activ_3 = KL.Activation(activ)
+        self._output_layer = KL.Dense(neffects)
+        self._output_activ = KL.Activation(activ)
 
     def call(self, inputs):
         x = self._hid_layer_1(inputs)
         x = self._activ_1(x)
         x = self._hid_layer_2(x)
         x = self._activ_2(x)
-        x = self._hid_layer_3(x)
-        x = self._activ_3(x)
-        x = self._hid_layer_4(x)
-        x = self._activ_4(x)
+        # x = self._hid_layer_3(x)
+        # x = self._activ_3(x)
         x = self._output_layer(x)
 
         effects = self._output_activ(x)
@@ -68,15 +65,15 @@ class DynamicsMLP(KL.Layer):
     THIS NETWORK IS DENOTED $f_O$ IN THESE PUBLICATIONS.
     """
 
-    def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
+    def __init__(self, ndynamics: int, nnodes: int, activ: str, l2: float, **kwargs):
 
         super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
-        self._hid_layer_1 = KL.Dense(nnodes, name=f"objnet_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"objnet_activ_1")
-        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"objnet_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"objnet_activ_2")
-        self._output_layer = KL.Dense(ndynamics, name=f"objnet_output_layer")
-        self._output_activ = KL.Activation(activ, name=f"objnet_output_activ")
+        self._hid_layer_1 = KL.Dense(nnodes)
+        self._activ_1 = KL.Activation(activ)
+        self._hid_layer_2 = KL.Dense(int(nnodes)/2)
+        self._activ_2 = KL.Activation(activ)
+        self._output_layer = KL.Dense(ndynamics)
+        self._output_activ = KL.Activation(activ)
 
     def call(self, inputs):
         x = self._hid_layer_1(inputs)
@@ -105,25 +102,23 @@ class AbstractMLP(KL.Layer):
     THIS NETWORK IS DENOTED $f_A$ IN THESE PUBLICATIONS.
     """
 
-    def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
+    def __init__(self, nabs_quant: int, nnodes: int, activ: str, l2: float, **kwargs):
 
         super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
-        self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
-        self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
-        self._hid_layer_2 = KL.Dense(int(nnodes/2), name=f"classnet_layer_2")
-        self._activ_2 = KL.Activation(activ, name=f"classnet_activ_2")
+        self._hid_layer_1 = KL.Dense(nnodes)
+        self._activ_1 = KL.Activation(activ)
+        self._hid_layer_2 = KL.Dense(int(nnodes)/2)
+        self._activ_2 = KL.Activation(activ)
 
-        self._output_layer = KL.Dense(nabs_quant, name=f"classnet_output_layer")
-        self._output_activ = KL.Activation("softmax", name=f"classnet_output_activ")
+        self._output_layer = KL.Dense(nabs_quant)
 
     def call(self, inputs):
         x = self._hid_layer_1(inputs)
         x = self._activ_1(x)
         x = self._hid_layer_2(x)
         x = self._activ_2(x)
-        x = self._output_layer(x)
 
-        abstract_quantities = self._output_activ(x)
+        abstract_quantities = self._output_layer(x)
 
         return abstract_quantities
 
@@ -166,6 +161,7 @@ class DensIntNet(keras.Model):
         ndynamics: int = 15,
         neffects: int = 15,
         nclasses: int = 5,
+        l2: float = 0.01,
         summation: bool = True,
         **kwargs,
     ):
@@ -179,10 +175,9 @@ class DensIntNet(keras.Model):
 
         self._summation = summation
         self._receiver_matrix, self._sender_matrix = self._build_relation_matrices()
-        self._batchnorm = KL.BatchNormalization()
-        self._effects_mlp = EffectsMLP(neffects, effects_nnodes, effects_activ)
-        self._dynamics_mlp = DynamicsMLP(neffects, dynamic_nnodes, dynamic_activ)
-        self._abstract_mlp = AbstractMLP(nclasses, abstrac_nnodes, abstrac_activ)
+        self._effects_mlp = EffectsMLP(neffects, effects_nnodes, effects_activ, l2)
+        self._dynamics_mlp = DynamicsMLP(neffects, dynamic_nnodes, dynamic_activ, l2)
+        self._abstract_mlp = AbstractMLP(nclasses, abstrac_nnodes, abstrac_activ, l2)
 
     def _build_relation_matrices(self):
         """Construct the relation matrices between the graph nodes."""
@@ -210,13 +205,10 @@ class DensIntNet(keras.Model):
 
     def call(self, inputs, **kwargs):
 
-        norm_constituents = self._batchnorm(inputs)
-        norm_constituents = KL.Permute((2, 1), input_shape=norm_constituents.shape[1:])(
-            norm_constituents
-        )
+        constituents = KL.Permute((2, 1), input_shape=inputs.shape[1:])(inputs)
 
-        rec_matrix = self._tmul(norm_constituents, self._receiver_matrix)
-        sen_matrix = self._tmul(norm_constituents, self._sender_matrix)
+        rec_matrix = self._tmul(constituents, self._receiver_matrix)
+        sen_matrix = self._tmul(constituents, self._sender_matrix)
 
         rs_matrix = KL.Concatenate(axis=1)([rec_matrix, sen_matrix])
         rs_matrix = KL.Permute((2, 1), input_shape=rs_matrix.shape[1:])(rs_matrix)
@@ -229,7 +221,7 @@ class DensIntNet(keras.Model):
         transpose_receiver_matrix = tf.transpose(self._receiver_matrix)
         effects_reduced = self._tmul(effects, transpose_receiver_matrix)
         constituents_effects_matrix = KL.Concatenate(axis=1)(
-            [norm_constituents, effects_reduced]
+            [constituents, effects_reduced]
         )
         constituents_effects_matrix = KL.Permute(
             (2, 1), input_shape=constituents_effects_matrix.shape[1:]
@@ -243,7 +235,6 @@ class DensIntNet(keras.Model):
             dynamics = tf.reduce_sum(dynamics, 1)
         else:
             dynamics = KL.Flatten()(dynamics)
-
         abstract_quantities = self._abstract_mlp(dynamics)
 
         return abstract_quantities

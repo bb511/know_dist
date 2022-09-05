@@ -1,7 +1,8 @@
 # Utility methods for the interaction network training, testing, etc...
 
-import numpy as np
 import os
+import json
+import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
@@ -21,15 +22,16 @@ def make_output_directory(location: str, outdir: str) -> str:
     return outdir
 
 
-def print_data_deets(data_hyperparams: dict):
+def nice_print_dictionary(dictionary_name: str, dictionary: dict):
     """Logs useful details about the data used to train the interaction network."""
-    print(tcols.HEADER + "\nDATA DETAILS" + tcols.ENDC)
-    print(tcols.HEADER + "------------" + tcols.ENDC)
-    for key in data_hyperparams:
-        print(f"{key}: {data_hyperparams[key]}")
+    print(tcols.HEADER + f"\n{dictionary_name}" + tcols.ENDC)
+    print(tcols.HEADER + "-----------" + tcols.ENDC)
+    for key in dictionary:
+        print(f"{key}: {dictionary[key]}")
 
 
 def device_info():
+    """Prints what device the tensorflow network will run on."""
     gpu_devices = tf.config.list_physical_devices("GPU")
     if gpu_devices:
         details = tf.config.experimental.get_device_details(gpu_devices[0])
@@ -87,6 +89,11 @@ def choose_intnet(intnet_type: str, nconst: int, nfeats: int, hyperparams: dict,
 
     model = switcher.get(intnet_type, lambda: None)()
 
+    compilation_hyperparams["optimizer"] = choose_optimiser(
+        compilation_hyperparams["optimizer"][0],
+        compilation_hyperparams["optimizer"][1],
+    )
+    compilation_hyperparams["loss"] = choose_loss(compilation_hyperparams["loss"])
     model.compile(**compilation_hyperparams)
     model.build((None, nconst, nfeats))
     print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
@@ -99,6 +106,41 @@ def choose_intnet(intnet_type: str, nconst: int, nfeats: int, hyperparams: dict,
 
     return model
 
+
+def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
+    """Construct a keras optimiser object with a certain learning rate given a string
+    for the name of that optimiser.
+    """
+
+    switcher = {
+        "categorical_crossentropy": \
+            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
+        "softmax_with_crossentropy": \
+            lambda: tf.nn.softmax_cross_entropy_with_logits,
+    }
+
+    loss = switcher.get(choice, lambda: None)()
+    if loss is None:
+        raise TypeError("The given loss name is not implemented in the wrapper yet!")
+
+    return loss
+
+
+def save_hyperparameters_file(hyperparams: dict, outdir: str):
+    """Saves the hyperparameters dictionary that defines an net to a file."""
+    hyperparams_file_path = os.path.join(outdir, "hyperparameters.json")
+    with open(hyperparams_file_path, 'w') as file:
+        json.dump(hyperparams, file)
+
+    print(tcols.OKGREEN + "Saved hyperparameters to json file." + tcols.ENDC)
+
+
+def load_hyperparameters_file(model_dir: str):
+    """Loads a hyperparameters file given the directory that it's in."""
+    with open(os.path.join(model_dir, "hyperparameters.json")) as file:
+        hyperparams = json.load(file)
+
+    return hyperparams
 
 def set_matrix_multiplication_hack_weights(model: keras.models.Model):
     """Set the weights of the QKeras convolutional layers that are used to do

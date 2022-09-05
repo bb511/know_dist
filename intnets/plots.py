@@ -6,7 +6,12 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 
 
-def loss_vs_epochs(outdir: str, train_loss: np.ndarray, valid_loss: np.ndarray):
+def loss_vs_epochs(
+    outdir: str,
+    train_loss: np.ndarray,
+    valid_loss: np.ndarray,
+    plot_name: str = "loss_epochs"
+    ):
     """Plots the loss for each epoch for the training and validation data
     and saves it to the same directory the model is saved in.
     """
@@ -25,7 +30,7 @@ def loss_vs_epochs(outdir: str, train_loss: np.ndarray, valid_loss: np.ndarray):
         bbox={"facecolor": "white", "alpha": 0.8, "pad": 5},
     )
     plt.legend()
-    plt.savefig(os.path.join(outdir, "loss_epochs.pdf"))
+    plt.savefig(os.path.join(outdir, plot_name + ".pdf"))
     plt.close()
     print(f"Loss vs epochs plot saved to {outdir}.")
 
@@ -54,6 +59,12 @@ def accuracy_vs_epochs(outdir: str, train_acc: np.ndarray, valid_acc: np.ndarray
     print(f"Accuracy vs epochs plot saved to {outdir}.")
 
 
+def find_nearest(array: np.ndarray, value: float):
+    """Finds the index of the nearest value in an array to a given value."""
+    array = np.asarray(array)
+    return (np.abs(array - value)).argmin()
+
+
 def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     """Plot the ROC curves for the labels of the jet data set."""
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
@@ -65,7 +76,13 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
         fpr_baseline = np.interp(tpr_baseline, tpr, fpr)
         fpr_baseline.astype("float32").tofile(os.path.join(outdir, f"fpr_{label}.dat"))
         tpr_baseline.astype("float32").tofile(os.path.join(outdir, f"tpr_{label}.dat"))
-        plt.plot(tpr, fpr, color=cols[idx], label=f"{label}: AUC = {auc*100:.1f}%")
+        tpr_idx = find_nearest(tpr, 0.8)
+        plt.plot(
+            tpr,
+            fpr,
+            color=cols[idx],
+            label=f"{label}: AUC = {auc*100:.1f}%; FPR @ 80% TPR: {fpr[tpr_idx]:.3f}",
+        )
 
     plt.xlabel("True Positive Rate")
     plt.ylabel("False Positive Rate")

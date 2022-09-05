@@ -7,7 +7,6 @@ import sys
 sys.path.append("..")
 
 from intnets.train import main
-from intnets import util
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data_folder", type=str, default='../../ki_data/intnet_input',
@@ -20,9 +19,9 @@ parser.add_argument("--jet_seed", type=int, default=123,
                     help="Seed to use in shuffling the jets.")
 parser.add_argument("--seed", type=int, default=127,
                     help="Seed to use in any random thing that is done.")
-parser.add_argument('--lr', type=float, default=0.0001,
+parser.add_argument('--lr', type=float, default=0.001,
                     help="The learning rate.")
-parser.add_argument("--batch", type=int, default=100,
+parser.add_argument("--batch", type=int, default=128,
                     help="The batch size.")
 parser.add_argument("--epochs", type=int, default=100,
                     help="The number of training epochs.")
@@ -31,7 +30,7 @@ parser.add_argument("--valid_split", type=float, default=0.3,
 parser.add_argument("--optimiser", type=str, default="adam",
                     choices=["adam"],
                     help="Name of the optimiser you want to use.")
-parser.add_argument("--loss", type=str, default="categorical_crossentropy",
+parser.add_argument("--loss", type=str, default="softmax_with_crossentropy",
                     help="Name of the loss you want to use.")
 parser.add_argument("--metrics", type=str, default="categorical_accuracy",
                     help="Name of the success metric you want to use.")
@@ -56,32 +55,33 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "16",
+    "nconstituents":     "150",
     "feature_selection": "jedinet",
 }
 
 training_hyperparams = {
     "batch":        args.batch,
-    "lr":           args.lr,
     "epochs":       args.epochs,
+    "lr":           args.lr,
     "valid_split":  args.valid_split,
 }
 
 intnet_compilation_hyperparams = {
-    "optimizer": util.choose_optimiser(args.optimiser, args.lr),
+    "optimizer": [args.optimiser, args.lr],
     "loss":      args.loss,
     "metrics":   [args.metrics],
 }
 
 intnet_hyperparams = {
-    "effects_nnodes": 150,
-    "dynamic_nnodes": 100,
+    "effects_nnodes": 50,
+    "dynamic_nnodes": 50,
     "abstrac_nnodes": 50,
-    "effects_activ":  "relu",
-    "dynamic_activ":  "relu",
-    "abstrac_activ":  "relu",
-    "ndynamics":      15,
+    "effects_activ":  "selu",
+    "dynamic_activ":  "selu",
+    "abstrac_activ":  "selu",
     "neffects":       15,
+    "ndynamics":      10,
+    "l2":             0.001,
     "summation":      args.summation,
 }
 
