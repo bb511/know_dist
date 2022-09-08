@@ -7,7 +7,7 @@ from tensorflow import keras
 import tensorflow.keras.layers as KL
 
 
-class UniversalStudent(keras.Model):
+class JEDIstudent(keras.Model):
     """Optimised DNN for classification on the jet data set used in JEDInet paper.
 
     This network is implemented based on the publication:
@@ -24,15 +24,16 @@ class UniversalStudent(keras.Model):
         self,
         node_size: int = 64,
         activ: str = "relu",
-        nclasses: int = 5,
         dropout_rate: float = 0.1,
-        name: str = "UniversalStudent",
+        nclasses: int = 5,
+        name: str = "JEDIstudent",
     ):
-        super(UniversalStudent, self).__init__(name=name)
+        super(JEDIstudent, self).__init__(name=name)
 
         self.node_size = node_size
         self.activ = activ
         self.nclasses = nclasses
+        self.dropout_rate = dropout_rate
 
         self.__build_network()
 
@@ -40,20 +41,26 @@ class UniversalStudent(keras.Model):
         """Lay out the anatomy of the universal student network."""
         self._dense_layer_1 = KL.Dense(self.node_size)
         self._activ_funct_1 = KL.Activation(self.activ)
-        self._dense_layer_2 = KL.Dense(int(self.node_size) / 2)
+        self._dropo_layer_1 = KL.Dropout(self.dropout_rate)
+        self._dense_layer_2 = KL.Dense(self.node_size)
         self._activ_funct_2 = KL.Activation(self.activ)
-        self._dense_layer_3 = KL.Dense(int(self.node_size) / 2)
+        self._dropo_layer_2 = KL.Dropout(self.dropout_rate)
+        self._dense_layer_3 = KL.Dense(self.node_size)
         self._activ_funct_3 = KL.Activation(self.activ)
+        self._dropo_layer_3 = KL.Dropout(self.dropout_rate)
         self._dense_layer_4 = KL.Dense(self.nclasses)
 
     def call(self, inputs: np.ndarray, **kwargs):
         inputs = KL.Flatten()(inputs)
         x = self._dense_layer_1(inputs)
         x = self._activ_funct_1(x)
+        x = self._dropo_layer_1(x)
         x = self._dense_layer_2(x)
         x = self._activ_funct_2(x)
+        x = self._dropo_layer_2(x)
         x = self._dense_layer_3(x)
         x = self._activ_funct_3(x)
+        x = self._dropo_layer_3(x)
 
         logits = self._dense_layer_4(x)
 

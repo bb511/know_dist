@@ -132,8 +132,8 @@ class Data:
         targetfile_name = self._get_target_filename(data_type)
         targetfile_path = os.path.join(self.data_folder, targetfile_name)
 
-        x = np.load(datafile_path)
-        y = np.load(targetfile_path)
+        x = np.load(datafile_path, 'r+')
+        y = np.load(targetfile_path, 'r+')
 
         nevents = self._get_nevents(data_type)
         x, y = self._trim_data(x, y, nevents, self.jet_seed)

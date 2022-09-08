@@ -4,6 +4,7 @@ import os
 
 import tensorflow as tf
 from tensorflow import keras
+from .jedidnn_student import JEDIstudent
 from .universal_student import UniversalStudent
 from .terminal_colors import tcols
 
@@ -11,6 +12,7 @@ from .terminal_colors import tcols
 def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
     switcher = {
+        "jedistudent": lambda: JEDIstudent(**hyperparams),
         "unistudent": lambda: UniversalStudent(**hyperparams),
     }
 

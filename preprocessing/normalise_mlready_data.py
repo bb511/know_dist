@@ -56,19 +56,17 @@ parser.add_argument(
 def main(args):
 
     print("Loading the files...\n")
-    x_data = np.concatenate(
-        (np.load(args.x_data_path_train, "r"), np.load(args.x_data_path_test, "r")),
-        axis=0,
-    )
-    y_data = np.concatenate(
-        (np.load(args.y_data_path_train, "r"), np.load(args.y_data_path_test, "r")),
-        axis=0,
-    )
+    x_data_train = np.load(args.x_data_path_train, "r")
+    y_data_train = np.load(args.x_data_path_test, "r")
+    x_data_test = np.load(args.y_data_path_train, "r")
+    y_data_test = np.load(args.y_data_path_test, "r")
+    x_data = np.concatenate((x_data_train, y_data_train), axis=0)
+    y_data = np.concatenate((x_data_test, y_data_test), axis=0)
 
     x_data, y_data = equalize_classes(x_data, y_data)
     x_data = apply_normalisation(args.norm, x_data)
 
-    plots_folder = format_output_filename(args.x_data_paths[0], args.norm)
+    plots_folder = format_output_filename(args.x_data_path_train, args.norm)
     plots_path = os.path.join(args.output_dir, plots_folder)
     plot_normalised_data(plots_path, x_data, y_data)
 
@@ -79,7 +77,7 @@ def main(args):
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    output_name = format_output_filename(args.x_data_paths[0], args.norm)
+    output_name = format_output_filename(args.x_data_path_train, args.norm)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_train"), x_data_train)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_test"), x_data_test)
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_train"), y_data_train)

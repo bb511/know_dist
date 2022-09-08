@@ -79,7 +79,7 @@ intnet_hyperparams = {
     "effects_activ":  "selu",
     "dynamic_activ":  "selu",
     "abstrac_activ":  "selu",
-    "neffects":       15,
+    "neffects":       14,
     "ndynamics":      10,
     "l2":             0.001,
     "summation":      args.summation,

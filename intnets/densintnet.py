@@ -32,8 +32,8 @@ class EffectsMLP(KL.Layer):
         self._activ_1 = KL.Activation(activ)
         self._hid_layer_2 = KL.Dense(int(nnodes) / 2)
         self._activ_2 = KL.Activation(activ)
-        # self._hid_layer_3 = KL.Dense(nnodes)
-        # self._activ_3 = KL.Activation(activ)
+        self._hid_layer_3 = KL.Dense(nnodes)
+        self._activ_3 = KL.Activation(activ)
         self._output_layer = KL.Dense(neffects)
         self._output_activ = KL.Activation(activ)
 
@@ -176,7 +176,7 @@ class DensIntNet(keras.Model):
         self._summation = summation
         self._receiver_matrix, self._sender_matrix = self._build_relation_matrices()
         self._effects_mlp = EffectsMLP(neffects, effects_nnodes, effects_activ, l2)
-        self._dynamics_mlp = DynamicsMLP(neffects, dynamic_nnodes, dynamic_activ, l2)
+        self._dynamics_mlp = DynamicsMLP(ndynamics, dynamic_nnodes, dynamic_activ, l2)
         self._abstract_mlp = AbstractMLP(nclasses, abstrac_nnodes, abstrac_activ, l2)
 
     def _build_relation_matrices(self):

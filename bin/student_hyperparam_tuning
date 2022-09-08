@@ -5,12 +5,12 @@ import argparse
 import sys
 sys.path.append("..")
 
-from studentnets.train import main
+from studentnets.hyperparam_tuning import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data_folder", type=str, default='../../ki_data/intnet_input',
                     help="The folder where the data is stored on the system..")
-parser.add_argument("--norm", type=str, default='robust',
+parser.add_argument("--norm", type=str, default='minmax',
                     help="The name of the normalisation that you'll to use.")
 parser.add_argument("--train_events", type=int, default=-1,
                     help="The exact number of training events to use.")
@@ -36,10 +36,6 @@ parser.add_argument("--teacher", type=str,
                     help="Path to a tensorflow trained network to use as teacher.")
 parser.add_argument("--student_type", type=str, default="jedistudent",
                     help="The type of student to instantiate.")
-parser.add_argument("--alpha", type=float, default=0.1,
-                    help="Weight for the distillation loss function.")
-parser.add_argument("--temperature", type=int, default=10,
-                    help="Name of the optimiser you want to use.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
@@ -63,7 +59,7 @@ training_hyperparams = {
 
 student_hyperparams = {
     "node_size":    64,
-    "activ":        "relu",
+    "activ":        "elu",
     "dropout_rate": 0.11,
     "nclasses":     5,
 }
@@ -72,8 +68,8 @@ distiller_hyperparams = {
     "optimizer":       args.optimizer,
     "student_loss_fn": args.student_loss,
     "distill_loss_fn": args.distill_loss,
-    "alpha":           args.alpha,
-    "temperature":     args.temperature,
+    "alpha":           [0.1, 1, 0.1],
+    "temperature":     [1, 20, 1],
 }
 
 args = {
