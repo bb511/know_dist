@@ -3,6 +3,7 @@
 # Run the training of the interaction network..
 import argparse
 import sys
+import os
 sys.path.append("..")
 
 from studentnets.hyperparam_tuning import main
@@ -38,8 +39,12 @@ parser.add_argument("--student_type", type=str, default="jedistudent",
                     help="The type of student to instantiate.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
+parser.add_argument("--gpu", type=str, default="",
+                    help="Sets the number of the GPU to run on.")
 args = parser.parse_args()
 
+if args.gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
     "data_folder":       args.data_folder,
@@ -47,7 +52,7 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "16",
+    "nconstituents":     "150",
     "feature_selection": "jedinet",
 }
 
@@ -58,7 +63,7 @@ training_hyperparams = {
 }
 
 student_hyperparams = {
-    "node_size":    64,
+    "node_size":    80,
     "activ":        "elu",
     "dropout_rate": 0.11,
     "nclasses":     5,
@@ -69,7 +74,7 @@ distiller_hyperparams = {
     "student_loss_fn": args.student_loss,
     "distill_loss_fn": args.distill_loss,
     "alpha":           [0.1, 1, 0.1],
-    "temperature":     [1, 20, 1],
+    "temperature":     [1, 25, 1],
 }
 
 args = {

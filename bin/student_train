@@ -3,6 +3,7 @@
 # Run the training of the interaction network..
 import argparse
 import sys
+import os
 sys.path.append("..")
 
 from studentnets.train import main
@@ -40,10 +41,15 @@ parser.add_argument("--alpha", type=float, default=0.1,
                     help="Weight for the distillation loss function.")
 parser.add_argument("--temperature", type=int, default=10,
                     help="Name of the optimiser you want to use.")
+parser.add_argument("--gpu", type=str, default="",
+                    help="Sets the number of the GPU to run on.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
 
+
+if args.gpu:
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
     "data_folder":       args.data_folder,
@@ -51,7 +57,7 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "16",
+    "nconstituents":     "150",
     "feature_selection": "jedinet",
 }
 

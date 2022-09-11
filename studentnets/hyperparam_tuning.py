@@ -28,7 +28,7 @@ def main(args):
     jet_data = Data.shuffled(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
-    teacher = keras.models.load_model(args["teacher"])
+    teacher = keras.models.load_model(args["teacher"], compile=False)
 
     print("Instantiating the student network model...")
     student = util.choose_student(args["student_type"], args["student"])
