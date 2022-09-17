@@ -68,8 +68,8 @@ training_hyperparams = {
 }
 
 student_hyperparams = {
-    "node_size":    64,
-    "activ":        "relu",
+    "node_size":    80,
+    "activ":        "elu",
     "dropout_rate": 0.11,
     "nclasses":     5,
 }

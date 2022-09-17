@@ -47,7 +47,7 @@ def main(args):
         distiller_hypermodel,
         objective="val_acc",
         max_trials=300,
-        executions_per_trial=3,
+        executions_per_trial=1,
         overwrite=True,
         directory=outdir,
     )
