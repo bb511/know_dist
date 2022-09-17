@@ -35,7 +35,7 @@ parser.add_argument("--metrics", type=str, default="categorical_accuracy",
                     help="Name of the success metric you want to use.")
 parser.add_argument("--teacher", type=str,
                     help="Path to a tensorflow trained network to use as teacher.")
-parser.add_argument("--student_type", type=str, default="jedistudent",
+parser.add_argument("--student_type", type=str, default="jedidnn",
                     help="The type of student to instantiate.")
 parser.add_argument("--alpha", type=float, default=0.1,
                     help="Weight for the distillation loss function.")
@@ -57,7 +57,7 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "150",
+    "nconstituents":     "50",
     "feature_selection": "jedinet",
 }
 
@@ -67,12 +67,7 @@ training_hyperparams = {
     "epochs": args.epochs,
 }
 
-student_hyperparams = {
-    "node_size":    64,
-    "activ":        "relu",
-    "dropout_rate": 0.11,
-    "nclasses":     5,
-}
+student_hyperparams = {}
 
 distiller_hyperparams = {
     "optimizer":       args.optimizer,

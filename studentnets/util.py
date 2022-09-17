@@ -12,14 +12,14 @@ from .terminal_colors import tcols
 def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     """Select and instantiate a certain type of interaction network."""
     switcher = {
-        "jedistudent": lambda: JEDIstudent(**hyperparams),
-        "unistudent": lambda: UniversalStudent(**hyperparams),
+        "jedidnn": lambda: JEDIstudent(**hyperparams),
+        "universal": lambda: UniversalStudent(**hyperparams),
     }
 
     model = switcher.get(student_type, lambda: None)()
 
     if model is None:
-        raise TypeError("Given interaction network model type is not implemented!")
+        raise TypeError("Given student model type is not implemented!")
 
     return model
 

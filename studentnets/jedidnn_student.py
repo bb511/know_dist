@@ -20,20 +20,14 @@ class JEDIstudent(keras.Model):
         name: Name of this network.
     """
 
-    def __init__(
-        self,
-        node_size: int = 64,
-        activ: str = "relu",
-        dropout_rate: float = 0.1,
-        nclasses: int = 5,
-        name: str = "JEDIstudent",
-    ):
-        super(JEDIstudent, self).__init__(name=name)
+    def __init__(self):
+        super(JEDIstudent, self).__init__(name="JEDIdnn")
 
-        self.node_size = node_size
-        self.activ = activ
-        self.nclasses = nclasses
-        self.dropout_rate = dropout_rate
+        # Best hyperparameter according to http://arxiv.org/abs/1908.05318.
+        self.node_size = 80
+        self.activ = "elu"
+        self.nclasses = 5
+        self.dropout_rate = 0.11
 
         self.__build_network()
 
