@@ -55,7 +55,7 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "150",
+    "nconstituents":     "50",
     "feature_selection": "jedinet",
 }
 
@@ -76,11 +76,11 @@ intnet_hyperparams = {
     "effects_nnodes": 50,
     "dynamic_nnodes": 50,
     "abstrac_nnodes": 50,
-    "effects_activ":  "selu",
-    "dynamic_activ":  "selu",
+    "effects_activ":  "relu",
+    "dynamic_activ":  "relu",
     "abstrac_activ":  "selu",
-    "neffects":       14,
-    "ndynamics":      10,
+    "neffects":       12,
+    "ndynamics":      14,
     "l2":             0.001,
     "summation":      args.summation,
 }

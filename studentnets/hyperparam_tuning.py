@@ -52,6 +52,7 @@ def main(args):
         directory=outdir,
     )
     tuner.search_space_summary()
+
     training_hyperparams = args["training_hyperparams"]
     util.print_training_attributes(training_hyperparams, distiller)
     tuner.search(
@@ -68,9 +69,9 @@ def main(args):
 
 def get_callbacks():
     """Prepare the callbacks for the training."""
-    early_stopping = keras.callbacks.EarlyStopping(monitor="val_acc", patience=50)
+    early_stopping = keras.callbacks.EarlyStopping(monitor="val_acc", patience=20)
     learning = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_acc", factor=0.8, patience=40
+        monitor="val_acc", factor=0.8, patience=10
     )
 
     return [early_stopping, learning]

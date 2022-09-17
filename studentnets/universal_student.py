@@ -20,19 +20,13 @@ class UniversalStudent(keras.Model):
         name: Name of this network.
     """
 
-    def __init__(
-        self,
-        node_size: int = 64,
-        activ: str = "relu",
-        nclasses: int = 5,
-        dropout_rate: float = 0.1,
-        name: str = "UniversalStudent",
-    ):
-        super(UniversalStudent, self).__init__(name=name)
+    def __init__(self):
+        super(UniversalStudent, self).__init__(name="UniversalStudent")
 
-        self.node_size = node_size
-        self.activ = activ
-        self.nclasses = nclasses
+        # Hyperparameters decided for universal student.
+        self.node_size = 64
+        self.activ = "relu"
+        self.nclasses = 5
 
         self.__build_network()
 

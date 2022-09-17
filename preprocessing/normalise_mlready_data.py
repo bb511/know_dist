@@ -64,10 +64,11 @@ def main(args):
     y_data = np.concatenate((x_data_test, y_data_test), axis=0)
 
     x_data, y_data = equalize_classes(x_data, y_data)
-    x_data = apply_normalisation(args.norm, x_data)
-
     plots_folder = format_output_filename(args.x_data_path_train, args.norm)
     plots_path = os.path.join(args.output_dir, plots_folder)
+    plot_constituent_number(plots_path, x_data)
+
+    x_data = apply_normalisation(args.norm, x_data)
     plot_normalised_data(plots_path, x_data, y_data)
 
     x_data_train, x_data_test, y_data_train, y_data_test = train_test_split(
@@ -348,6 +349,55 @@ def plot_normalised_data(outdir: str, x_data: np.ndarray, y_data: np.ndarray):
         plt.legend()
         plt.savefig(os.path.join(outdir, feature_labels[feature] + ".pdf"))
         plt.close()
+
+    print(tcols.OKGREEN + "Plots saved to: " + tcols.ENDC, outdir, "\U0001f4ca")
+
+
+def count_constituents_per_jet(x_data: np.array):
+    """Count the number of non-zero constituents for each of the jets in the dataset."""
+    constituents_distribution = []
+    for jet in x_data:
+        const_nb = 0
+        for const in jet:
+            if const[0] != 0:
+                const_nb += 1
+        constituents_distribution.append(const_nb)
+
+    return constituents_distribution
+
+
+def plot_constituent_number(outdir: str, x_data: np.ndarray):
+    """Plot the number of constituents in the data that is being normalised per jet."""
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    print("Plotting the number of constituents in data...")
+    plt.rc("xtick", labelsize=23)
+    plt.rc("ytick", labelsize=23)
+    plt.rc("axes", titlesize=25)
+    plt.rc("axes", labelsize=25)
+    plt.rc("legend", fontsize=22)
+
+    constituents_distribution = count_constituents_per_jet(x_data)
+    median_const = np.median(constituents_distribution)
+
+    plt.xlim(0, 150)
+    plt.figure(figsize=(12, 10))
+    plt.hist(
+        x=constituents_distribution,
+        bins=150,
+        alpha=0.4,
+        histtype="step",
+        linewidth=2.5,
+        label=f"Median: {median_const}",
+        color="#648FFF",
+    )
+    plt.xlabel("Number of Constituents")
+    plt.ylabel("Number of Jets")
+    plt.legend()
+    plt.gca().set_yscale("log")
+    plt.savefig(os.path.join(outdir, "constituents_plot.pdf"))
+    plt.close()
 
     print(tcols.OKGREEN + "Plots saved to: " + tcols.ENDC, outdir, "\U0001f4ca")
 
