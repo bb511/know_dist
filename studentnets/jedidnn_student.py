@@ -33,7 +33,7 @@ class JEDIstudent(keras.Model):
 
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
-        self._dense_layer_1 = KL.Dense(self.node_size)
+        self._dense_layer_1 = KL.Dense(self.node_size, input_shape=(48, ))
         self._activ_funct_1 = KL.Activation(self.activ)
         self._dropo_layer_1 = KL.Dropout(self.dropout_rate)
         self._dense_layer_2 = KL.Dense(self.node_size)

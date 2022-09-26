@@ -1,8 +1,10 @@
 # Class that distills the knowledge from a given teacher model to a given student model.
 
 import numpy as np
+import operator
 
 import tensorflow as tf
+import tensorflow.keras.layers as KL
 from tensorflow import keras
 
 from . import util
@@ -50,6 +52,7 @@ class Distiller(keras.Model):
         self.alpha = alpha
         self.temperature = temperature
 
+
         self.student_loss_track = tf.keras.metrics.Mean("student_loss")
         self.distill_loss_track = tf.keras.metrics.Mean("distill_loss")
         self.loss_track = tf.keras.metrics.Mean("loss")
@@ -58,10 +61,12 @@ class Distiller(keras.Model):
     def train_step(self, data):
         """Train the student network through one feed forward."""
         x, y = data
-
         teacher_predictions = self.teacher(x, training=False)
+
         with tf.GradientTape() as tape:
-            student_predictions = self.student(x, training=True)
+            # Select only the first 16 features and (p_T, eta, phi) for the student.
+            student_predictions = self.student(
+                tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=True)
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = (
                 self.distillation_loss_fn(
@@ -96,7 +101,10 @@ class Distiller(keras.Model):
     def test_step(self, data: np.ndarray):
         """Test the student network."""
         x, y = data
-        y_prediction = self.student(x, training=False)
+
+        # Select only the first 16 features and (p_T, eta, phi) for the student.
+        y_prediction = self.student(
+            tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=False)
         student_loss = tf.reduce_mean(self.student_loss_fn(y, y_prediction))
 
         self.student_loss_track.update_state(student_loss)

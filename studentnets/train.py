@@ -26,12 +26,12 @@ def main(args):
 
     data_hp = args["data_hyperparams"]
     intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
+    jet_data = Data(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
     teacher = keras.models.load_model(args["teacher"], compile=False)
 
-    print("Instantiating the student network model...")
+    print(f"Instantiating the student of type: {args['student_type']}...")
     student = util.choose_student(args["student_type"], args["student"])
 
     print("Making the distiller...")
@@ -59,7 +59,6 @@ def main(args):
     print(tcols.OKGREEN + "Saving student model to: " + tcols.ENDC, outdir)
     student.save(outdir, save_format="tf")
     plot_model_performance(history.history, outdir)
-
 
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
