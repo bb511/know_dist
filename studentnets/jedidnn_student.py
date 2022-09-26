@@ -20,20 +20,30 @@ class JEDIstudent(keras.Model):
         name: Name of this network.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        node_size: int = 80,
+        activ: str = "elu",
+        dropout_rate: float = 0.11,
+        input_dims: tuple = None,
+        ):
         super(JEDIstudent, self).__init__(name="JEDIdnn")
 
+        self.input_dims = input_dims
         # Best hyperparameter according to http://arxiv.org/abs/1908.05318.
-        self.node_size = 80
-        self.activ = "elu"
+        self.node_size = node_size
+        self.activ = activ
+        self.dropout_rate = dropout_rate
         self.nclasses = 5
-        self.dropout_rate = 0.11
 
         self.__build_network()
 
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
-        self._dense_layer_1 = KL.Dense(self.node_size, input_shape=(48, ))
+        self._dense_layer_1 = KL.Dense(self.node_size)
+        if self.input_dims != None:
+            self._dense_layer_1 = KL.Dense(self.node_size, input_shape=self.input_dims)
+
         self._activ_funct_1 = KL.Activation(self.activ)
         self._dropo_layer_1 = KL.Dropout(self.dropout_rate)
         self._dense_layer_2 = KL.Dense(self.node_size)

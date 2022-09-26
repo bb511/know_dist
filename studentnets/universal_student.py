@@ -20,12 +20,16 @@ class UniversalStudent(keras.Model):
         name: Name of this network.
     """
 
-    def __init__(self):
+    def __init__(
+        self, node_size: int = 64, activ: str = "relu", input_dims: tuple = None
+        ):
+
         super(UniversalStudent, self).__init__(name="UniversalStudent")
 
+        self.input_dims = input_dims
         # Hyperparameters decided for universal student.
-        self.node_size = 64
-        self.activ = "relu"
+        self.node_size = node_size
+        self.activ = activ
         self.nclasses = 5
 
         self.__build_network()
@@ -33,6 +37,8 @@ class UniversalStudent(keras.Model):
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
         self._dense_layer_1 = KL.Dense(self.node_size)
+        if self.input_dims != None:
+            self._dense_layer_1 = KL.Dense(self.node_size, input_shape=self.input_dims)
         self._activ_funct_1 = KL.Activation(self.activ)
         self._dense_layer_2 = KL.Dense(int(self.node_size) / 2)
         self._activ_funct_2 = KL.Activation(self.activ)

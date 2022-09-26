@@ -62,11 +62,11 @@ class Distiller(keras.Model):
         """Train the student network through one feed forward."""
         x, y = data
         teacher_predictions = self.teacher(x, training=False)
-
         with tf.GradientTape() as tape:
             # Select only the first 16 features and (p_T, eta, phi) for the student.
             student_predictions = self.student(
                 tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=True)
+
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = (
                 self.distillation_loss_fn(
