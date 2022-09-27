@@ -52,7 +52,6 @@ class Distiller(keras.Model):
         self.alpha = alpha
         self.temperature = temperature
 
-
         self.student_loss_track = tf.keras.metrics.Mean("student_loss")
         self.distill_loss_track = tf.keras.metrics.Mean("distill_loss")
         self.loss_track = tf.keras.metrics.Mean("loss")
@@ -63,8 +62,10 @@ class Distiller(keras.Model):
         x, y = data
         teacher_predictions = self.teacher(x, training=False)
 
+        x_student = tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2)
         with tf.GradientTape() as tape:
-            student_predictions = self.student(x, training=True)
+            # Select only the first 16 features and (p_T, eta, phi) for the student.
+            student_predictions = self.student(x_student, training=True)
 
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = (
@@ -101,7 +102,9 @@ class Distiller(keras.Model):
         """Test the student network."""
         x, y = data
 
-        y_prediction = self.student(x, training=False)
+        # Select only the first 16 features and (p_T, eta, phi) for the student.
+        y_prediction = self.student(
+            tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=False)
         student_loss = tf.reduce_mean(self.student_loss_fn(y, y_prediction))
 
         self.student_loss_track.update_state(student_loss)
