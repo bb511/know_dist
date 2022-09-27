@@ -46,7 +46,7 @@ class Distiller(keras.Model):
             temperature: Temperature for softening probability distributions.
                 Larger temperature gives softer distributions.
         """
-        super(Distiller, self).compile(optimizer=optimizer)
+        super(Distiller, self).compile(optimizer=optimizer, run_eagerly=True)
         self.student_loss_fn = util.choose_loss(student_loss_fn)
         self.distillation_loss_fn = util.choose_loss(distill_loss_fn)
         self.alpha = alpha
@@ -62,10 +62,9 @@ class Distiller(keras.Model):
         """Train the student network through one feed forward."""
         x, y = data
         teacher_predictions = self.teacher(x, training=False)
+
         with tf.GradientTape() as tape:
-            # Select only the first 16 features and (p_T, eta, phi) for the student.
-            student_predictions = self.student(
-                tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=True)
+            student_predictions = self.student(x, training=True)
 
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = (
@@ -102,9 +101,7 @@ class Distiller(keras.Model):
         """Test the student network."""
         x, y = data
 
-        # Select only the first 16 features and (p_T, eta, phi) for the student.
-        y_prediction = self.student(
-            tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2), training=False)
+        y_prediction = self.student(x, training=False)
         student_loss = tf.reduce_mean(self.student_loss_fn(y, y_prediction))
 
         self.student_loss_track.update_state(student_loss)
