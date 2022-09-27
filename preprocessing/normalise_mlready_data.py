@@ -51,6 +51,12 @@ parser.add_argument(
     default=0.33,
     help="The percentage of data to be used as validation.",
 )
+parser.add_argument(
+    "--flag",
+    type=str,
+    default="",
+    help="Special flag that can be added to the file name.",
+)
 
 
 def main(args):
@@ -64,7 +70,7 @@ def main(args):
     y_data = np.concatenate((x_data_test, y_data_test), axis=0)
 
     x_data, y_data = equalize_classes(x_data, y_data)
-    plots_folder = format_output_filename(args.x_data_path_train, args.norm)
+    plots_folder = format_output_filename(args.x_data_path_train, args.norm, args.flag)
     plots_path = os.path.join(args.output_dir, plots_folder)
     plot_constituent_number(plots_path, x_data)
 
@@ -78,7 +84,7 @@ def main(args):
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    output_name = format_output_filename(args.x_data_path_train, args.norm)
+    output_name = format_output_filename(args.x_data_path_train, args.norm, args.flag)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_train"), x_data_train)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_test"), x_data_test)
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_train"), y_data_train)
@@ -253,7 +259,7 @@ def get_min_data_per_class(x_data_segregated: np.ndarray):
     return desired_datapoints_per_class
 
 
-def format_output_filename(input_name: str, norm_name: str) -> str:
+def format_output_filename(input_name: str, norm_name: str, flag: str = "") -> str:
     """Formats the name of the output file given a certain convention so the data
     loading for the ml models is easier.
     """
@@ -262,8 +268,7 @@ def format_output_filename(input_name: str, norm_name: str) -> str:
 
     output_filename = "_".join(input_base_name)
 
-    return output_filename + "_" + norm_name
-
+    return output_filename + "_" + norm_name + "_" + flag
 
 def print_jets_per_class(y_data: np.array):
     print(f"Number of gluon jets: {np.sum(np.argmax(y_data, axis=1)==0)}")

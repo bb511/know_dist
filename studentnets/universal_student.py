@@ -8,16 +8,13 @@ import tensorflow.keras.layers as KL
 
 
 class UniversalStudent(keras.Model):
-    """Optimised DNN for classification on the jet data set used in JEDInet paper.
-
-    This network is implemented based on the publication:
-    http://arxiv.org/abs/1908.05318
+    """Universal student for knowledge distillation.
 
     Attributes:
         nconst: Number of constituents for the jet data.
         nfeats: Number of features for each constituent.
         activ: Activation function to use between the dense layers.
-        name: Name of this network.
+        input_dims: The input dimensions of the network.
     """
 
     def __init__(

@@ -54,6 +54,7 @@ data_hyperparams = {
     "pt_min":            "2.0",
     "nconstituents":     "50",
     "feature_selection": "jedinet",
+    "flag":              "",
 }
 
 training_hyperparams = {

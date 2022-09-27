@@ -55,8 +55,9 @@ data_hyperparams = {
     "train_events":      args.train_events,
     "test_events":       0,
     "pt_min":            "2.0",
-    "nconstituents":     "50",
+    "nconstituents":     "16",
     "feature_selection": "jedinet",
+    "flag":              "",
 }
 
 training_hyperparams = {

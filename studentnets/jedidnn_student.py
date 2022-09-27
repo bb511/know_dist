@@ -17,7 +17,8 @@ class JEDIstudent(keras.Model):
         nconst: Number of constituents for the jet data.
         nfeats: Number of features for each constituent.
         activ: Activation function to use between the dense layers.
-        name: Name of this network.
+        dropout_rate: The rate all the dropout layers will assume.
+        input_dims: The input dimensions of the network.
     """
 
     def __init__(

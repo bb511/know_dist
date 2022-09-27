@@ -28,6 +28,7 @@ class Data:
         self,
         data_folder: str,
         norm: str = "nonorm",
+        flag: str = "",
         train_events: int = -1,
         test_events: int = -1,
         pt_min: str = "2",
@@ -39,6 +40,7 @@ class Data:
 
         self.data_folder = data_folder
         self.norm_name = norm
+        self.flag = flag
         self.nconstituents = nconstituents
         self.minpt = pt_min
         self.feature_selection = feature_selection
@@ -64,6 +66,7 @@ class Data:
         cls,
         data_folder: str,
         norm: str = "nonorm",
+        flag: str = "",
         train_events: int = -1,
         test_events: int = -1,
         pt_min: str = "2",
@@ -76,6 +79,7 @@ class Data:
         data = cls(
             data_folder,
             norm,
+            flag,
             train_events,
             test_events,
             pt_min,
@@ -163,6 +167,8 @@ class Data:
             + "_"
             + self.norm_name
             + "_"
+            + self.flag
+            + "_"
             + data_type
             + ".npy"
         )
@@ -178,6 +184,8 @@ class Data:
             + self.feature_selection
             + "_"
             + self.norm_name
+            + "_"
+            + self.flag
             + "_"
             + data_type
             + ".npy"
