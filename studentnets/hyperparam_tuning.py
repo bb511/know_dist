@@ -63,6 +63,7 @@ def main(args):
         verbose=2,
         callbacks=get_callbacks(),
         validation_split=0.3,
+        shuffle=True,
     )
     tuner.results_summary()
 

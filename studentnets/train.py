@@ -55,6 +55,7 @@ def main(args):
         verbose=2,
         callbacks=get_callbacks(),
         validation_split=0.3,
+        shuffle=True,
     )
 
     print(tcols.OKGREEN + "Saving student model to: " + tcols.ENDC, outdir)
@@ -75,7 +76,6 @@ def plot_model_performance(history: dict, outdir: str):
         history["val_acc"],
     )
     print(tcols.OKGREEN + "\nPlots done! " + tcols.ENDC)
-
 
 def get_callbacks():
     """Prepare the callbacks for the training."""
