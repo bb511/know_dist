@@ -32,8 +32,8 @@ class EffectsMLP(KL.Layer):
         self._activ_1 = KL.Activation(activ)
         self._hid_layer_2 = KL.Dense(int(nnodes) / 2)
         self._activ_2 = KL.Activation(activ)
-        self._hid_layer_3 = KL.Dense(nnodes)
-        self._activ_3 = KL.Activation(activ)
+        # self._hid_layer_3 = KL.Dense(nnodes)
+        # self._activ_3 = KL.Activation(activ)
         self._output_layer = KL.Dense(neffects)
         self._output_activ = KL.Activation(activ)
 

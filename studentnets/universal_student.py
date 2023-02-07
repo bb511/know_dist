@@ -11,8 +11,7 @@ class UniversalStudent(keras.Model):
     """Universal student for knowledge distillation.
 
     Attributes:
-        nconst: Number of constituents for the jet data.
-        nfeats: Number of features for each constituent.
+        node_size: Number of constituents for the jet data.
         activ: Activation function to use between the dense layers.
         input_dims: The input dimensions of the network.
     """

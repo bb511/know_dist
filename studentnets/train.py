@@ -30,6 +30,7 @@ def main(args):
     jet_data = Data(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
+    print(args["teacher"])
     teacher = keras.models.load_model(args["teacher"], compile=False)
 
     print(f"Instantiating the student of type: {args['student_type']}...")
@@ -57,6 +58,7 @@ def main(args):
         validation_split=0.3,
         shuffle=True,
     )
+    student.summary()
 
     print(tcols.OKGREEN + "Saving student model to: " + tcols.ENDC, outdir)
     student.save(outdir, save_format="tf")

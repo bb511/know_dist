@@ -46,7 +46,7 @@ class Distiller(keras.Model):
             temperature: Temperature for softening probability distributions.
                 Larger temperature gives softer distributions.
         """
-        super(Distiller, self).compile(optimizer=optimizer, run_eagerly=True)
+        super(Distiller, self).compile(optimizer=optimizer, run_eagerly=False)
         self.student_loss_fn = util.choose_loss(student_loss_fn)
         self.distillation_loss_fn = util.choose_loss(distill_loss_fn)
         self.alpha = alpha
@@ -60,15 +60,10 @@ class Distiller(keras.Model):
     def train_step(self, data):
         """Train the student network through one feed forward."""
         x, y = data
-        x_teacher = self.tf_shuffle_axis(x, 1)
-        teacher_predictions = self.teacher(x_teacher, training=False)
-
-        # Select only the first 16 features and (p_T, eta, phi) for the student.
-        x_student = tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2)
-        x_student = self.tf_shuffle_axis(x_student, 1)
+        teacher_predictions = self.teacher(x, training=False)
 
         with tf.GradientTape() as tape:
-            student_predictions = self.student(x_student, training=True)
+            student_predictions = self.student(x, training=True)
 
             student_loss = tf.reduce_mean(self.student_loss_fn(y, student_predictions))
             distillation_loss = (
@@ -106,9 +101,6 @@ class Distiller(keras.Model):
         x, y = data
 
         # Select only the first 16 features and (p_T, eta, phi) for the student.
-        x = tf.stack([x[:, :16, 5], x[:, :16, 8], x[:, :16, 11]], 2)
-        x = self.tf_shuffle_axis(x, 1)
-
         y_prediction = self.student(x, training=False)
         student_loss = tf.reduce_mean(self.student_loss_fn(y, y_prediction))
 
@@ -121,11 +113,3 @@ class Distiller(keras.Model):
         }
 
         return results
-
-    def tf_shuffle_axis(self, value, axis=0, seed=None, name=None):
-        """Same as tf.shuffle but takes an axis."""
-        perm = list(range(tf.rank(value)))
-        perm[axis], perm[0] = perm[0], perm[axis]
-        value = tf.random.shuffle(tf.transpose(value, perm=perm))
-        value = tf.transpose(value, perm=perm)
-        return value
