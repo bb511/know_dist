@@ -30,9 +30,10 @@ def main(args):
     jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
-    util.nice_print_dictionary("", hyperparams["intnet_hyperparams"])
+    util.nice_print_dictionary("Intnet hps:", hyperparams["intnet_hyperparams"])
     model = keras.models.load_model(args["model_dir"], compile=False)
-    print(tcols.HEADER + "Model summary..." + tcols.ENDC)
+
+    print(tcols.HEADER + "Model summary:" + tcols.ENDC)
     model.summary(expand_nested=True)
     print(tcols.OKGREEN + "Model loaded! \U0001F370\U00002728\n" + tcols.ENDC)
 

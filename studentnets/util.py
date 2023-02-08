@@ -8,6 +8,7 @@ from .jedidnn_student import JEDIstudent
 from .universal_student import UniversalStudent
 from .deepsets_student import DeepSets
 from .terminal_colors import tcols
+from . import deepsets_barebones as lul
 
 
 def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
@@ -15,7 +16,8 @@ def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     switcher = {
         "jedidnn": lambda: JEDIstudent(**hyperparams),
         "universal": lambda: UniversalStudent(**hyperparams),
-        "deepsets": lambda: DeepSets(**hyperparams)
+        # "deepsets": lambda: DeepSets(**hyperparams)
+        "deepsets": lambda: lul.get_deepsets_net()
     }
 
     model = switcher.get(student_type, lambda: None)()

@@ -27,7 +27,7 @@ def main(args):
 
     data_hp = args["data_hyperparams"]
     intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
+    jet_data = Data.shuffled(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
     print(args["teacher"])
