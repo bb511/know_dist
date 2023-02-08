@@ -9,7 +9,7 @@ import tensorflow.keras.layers as KL
 
 
 class PermutationEquivariantMax(KL.Layer):
-    """Permutation equivariant neural netowrk layer with max operation."""
+    """Permutation equivariant neural network layer with max operation."""
     def __init__(self, dim):
         super(PermutationEquivariantMax, self).__init__()
         self.gamma = KL.Dense(dim)
@@ -24,14 +24,14 @@ class PermutationEquivariantMax(KL.Layer):
         return x
 
 class PermutationEquivariantMean(KL.Layer):
-    """Permutation equivariant neural netowrk layer with mean operation."""
+    """Permutation equivariant neural network layer with mean operation."""
     def __init__(self, dim):
         super(PermutationEquivariantMean, self).__init__()
         self.gamma = KL.Dense(dim)
         self.lambd = KL.Dense(dim, use_bias=False)
 
     def call(self, inputs: np.ndarray, **kwargs):
-        x_mean = tf.reduce_mean(inputs, axis=1, keepdims=True)
+        x_mean = tf.reduce_mean(sinputs, axis=1, keepdims=True)
         x_mean = self.lambd(x_mean)
         x = self.gamma(inputs)
         x = x - x_mean

@@ -30,19 +30,23 @@ def main(args):
 
     data_hp = hyperparams["data_hyperparams"]
     intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
-    intnets.util.nice_print_dictionary("", hyperparams["student"])
+    intnets.util.nice_print_dictionary("Student hps:", hyperparams["student"])
     model = keras.models.load_model(args["model_dir"])
+    print(tcols.HEADER + "Model summary:" + tcols.ENDC)
     model.summary(expand_nested=True)
     print(tcols.OKGREEN + "Model loaded! \U0001F370\U00002728\n" + tcols.ENDC)
 
+    print(tcols.HEADER + "Testing model:" + tcols.ENDC)
+
     y_pred = tf.nn.softmax(model.predict(jet_data.te_data)).numpy()
     y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
-    print(tcols.OKGREEN + "\nSaved predictions array.\n" + tcols.ENDC)
 
+    ce_loss = keras.losses.CategoricalCrossentropy()(jet_data.te_target, y_pred)
+    print(tcols.OKCYAN + f"\nCross-entropy loss: {ce_loss}" + tcols.ENDC)
 
     intnets.plots.dnn_output(plots_dir, y_pred)
     intnets.plots.roc_curves(plots_dir, y_pred, jet_data.te_target)
-    print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)
+    print(tcols.OKGREEN + "\nPlotted results! \U0001F4C8\U00002728" + tcols.ENDC)

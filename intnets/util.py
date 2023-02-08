@@ -26,6 +26,9 @@ def nice_print_dictionary(dictionary_name: str, dictionary: dict):
     """Logs useful details about the data used to train the interaction network."""
     print(tcols.HEADER + f"\n{dictionary_name}" + tcols.ENDC)
     print(tcols.HEADER + "-----------" + tcols.ENDC)
+    if not bool(dictionary):
+        print(tcols.WARNING + "Dictionary is empty.\n" + tcols.ENDC)
+        return
     for key in dictionary:
         print(f"{key}: {dictionary[key]}")
 
