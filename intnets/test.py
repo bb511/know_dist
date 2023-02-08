@@ -42,6 +42,9 @@ def main(args):
     print(tcols.OKGREEN + "\nSaved predictions array.\n" + tcols.ENDC)
     y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
 
+    ce_loss = keras.losses.CategoricalCrossentropy()(jet_data.te_target, y_pred)
+    print(tcols.OKCYAN + f"\nCross-entropy loss: {ce_loss}" + tcols.ENDC)
+
     plots.roc_curves(plots_dir, y_pred, jet_data.te_target)
     plots.dnn_output(plots_dir, y_pred)
     print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)

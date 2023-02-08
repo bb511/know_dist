@@ -30,7 +30,7 @@ def main(args):
 
     data_hp = hyperparams["data_hyperparams"]
     intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
     intnets.util.nice_print_dictionary("Student hps:", hyperparams["student"])
