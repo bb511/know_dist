@@ -30,7 +30,7 @@ def main(args):
 
     data_hp = hyperparams["data_hyperparams"]
     intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
     intnets.util.nice_print_dictionary("", hyperparams["student"])
@@ -41,6 +41,7 @@ def main(args):
     y_pred = tf.nn.softmax(model.predict(jet_data.te_data)).numpy()
     y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
     print(tcols.OKGREEN + "\nSaved predictions array.\n" + tcols.ENDC)
+
 
     intnets.plots.dnn_output(plots_dir, y_pred)
     intnets.plots.roc_curves(plots_dir, y_pred, jet_data.te_target)
