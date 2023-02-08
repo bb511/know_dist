@@ -16,8 +16,7 @@ def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     switcher = {
         "jedidnn": lambda: JEDIstudent(**hyperparams),
         "universal": lambda: UniversalStudent(**hyperparams),
-        # "deepsets": lambda: DeepSets(**hyperparams)
-        "deepsets": lambda: lul.get_deepsets_net()
+        "deepsets": lambda: DeepSets(**hyperparams)
     }
 
     model = switcher.get(student_type, lambda: None)()

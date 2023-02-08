@@ -46,7 +46,7 @@ class Distiller(keras.Model):
             temperature: Temperature for softening probability distributions.
                 Larger temperature gives softer distributions.
         """
-        super(Distiller, self).compile(optimizer=optimizer, run_eagerly=False)
+        super(Distiller, self).compile(optimizer=optimizer, run_eagerly=True)
         self.student_loss_fn = util.choose_loss(student_loss_fn)
         self.distillation_loss_fn = util.choose_loss(distill_loss_fn)
         self.alpha = alpha
