@@ -11,7 +11,7 @@ import argparse
 import h5py
 import numpy as np
 
-from terminal_colors import tcols
+from util.terminal_colors import tcols
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
