@@ -13,16 +13,12 @@ class UniversalStudent(keras.Model):
     Attributes:
         node_size: Number of constituents for the jet data.
         activ: Activation function to use between the dense layers.
-        input_dims: The input dimensions of the network.
     """
 
-    def __init__(
-        self, node_size: int = 64, activ: str = "relu", input_dims: tuple = None
-        ):
+    def __init__(self, node_size: int = 64, activ: str = "relu"):
 
         super(UniversalStudent, self).__init__(name="UniversalStudent")
 
-        self.input_dims = input_dims
         # Hyperparameters decided for universal student.
         self.node_size = node_size
         self.activ = activ
@@ -33,8 +29,6 @@ class UniversalStudent(keras.Model):
     def __build_network(self):
         """Lay out the anatomy of the universal student network."""
         self._dense_layer_1 = KL.Dense(self.node_size)
-        if self.input_dims != None:
-            self._dense_layer_1 = KL.Dense(self.node_size, input_shape=self.input_dims)
         self._activ_funct_1 = KL.Activation(self.activ)
         self._dense_layer_2 = KL.Dense(int(self.node_size) / 2)
         self._activ_funct_2 = KL.Activation(self.activ)

@@ -2,6 +2,7 @@
 
 import keras_tuner as kt
 
+
 class DistillerHypermodel(kt.HyperModel):
     """Keras tuner hypermodel for the distiller class implemented in distiller.py."""
 
@@ -15,13 +16,13 @@ class DistillerHypermodel(kt.HyperModel):
             "temperature",
             min_value=self.distiller_hyperparams["temperature"][0],
             max_value=self.distiller_hyperparams["temperature"][1],
-            step=self.distiller_hyperparams["temperature"][2]
+            step=self.distiller_hyperparams["temperature"][2],
         )
         alpha = hp.Float(
             "alpha",
             min_value=self.distiller_hyperparams["alpha"][0],
             max_value=self.distiller_hyperparams["alpha"][1],
-            step=self.distiller_hyperparams["alpha"][2]
+            step=self.distiller_hyperparams["alpha"][2],
         )
 
         trial_distiller_hyperparams["alpha"] = alpha

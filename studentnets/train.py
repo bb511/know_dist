@@ -8,12 +8,13 @@ from tensorflow import keras
 # Setting the weight initialisation seed for reproducibility.
 keras.utils.set_random_seed(0)
 
+import util.util
+import util.plots
+from util.data import Data
+from util.terminal_colors import tcols
 import intnets.util
-import intnets.plots
-from intnets.data import Data
-from . import util
+from . import util as stutil
 from .distiller import Distiller
-from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -21,12 +22,12 @@ tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
-    intnets.util.device_info()
-    outdir = intnets.util.make_output_directory("trained_students", args["outdir"])
-    intnets.util.save_hyperparameters_file(args, outdir)
+    util.util.device_info()
+    outdir = util.util.make_output_directory("trained_students", args["outdir"])
+    util.util.save_hyperparameters_file(args, outdir)
 
     data_hp = args["data_hyperparams"]
-    intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
+    util.util.nice_print_dictionary("DATA DEETS", data_hp)
     jet_data = Data.shuffled(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
@@ -34,7 +35,7 @@ def main(args):
     teacher = keras.models.load_model(args["teacher"], compile=False)
 
     print(f"Instantiating the student of type: {args['student_type']}...")
-    student = util.choose_student(args["student_type"], args["student"])
+    student = stutil.choose_student(args["student_type"], args["student"])
 
     print("Making the distiller...")
     args["distill"]["optimizer"] = intnets.util.choose_optimiser(
@@ -47,7 +48,7 @@ def main(args):
     print(tcols.HEADER + "\nTEACHING THE STUDENT \U0001F4AA" + tcols.ENDC)
     print("====================")
     training_hyperparams = args["training_hyperparams"]
-    util.print_training_attributes(training_hyperparams, distiller)
+    stutil.print_training_attributes(training_hyperparams, distiller)
     history = distiller.fit(
         jet_data.tr_data,
         jet_data.tr_target,
@@ -58,26 +59,30 @@ def main(args):
         validation_split=0.3,
         shuffle=True,
     )
-    student.summary()
+
+    print(tcols.OKGREEN + "\nStudent dimensions:" + tcols.ENDC)
+    student.summary(expand_nested=True)
 
     print(tcols.OKGREEN + "Saving student model to: " + tcols.ENDC, outdir)
     student.save(outdir, save_format="tf")
     plot_model_performance(history.history, outdir)
 
+
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
-    intnets.plots.loss_vs_epochs(
+    util.plots.loss_vs_epochs(
         outdir,
         history["student_loss"],
         history["val_student_loss"],
         "loss_epochs_student",
     )
-    intnets.plots.accuracy_vs_epochs(
+    util.plots.accuracy_vs_epochs(
         outdir,
         history["acc"],
         history["val_acc"],
     )
     print(tcols.OKGREEN + "\nPlots done! " + tcols.ENDC)
+
 
 def get_callbacks():
     """Prepare the callbacks for the training."""

@@ -28,8 +28,8 @@ class Distiller(keras.Model):
     def compile(
         self,
         optimizer: str,
-        student_loss_fn: callable,
-        distill_loss_fn: callable,
+        student_loss_fn: str,
+        distill_loss_fn: str,
         alpha: float = 0.1,
         temperature: int = 10,
     ):

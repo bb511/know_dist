@@ -6,13 +6,12 @@ import keras_tuner as kt
 import tensorflow as tf
 from tensorflow import keras
 
-import intnets.util
-import intnets.plots
-from intnets.data import Data
+import util.util
+from util.data import Data
+from util.terminal_colors import tcols
 from . import util
 from .distiller import Distiller
 from .distiller_hypermodel import DistillerHypermodel
-from .terminal_colors import tcols
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -20,12 +19,12 @@ tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
-    intnets.util.device_info()
-    outdir = intnets.util.make_output_directory("trained_students", args["outdir"])
+    util.util.device_info()
+    outdir = util.util.make_output_directory("trained_students", args["outdir"])
 
     data_hp = args["data_hyperparams"]
-    intnets.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
+    util.util.nice_print_dictionary("DATA DEETS", data_hp)
+    jet_data = Data.shuffle(**data_hp, seed=args["seed"], jet_seed=args["jet_seed"])
 
     print("Importing the teacher network model...")
     teacher = keras.models.load_model(args["teacher"], compile=False)
@@ -34,7 +33,7 @@ def main(args):
     student = util.choose_student(args["student_type"], args["student"])
 
     print("Making the distiller...")
-    args["distill"]["optimizer"] = intnets.util.choose_optimiser(
+    args["distill"]["optimizer"] = util.util.choose_optimiser(
         args["distill"]["optimizer"], args["training_hyperparams"]["lr"]
     )
     distiller_hyperparams = args["distill"]

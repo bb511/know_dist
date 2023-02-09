@@ -43,6 +43,7 @@ parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
 args = parser.parse_args()
 
+
 if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 

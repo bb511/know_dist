@@ -270,6 +270,7 @@ def format_output_filename(input_name: str, norm_name: str, flag: str = "") -> s
 
     return output_filename + "_" + norm_name + "_" + flag
 
+
 def print_jets_per_class(y_data: np.array):
     print(f"Number of gluon jets: {np.sum(np.argmax(y_data, axis=1)==0)}")
     print(f"Number of quark jets: {np.sum(np.argmax(y_data, axis=1)==1)}")

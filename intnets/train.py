@@ -12,10 +12,11 @@ import absl.logging
 
 absl.logging.set_verbosity(absl.logging.ERROR)
 
-from . import util
-from . import plots
-from .data import Data
-from .terminal_colors import tcols
+import util.util
+import util.plots
+from util.data import Data
+from util.terminal_colors import tcols
+from . import util as intutil
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -23,15 +24,15 @@ tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
-    util.device_info()
-    outdir = util.make_output_directory("trained_intnets", args["outdir"])
-    util.save_hyperparameters_file(args, outdir)
+    util.util.device_info()
+    outdir = util.util.make_output_directory("trained_intnets", args["outdir"])
+    util.util.save_hyperparameters_file(args, outdir)
 
     data_hp = args["data_hyperparams"]
-    util.nice_print_dictionary("DATA DEETS", data_hp)
+    util.util.nice_print_dictionary("DATA DEETS", data_hp)
     jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
 
-    model = util.choose_intnet(
+    model = intutil.choose_intnet(
         args["intnet_type"],
         jet_data.tr_data.shape[1],
         jet_data.tr_data.shape[2],
@@ -41,7 +42,7 @@ def main(args):
     model.summary(expand_nested=True)
 
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
-    util.print_training_attributes(model, args)
+    util.util.print_training_attributes(model, args)
     model.summary(expand_nested=True)
     training_hyperparams = args["training_hyperparams"]
 
@@ -63,8 +64,8 @@ def main(args):
 
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
-    plots.loss_vs_epochs(outdir, history["loss"], history["val_loss"])
-    plots.accuracy_vs_epochs(
+    util.plots.loss_vs_epochs(outdir, history["loss"], history["val_loss"])
+    util.plots.accuracy_vs_epochs(
         outdir,
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
