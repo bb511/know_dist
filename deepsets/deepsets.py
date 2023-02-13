@@ -53,7 +53,7 @@ class DeepSets(keras.Model):
         input_dims: The input dimensions of the network.
     """
 
-    def __init__(self, nnodes: int = 32):
+    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "elu"):
         super(DeepSets, self).__init__(name="DeepSets")
         self.nclasses = 5
 
@@ -75,6 +75,6 @@ class DeepSets(keras.Model):
     def call(self, inputs: np.ndarray, **kwargs):
         phi_output = self.phi(inputs)
         sum_output = tf.reduce_mean(phi_output, axis=1)
-        rho_output = self.rho(sum_output)
+        rho_output = self.rho(phi_output)
 
         return rho_output

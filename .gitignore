@@ -131,6 +131,7 @@ dmypy.json
 # Output
 trained_intnets/
 trained_students/
+trained_deepsets/
 
 # Slurm submit files.
 *slurm*
