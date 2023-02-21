@@ -27,12 +27,10 @@ def main(args):
     hyperparams = util.util.load_hyperparameters_file(args["model_dir"])
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
-    data_hp = hyperparams["data_hyperparams"]
-    util.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data.shuffled(**args["data_hyperparams"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
-    util.util.nice_print_dictionary("DS hps:", hyperparams["deepsets_hyperparams"])
+    util.util.nice_print_dictionary("DS hps:", hyperparams["model_hyperparams"])
     model = keras.models.load_model(args["model_dir"], compile=False)
 
     print(tcols.HEADER + "\nModel summary:" + tcols.ENDC)

@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument(
     "data_file_dir",
     type=str,
-    help="Path to directory with .h5 files containing jet image data.",
+    help="Path to directories with .h5 files containing jet image data.",
 )
 parser.add_argument(
     "output_dir", type=str, help="Directory to save the processed data in."
@@ -26,7 +26,7 @@ parser.add_argument(
     "--min_pt",
     type=float,
     default=2,
-    help="Maximum transverse momentum that the data should have.",
+    help="Minimum transverse momentum that the data should have.",
 )
 parser.add_argument(
     "--max_constituents",
@@ -38,6 +38,7 @@ parser.add_argument(
     "--type",
     type=str,
     default="andre",
+    choices=["andre", "jedinet"],
     help="The type of feature selection to be employed.",
 )
 parser.add_argument(

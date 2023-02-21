@@ -7,11 +7,46 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from deepsets.deepsets import DeepSets
+from deepsets.deepsets import DeepSets_Equiv
+from deepsets.deepsets import DeepSets_Inv
 from util.terminal_colors import tcols
 
 
-def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
+def choose_deepsets(
+    deepsets_type: str,
+    nconst: int,
+    nfeats: int,
+    model_hyperparams: dict,
+    compilation_hyperparams: dict,
+    lr: float,
+) -> keras.models.Model:
+    """Select and instantiate a certain type of interaction network."""
+    print("Instantiating model with the hyperparameters:")
+    for key in model_hyperparams:
+        print(f"{key}: {model_hyperparams[key]}")
+
+    switcher = {
+        "equivariant": lambda: DeepSets_Equiv(**model_hyperparams),
+        "invariant": lambda: DeepSets_Inv(**model_hyperparams)
+    }
+
+    model = switcher.get(deepsets_type, lambda: None)()
+
+    comp_hps = {}
+    comp_hps.update(compilation_hyperparams)
+    comp_hps["optimizer"] = load_optimizer(
+        comp_hps["optimizer"],
+        lr,
+    )
+    comp_hps["loss"] = choose_loss(compilation_hyperparams["loss"])
+
+    model.compile(**comp_hps)
+    model.build((None, nconst, nfeats))
+    print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
+
+    return model
+
+def load_optimizer(choice: str, lr: float) -> keras.optimizers.Optimizer:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.
     """
@@ -21,47 +56,8 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
     }
 
     optimiser = switcher.get(choice, lambda: None)()
-    if optimiser is None:
-        raise TypeError(
-            "Optimiser was not implemented yet! Please choose one of the "
-            "following: adam."
-        )
 
     return optimiser
-
-
-def choose_deepsets(
-    deepsets_type: str,
-    nconst: int,
-    nfeats: int,
-    hyperparams: dict,
-    compilation_hyperparams,
-) -> keras.models.Model:
-    """Select and instantiate a certain type of interaction network."""
-    print("Instantiating model with the hyperparameters:")
-    for key in hyperparams:
-        print(f"{key}: {hyperparams[key]}")
-
-    switcher = {
-        "vanilla": lambda: DeepSets(**hyperparams),
-    }
-
-    model = switcher.get(deepsets_type, lambda: None)()
-
-    compilation_hyperparams["optimizer"] = choose_optimiser(
-        compilation_hyperparams["optimizer"][0],
-        compilation_hyperparams["optimizer"][1],
-    )
-    compilation_hyperparams["loss"] = choose_loss(compilation_hyperparams["loss"])
-    model.compile(**compilation_hyperparams)
-    model.build((None, nconst, nfeats))
-    print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
-
-    if model is None:
-        raise TypeError("Given deepsets network model type is not implemented!")
-
-    return model
-
 
 def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """Construct a keras optimiser object with a certain learning rate given a string
@@ -69,22 +65,18 @@ def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """
 
     switcher = {
-        "categorical_crossentropy": lambda: keras.losses.CategoricalCrossentropy(
-            from_logits=from_logits
-        ),
+        "categorical_crossentropy": \
+            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
         "softmax_with_crossentropy": lambda: tf.nn.softmax_cross_entropy_with_logits,
     }
 
     loss = switcher.get(choice, lambda: None)()
-    if loss is None:
-        raise TypeError("The given loss name is not implemented in the wrapper yet!")
 
     return loss
 
-
 def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
-    compilation_hyperparams = args["deepsets_compilation"]
+    compilation_hyperparams = args["compilation"]
     train_hyperparams = args["training_hyperparams"]
 
     print("\nTraining parameters")

@@ -3,13 +3,14 @@
 import os
 import numpy as np
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 from tensorflow import keras
 
 keras.utils.set_random_seed(123)
 
 import absl.logging
-
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
@@ -18,48 +19,55 @@ from util.data import Data
 from util.terminal_colors import tcols
 from . import util as dsutil
 
-# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
-    util.util.device_info()
+    util.util.device_info(max_gpu_memory=8192)
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data_hp = args["data_hyperparams"]
-    util.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    data = Data.shuffled(**args["data_hyperparams"])
 
+    model = build_model(args, data)
+    history = train_model(model, data, args)
+
+    print(tcols.OKGREEN + "\n\n\nSAVING MODEL TO: " + tcols.ENDC, outdir)
+    model.save(outdir, save_format="tf")
+    plot_model_performance(history.history, outdir)
+
+def build_model(args: dict, data: Data):
+    """Instantiate the model with chosen hyperparams and return it."""
+    print(tcols.HEADER + "\n\nINSTANTIATING MODEL" + tcols.ENDC)
     model = dsutil.choose_deepsets(
         args["deepsets_type"],
-        jet_data.tr_data.shape[1],
-        jet_data.tr_data.shape[2],
-        args["deepsets_hyperparams"],
-        args["deepsets_compilation"],
+        data.ncons,
+        data.nfeat,
+        args["model_hyperparams"],
+        args["compilation"],
+        args["training_hyperparams"]['lr'],
     )
     model.summary(expand_nested=True)
 
+    return model
+
+def train_model(model, data, args: dict):
+    """Fit the model to the data."""
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     dsutil.print_training_attributes(model, args)
-    training_hyperparams = args["training_hyperparams"]
 
     history = model.fit(
-        jet_data.tr_data,
-        jet_data.tr_target,
-        epochs=training_hyperparams["epochs"],
-        batch_size=training_hyperparams["batch"],
+        data.tr_data,
+        data.tr_target,
+        epochs=args["training_hyperparams"]["epochs"],
+        batch_size=args["training_hyperparams"]["batch"],
         verbose=2,
         callbacks=get_tensorflow_callbacks(),
-        validation_split=training_hyperparams["valid_split"],
+        validation_split=args["training_hyperparams"]["valid_split"],
         shuffle=True,
     )
 
-    model.save(outdir, save_format="tf")
-    print(tcols.OKGREEN + "\nSaved model to: " + tcols.ENDC, outdir)
-    plot_model_performance(history.history, outdir)
-
+    return history
 
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
@@ -69,8 +77,6 @@ def plot_model_performance(history: dict, outdir: str):
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
     )
-    print(tcols.OKGREEN + "\nPlots done! " + tcols.ENDC)
-
 
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""

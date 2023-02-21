@@ -30,12 +30,15 @@ def nice_print_dictionary(dictionary_name: str, dictionary: dict):
         print(f"{key}: {dictionary[key]}")
 
 
-def device_info():
+def device_info(max_gpu_memory: int):
     """Prints what device the tensorflow network will run on."""
     gpu_devices = tf.config.list_physical_devices("GPU")
     if gpu_devices:
         details = tf.config.experimental.get_device_details(gpu_devices[0])
         print(tcols.OKCYAN + f"\nGPU: {details.get('device_name')}" + tcols.ENDC)
+        print("Activating procedural GPU memory growth...")
+        for gpu in gpu_devices:
+            tf.config.experimental.set_memory_growth(gpu, True)
     else:
         print(tcols.WARNING + "\nNo GPU detected. Running on CPU." + tcols.ENDC)
 

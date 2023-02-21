@@ -3,100 +3,139 @@
 
 import numpy as np
 
+import optuna
+import sklearn
 import tensorflow as tf
-from tensorflow import keras
 import tensorflow.keras.layers as KL
-from determined.keras import TFKerasTrial, TFKerasTrialContext
+from tensorflow import keras
 
-from . import util
-from .deepsets import DeepSets
+import absl.logging
+absl.logging.set_verbosity(absl.logging.ERROR)
+
+import util.util
 from util.data import Data
+from util.terminal_colors import tcols
+from . import util as dsutil
 
 
-class PermutationEquivariantMax(KL.Layer):
-    """Permutation equivariant neural network layer with max operation."""
+def main(args):
+    util.util.device_info()
+    outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
 
-    def __init__(self, dim):
-        super(PermutationEquivariantMax, self).__init__()
-        self.gamma = KL.Dense(dim)
-        self.lambd = KL.Dense(dim, use_bias=False)
+    jet_data = Data.shuffled(**args["data_hyperparams"])
 
-    def call(self, inputs: np.ndarray, **kwargs):
-        x_maximum = tf.reduce_max(inputs, axis=1, keepdims=True)
-        x_maximum = self.lambd(x_maximum)
-        x = self.gamma(inputs)
-        x = x - x_maximum
+    study = optuna.create_study(
+        study_name="deepsets_3layer",
+        sampler=optuna.samplers.TPESampler(),
+        pruner=optuna.pruners.SuccessiveHalvingPruner(),
+        direction='maximize',
+        storage=f'sqlite:///{outdir}/test.db',
+        load_if_exists=True)
+    study.optimize(Objective(jet_data, args), n_trials=200)
 
-        return x
+class Objective:
+    def __init__(self, jet_data: Data, args: dict):
+        self.jet_data = jet_data
+        self.args = args
+        self.training_hyperparams = {
+            "epochs":      args["training_hyperparams"]["epochs"],
+            "valid_split": args["training_hyperparams"]["valid_split"],
+        }
+        self.compilation_hyperparams = {
+            "loss":     args["compilation"]["loss"],
+            "metrics":  args["compilation"]["metrics"],
+        }
+        self.model_hyperparams = {}
 
+    def __call__(self, trial):
+        self.training_hyperparams.update(
+        {
+            "batch":  trial.suggest_categorical(
+                "bs", self.args["training_hyperparams"]["batch"]
+                ),
+            "lr":     trial.suggest_float(
+                "lr", *self.args["training_hyperparams"]["lr"], log=True
+                ),
+        })
+        self.compilation_hyperparams.update({
+            "optimizer": trial.suggest_categorical(
+                "optim", self.args["compilation"]["optimizer"]
+                ),
+        })
 
-class PermutationEquivariantMean(KL.Layer):
-    """Permutation equivariant neural network layer with mean operation."""
+        self.model_hyperparams.update(
+        {
+            "nnodes_phi": trial.suggest_categorical(
+                "nphi", self.args["model_hyperparams"]["nnodes_phi"]
+                ),
+            "nnodes_rho": trial.suggest_categorical(
+                "nrho", self.args["model_hyperparams"]["nnodes_rho"]
+                ),
+            "activ":      trial.suggest_categorical(
+                "activ", self.args["model_hyperparams"]["activ"]
+                ),
+        })
 
-    def __init__(self, dim):
-        super(PermutationEquivariantMean, self).__init__()
-        self.gamma = KL.Dense(dim)
-        self.lambd = KL.Dense(dim, use_bias=False)
+        model = dsutil.choose_deepsets(
+            self.args["deepsets_type"],
+            self.jet_data.ncons,
+            self.jet_data.nfeat,
+            self.model_hyperparams,
+            self.compilation_hyperparams,
+            self.training_hyperparams['lr'],
+        )
+        model.summary(expand_nested=True)
 
-    def call(self, inputs: np.ndarray, **kwargs):
-        x_mean = tf.reduce_mean(inputs, axis=1, keepdims=True)
-        x_mean = self.lambd(x_mean)
-        x = self.gamma(inputs)
-        x = x - x_mean
+        print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
 
-        return x
+        callbacks = get_tensorflow_callbacks()
+        callbacks.append(
+            optuna.integration.TFKerasPruningCallback(trial, "val_categorical_accuracy")
+        )
 
-class DeepSetsTrial(TFKerasTrial):
-    def __init__(self, context: TFKerasTrialContext):
-        self.context = context
-        self.context.configure_fit(shuffle=True)
+        model.fit(
+            self.jet_data.tr_data,
+            self.jet_data.tr_target,
+            epochs=self.training_hyperparams["epochs"],
+            batch_size=self.training_hyperparams["batch"],
+            verbose=2,
+            callbacks=callbacks,
+            validation_split=self.training_hyperparams["valid_split"],
+            shuffle=True,
+        )
 
-    def build_model(self):
+        print(tcols.HEADER + "\nTraining done... Testing model." + tcols.ENDC)
+        y_pred = tf.nn.softmax(model.predict(self.jet_data.va_data)).numpy()
 
-        nnodes_phi = self.context.get_hparam("nnodes_phi")
-        nnodes_rho = self.context.get_hparam("nnodes_rho")
-        activation = self.context.get_hparam("activation")
+        # fprs = []
+        # for idx in range(y_pred.shape[1]):
+            # fpr, tpr, thr = sklearn.metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
+            # tpr_idx = find_nearest(tpr, 0.8)
+            # fprs.append(fpr[tpr_idx])
 
-        model = DeepSets(nnodes_phi, nnodes_rho, activation)
-        model = self.context.wrap_model(model)
+        accuracy = tf.keras.metrics.CategoricalAccuracy()
+        accuracy.update_state(self.jet_data.va_target, y_pred)
 
-        optimizer = util.choose_optimiser(
-            choice=self.context.get_hparam("optimizer"),
-            learning_rate=self.context.get_hparam("lr")
-            )
-        loss = util.choose_loss(self.context.get_hparam("loss"))
-        metrics = ["categorical_accuracy"]
+        return accuracy.result().numpy()
 
-        model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+def get_tensorflow_callbacks():
+    """Prepare the callbacks for the training."""
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_categorical_accuracy", patience=20
+    )
+    learning = keras.callbacks.ReduceLROnPlateau(
+        monitor="val_categorical_accuracy", factor=0.8, patience=10, min_lr=0.00001
+    )
 
-        return model
+    return [early_stopping, learning]
 
-    def build_training_data_loader():
-        jet_data = Data.shuffled(
-            data_folder="../../ki_data/intnet_input",
-            norm="robust",
-            train_events=-1,
-            test_events=0,
-            pt_min="2.0",
-            nconstituents="150",
-            feature_selection="jedinet",
-            flag="",
-            )
+class OptunaPruner(keras.callbacks.Callback):
+    def __init__(self, trial):
+        super(OptunaPruner, self).__init__()
+        self.trial = trial
 
-        return jet_data.tr_data, jet_data.tr_target
-
-    def build_validation_data_loader():
-        jet_data = Data.shuffled(
-            data_folder="../../ki_data/intnet_input",
-            norm="robust",
-            train_events=0,
-            test_events=-1,
-            pt_min="2.0",
-            nconstituents="150",
-            feature_selection="jedinet",
-            flag="",
-            )
-
-        return jet_data.te_data, jet_data.te_target
-
-
+    def on_epoch_end(self, epoch, logs=None):
+        self.trial.report(logs["val_categorical_accuracy"], epoch)
+        if self.trial.should_prune():
+            trial = self.trial
+            raise optuna.TrialPruned()

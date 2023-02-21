@@ -19,22 +19,22 @@ parser.add_argument(
     help="Path to the training data file to process.",
 )
 parser.add_argument(
-    "--x_data_path_test",
-    type=str,
-    required=True,
-    help="Path to the training data file to process.",
-)
-parser.add_argument(
     "--y_data_path_train",
     type=str,
     required=True,
     help="Paths to the training target file corresponding to the data.",
 )
 parser.add_argument(
+    "--x_data_path_test",
+    type=str,
+    required=True,
+    help="Path to the test data file to process.",
+)
+parser.add_argument(
     "--y_data_path_test",
     type=str,
     required=True,
-    help="Paths to the training target file corresponding to the data.",
+    help="Paths to the test target file corresponding to the data.",
 )
 parser.add_argument(
     "--output_dir", type=str, required=True, help="Path to the output folder."
@@ -46,10 +46,10 @@ parser.add_argument(
     help="The type of normalisation to apply to the data.",
 )
 parser.add_argument(
-    "--test_split",
+    "--val_split",
     type=float,
-    default=0.33,
-    help="The percentage of data to be used as validation.",
+    default=0.5,
+    help="The percentage of data to be used as validation from the test set.",
 )
 parser.add_argument(
     "--flag",
@@ -63,13 +63,16 @@ def main(args):
 
     print("Loading the files...\n")
     x_data_train = np.load(args.x_data_path_train, "r")
-    y_data_train = np.load(args.x_data_path_test, "r")
-    x_data_test = np.load(args.y_data_path_train, "r")
+    y_data_train = np.load(args.y_data_path_train, "r")
+    x_data_test = np.load(args.x_data_path_test, "r")
     y_data_test = np.load(args.y_data_path_test, "r")
-    x_data = np.concatenate((x_data_train, y_data_train), axis=0)
-    y_data = np.concatenate((x_data_test, y_data_test), axis=0)
 
-    x_data, y_data = equalize_classes(x_data, y_data)
+    x_data_train, y_data_train = equalize_classes(x_data_train, y_data_train)
+    x_data_test, y_data_test = equalize_classes(x_data_test, y_data_test)
+
+    x_data = np.concatenate((x_data_train, x_data_test), axis=0)
+    y_data = np.concatenate((y_data_train, y_data_test), axis=0)
+
     plots_folder = format_output_filename(args.x_data_path_train, args.norm, args.flag)
     plots_path = os.path.join(args.output_dir, plots_folder)
     plot_constituent_number(plots_path, x_data)
@@ -77,8 +80,15 @@ def main(args):
     x_data = apply_normalisation(args.norm, x_data)
     plot_normalised_data(plots_path, x_data, y_data)
 
-    x_data_train, x_data_test, y_data_train, y_data_test = train_test_split(
-        x_data, y_data, test_size=args.test_split, random_state=7, stratify=y_data
+    x_data_train = x_data[:y_data_train.shape[0]]
+    x_data_test = x_data[y_data_train.shape[0]:]
+
+    x_data_val, x_data_test, y_data_val, y_data_test = train_test_split(
+        x_data_test,
+        y_data_test,
+        test_size=args.val_split,
+        random_state=0,
+        stratify=y_data_test,
     )
 
     if not os.path.exists(args.output_dir):
@@ -86,13 +96,18 @@ def main(args):
 
     output_name = format_output_filename(args.x_data_path_train, args.norm, args.flag)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_train"), x_data_train)
+    np.save(os.path.join(args.output_dir, "x_" + output_name + "_val"), x_data_val)
     np.save(os.path.join(args.output_dir, "x_" + output_name + "_test"), x_data_test)
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_train"), y_data_train)
+    np.save(os.path.join(args.output_dir, "y_" + output_name + "_val"), y_data_val)
     np.save(os.path.join(args.output_dir, "y_" + output_name + "_test"), y_data_test)
 
     print("\n")
     print(tcols.HEADER + "Training data" + tcols.ENDC)
     print_jets_per_class(y_data_train)
+    print("\n")
+    print(tcols.HEADER + "Validation data" + tcols.ENDC)
+    print_jets_per_class(y_data_val)
     print("\n")
     print(tcols.HEADER + "Test data" + tcols.ENDC)
     print_jets_per_class(y_data_test)

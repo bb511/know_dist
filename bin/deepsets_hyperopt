@@ -6,17 +6,11 @@ import os
 import sys
 sys.path.append("..")
 
-from deepsets.train import main
+from deepsets.hyperparam_optimisation import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
-parser.add_argument("--jet_seed", type=int, default=123,
-                    help="Seed to use in shuffling the jets.")
-parser.add_argument("--seed", type=int, default=127,
-                    help="Seed to use in any random thing that is done.")
 parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
-parser.add_argument("--outdir", type=str, default="test",
-                    help="The output directory name.")
 args = parser.parse_args()
 
 if args.gpu:
@@ -24,40 +18,40 @@ if args.gpu:
 
 data_hyperparams = {
     "fpath":       '../../ki_data/mlready',
-    "fname":       'jet_images_c150_pt2.0_jedinet_robust',
+    "fname":       'x_jet_images_c150_pt2.0_jedinet_robust',
     "train_events": -1,
-    "val_events":   0,
+    "val_events":   -1,
     "test_events":  0,
-    "jet_seed":     123,
-    "seed":         127,
+    "jet_seed":     None,
+    "seed":         None,
 }
 
 training_hyperparams = {
-    "batch":        64,
+    "batch":        [64, 128, 256],
     "epochs":       100,
-    "lr":           0.0006853157773936255,
+    "lr":           [0.0001, 0.001],
     "valid_split":  0.3,
 }
 
 compilation_hyperparams = {
-    "optimizer": "adam",
-    "loss":      "softmax_with_crossentropy",
-    "metrics":   ["categorical_accuracy"],
+    "optimizer": ['adam'],
+    "loss":      'softmax_with_crossentropy',
+    "metrics":   ['categorical_accuracy'],
 }
 
 model_hyperparams = {
-    "nnodes_phi": 64,
-    "nnodes_rho": 32,
-    "activ": 'selu',
+    "nnodes_phi": [64, 32, 20, 16, 8],
+    "nnodes_rho": [64, 32, 20, 16, 8],
+    "activ": ['elu', 'selu', 'relu'],
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "deepsets_type":        "equivariant",
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
-    "outdir":               args.outdir,
+    "deepsets_type":        'equivariant',
+    "outdir":               'deepsets_hyperopt',
 }
 
 main(args)
