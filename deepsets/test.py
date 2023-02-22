@@ -27,7 +27,7 @@ def main(args):
     hyperparams = util.util.load_hyperparameters_file(args["model_dir"])
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
-    jet_data = Data.shuffled(**args["data_hyperparams"])
+    jet_data = Data.shuffled(**hyperparams["data_hyperparams"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
     util.util.nice_print_dictionary("DS hps:", hyperparams["model_hyperparams"])

@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 from tensorflow import keras
 
@@ -28,36 +28,49 @@ def main(args):
     outdir = util.util.make_output_directory("trained_intnets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    jet_data = Data.shuffled(**args["data_hyperparams"])
+    data = Data.shuffled(**args["data_hyperparams"])
 
+    model = build_model(data, args)
+    history = train_model(model, data, args)
+
+    print(tcols.OKGREEN + "\n\n\nSAVING MODEL TO: " + tcols.ENDC, outdir)
+    model.save(outdir, save_format="tf")
+    plot_model_performance(history.history, outdir)
+
+
+def build_model(data, args):
+    """Instantiate the model with chosen hyperparams and return it."""
+    print(tcols.HEADER + "\n\nINSTANTIATING MODEL" + tcols.ENDC)
     model = intutil.choose_intnet(
         args["intnet_type"],
-        jet_data.tr_data.shape[1],
-        jet_data.tr_data.shape[2],
+        data.ncons,
+        data.nfeat,
         args["intnet_hyperparams"],
         args["intnet_compilation"],
+        args["training_hyperparams"]["lr"]
     )
     model.summary(expand_nested=True)
 
+    return model
+
+
+def train_model(model, data, args: dict):
+    """Fit the model to the data."""
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     util.util.print_training_attributes(model, args)
-    model.summary(expand_nested=True)
-    training_hyperparams = args["training_hyperparams"]
 
     history = model.fit(
-        jet_data.tr_data,
-        jet_data.tr_target,
-        epochs=training_hyperparams["epochs"],
-        batch_size=training_hyperparams["batch"],
+        data.tr_data,
+        data.tr_target,
+        epochs=args["training_hyperparams"]["epochs"],
+        batch_size=args["training_hyperparams"]["batch"],
         verbose=2,
         callbacks=get_tensorflow_callbacks(),
-        validation_split=training_hyperparams["valid_split"],
+        validation_split=args["training_hyperparams"]["valid_split"],
         shuffle=True,
     )
 
-    model.save(outdir, save_format="tf")
-    print(tcols.OKGREEN + "\nSaved model to: " + tcols.ENDC, outdir)
-    plot_model_performance(history.history, outdir)
+    return history
 
 
 def plot_model_performance(history: dict, outdir: str):

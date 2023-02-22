@@ -3,6 +3,8 @@
 import os
 import json
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 from tensorflow import keras
 
@@ -21,15 +23,13 @@ tf.keras.backend.set_floatx("float64")
 def main(args):
     util.util.device_info()
     plots_dir = util.util.make_output_directory(
-        args["model_dir"], f"plots_{args['seed']}"
+        args["model_dir"], f"plots_{args['data_hyperparams']['seed']}"
     )
 
     hyperparams = util.util.load_hyperparameters_file(args["model_dir"])
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
-    data_hp = hyperparams["data_hyperparams"]
-    util.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data.shuffled(**hyperparams["data_hyperparams"])
 
     print(tcols.HEADER + "Importing the model..." + tcols.ENDC)
     util.util.nice_print_dictionary("Intnet hps:", hyperparams["intnet_hyperparams"])

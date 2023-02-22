@@ -13,7 +13,49 @@ from .densintnet import DensIntNet
 from util.terminal_colors import tcols
 
 
-def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
+def choose_intnet(
+    intnet_type: str,
+    nconst: int,
+    nfeats: int,
+    hyperparams: dict,
+    compilation_hyperparams: dict,
+    lr: float,
+) -> keras.models.Model:
+    """Select and instantiate a certain type of interaction network."""
+    print("Instantiating model with the hyperparameters:")
+    for key in hyperparams:
+        print(f"{key}: {hyperparams[key]}")
+
+    switcher = {
+        "qconv": lambda: QConvIntNet(nconst, nfeats, **hyperparams),
+        "dens": lambda: DensIntNet(nconst, nfeats, **hyperparams),
+        "conv": lambda: ConvIntNet(nconst, nfeats, **hyperparams),
+    }
+
+    model = switcher.get(intnet_type, lambda: None)()
+
+    comp_hps = {}
+    comp_hps.update(compilation_hyperparams)
+    comp_hps["optimizer"] = load_optimizer(
+        comp_hps["optimizer"],
+        lr,
+    )
+    comp_hps["loss"] = choose_loss(compilation_hyperparams["loss"])
+
+    model.compile(**comp_hps)
+    model.build((None, nconst, nfeats))
+    print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
+
+    if intnet_type == "qconv":
+        set_matrix_multiplication_hack_weights(model)
+
+    if model is None:
+        raise TypeError("Given interaction network model type is not implemented!")
+
+    return model
+
+
+def load_optimizer(choice: str, lr: float) -> keras.optimizers.Optimizer:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.
     """
@@ -30,44 +72,6 @@ def choose_optimiser(choice: str, lr: float) -> keras.optimizers.Optimizer:
         )
 
     return optimiser
-
-
-def choose_intnet(
-    intnet_type: str,
-    nconst: int,
-    nfeats: int,
-    hyperparams: dict,
-    compilation_hyperparams,
-) -> keras.models.Model:
-    """Select and instantiate a certain type of interaction network."""
-    print("Instantiating model with the hyperparameters:")
-    for key in hyperparams:
-        print(f"{key}: {hyperparams[key]}")
-
-    switcher = {
-        "qconv": lambda: QConvIntNet(nconst, nfeats, **hyperparams),
-        "dens": lambda: DensIntNet(nconst, nfeats, **hyperparams),
-        "conv": lambda: ConvIntNet(nconst, nfeats, **hyperparams),
-    }
-
-    model = switcher.get(intnet_type, lambda: None)()
-
-    compilation_hyperparams["optimizer"] = choose_optimiser(
-        compilation_hyperparams["optimizer"][0],
-        compilation_hyperparams["optimizer"][1],
-    )
-    compilation_hyperparams["loss"] = choose_loss(compilation_hyperparams["loss"])
-    model.compile(**compilation_hyperparams)
-    model.build((None, nconst, nfeats))
-    print(tcols.OKGREEN + "Model compiled and built!" + tcols.ENDC)
-
-    if intnet_type == "qconv":
-        set_matrix_multiplication_hack_weights(model)
-
-    if model is None:
-        raise TypeError("Given interaction network model type is not implemented!")
-
-    return model
 
 
 def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:

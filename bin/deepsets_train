@@ -32,7 +32,7 @@ training_hyperparams = {
     "batch":        64,
     "epochs":       100,
     "lr":           0.0006853157773936255,
-    "valid_split":  0.3,
+    "valid_split":  0.2,
 }
 
 compilation_hyperparams = {

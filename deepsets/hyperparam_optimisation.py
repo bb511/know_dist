@@ -37,7 +37,7 @@ def main(args):
         storage=f"sqlite:///{outdir}/deepsets_equiv.db",
         load_if_exists=True,
     )
-    study.optimize(Objective(jet_data, args), n_trials=250)
+    study.optimize(Objective(jet_data, args), n_trials=250, gc_after_trial=True)
 
 
 class Objective:
@@ -55,6 +55,7 @@ class Objective:
         self.model_hyperparams = {}
 
     def __call__(self, trial):
+        tf.keras.backend.clear_session()
         self.training_hyperparams.update(
             {
                 "batch": trial.suggest_categorical(

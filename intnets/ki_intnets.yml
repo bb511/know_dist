@@ -8,23 +8,28 @@ dependencies:
   - brotli=1.0.9=h166bdaf_7
   - brotli-bin=1.0.9=h166bdaf_7
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2022.5.18.1=ha878542_0
-  - certifi=2022.5.18.1=py310hff52083_0
+  - c-ares=1.18.1=h7f8727e_0
+  - ca-certificates=2022.07.19=h06a4308_0
+  - certifi=2022.6.15=py310h06a4308_0
   - cudatoolkit=11.2.2=hbe64b41_10
   - cudnn=8.1.0.77=h90431f1_0
+  - curl=7.84.0=h5eee18b_0
   - cycler=0.11.0=pyhd8ed1ab_0
   - dbus=1.13.6=he372182_0
   - expat=2.4.8=h27087fc_0
   - fontconfig=2.13.1=h6c09931_0
   - fonttools=4.33.3=py310h5764c6d_0
   - freetype=2.10.4=h0708190_1
+  - gettext=0.21.0=hf68c758_0
   - giflib=5.2.1=h36c2ea0_2
+  - git=2.34.1=pl5262hc120c5b_0
   - glib=2.69.1=h4ff587b_1
   - gst-plugins-base=1.14.0=hbbd80ab_1
   - gstreamer=1.14.0=h28cd5cc_2
   - icu=58.2=hf484d3e_1000
   - jpeg=9e=h166bdaf_1
   - kiwisolver=1.4.2=py310h295c915_0
+  - krb5=1.19.2=hac12032_0
   - lcms2=2.12=hddcbb42_0
   - ld_impl_linux-64=2.38=h1181459_1
   - libblas=3.9.0=15_linux64_openblas
@@ -32,14 +37,19 @@ dependencies:
   - libbrotlidec=1.0.9=h166bdaf_7
   - libbrotlienc=1.0.9=h166bdaf_7
   - libcblas=3.9.0=15_linux64_openblas
+  - libcurl=7.84.0=h91b91d3_0
+  - libedit=3.1.20210910=h7f8727e_0
+  - libev=4.33=h7f8727e_1
   - libffi=3.3=he6710b0_2
   - libgcc-ng=11.2.0=h1234567_1
   - libgfortran-ng=12.1.0=h69a702a_16
   - libgfortran5=12.1.0=hdcd56e2_16
   - libgomp=11.2.0=h1234567_1
   - liblapack=3.9.0=15_linux64_openblas
+  - libnghttp2=1.46.0=hce63b2e_0
   - libopenblas=0.3.20=pthreads_h78a6416_0
   - libpng=1.6.37=h21135ba_2
+  - libssh2=1.10.0=h8f2d780_0
   - libstdcxx-ng=11.2.0=h1234567_1
   - libtiff=4.2.0=h85742a9_0
   - libuuid=1.0.3=h7f8727e_2
@@ -53,10 +63,13 @@ dependencies:
   - munkres=1.1.4=pyh9f0ad1d_0
   - ncurses=6.3=h7f8727e_2
   - numpy=1.22.3=py310h4ef5377_2
-  - openssl=1.1.1o=h166bdaf_0
+  - openssl=1.1.1q=h7f8727e_0
   - packaging=21.3=pyhd8ed1ab_0
   - pcre=8.45=h9c3ff4c_0
+  - pcre2=10.37=he7ceb23_1
+  - perl=5.26.2=h14c3975_0
   - pillow=9.0.1=py310h22f2fdc_0
+  - pip=21.2.4=py310h06a4308_0
   - pthread-stubs=0.4=h36c2ea0_1001
   - pyparsing=3.0.9=pyhd8ed1ab_0
   - pyqt=5.9.2=py310h295c915_6
@@ -91,10 +104,10 @@ dependencies:
     - executing==0.8.3
     - flatbuffers==1.12
     - gast==0.4.0
-    - google-auth==2.7.0
+    - google-auth==2.8.0
     - google-auth-oauthlib==0.4.6
     - google-pasta==0.2.0
-    - grpcio==1.46.3
+    - grpcio==1.47.0
     - h5py==3.7.0
     - idna==3.3
     - ipython==8.4.0
@@ -114,7 +127,6 @@ dependencies:
     - parso==0.8.3
     - pexpect==4.8.0
     - pickleshare==0.7.5
-    - pip==22.2.2
     - prompt-toolkit==3.0.29
     - protobuf==3.19.4
     - ptyprocess==0.7.0
@@ -129,7 +141,7 @@ dependencies:
     - rsa==4.8
     - scikit-learn==1.1.1
     - scipy==1.8.1
-    - stack-data==0.2.0
+    - stack-data==0.3.0
     - tensorboard==2.9.1
     - tensorboard-data-server==0.6.1
     - tensorboard-plugin-wit==1.8.1
@@ -140,10 +152,10 @@ dependencies:
     - termcolor==1.1.0
     - threadpoolctl==3.1.0
     - tqdm==4.64.0
-    - traitlets==5.2.2.post1
+    - traitlets==5.3.0
     - typing-extensions==4.2.0
     - urllib3==1.26.9
     - wcwidth==0.2.5
     - werkzeug==2.1.2
     - wrapt==1.14.1
-prefix: /work/deodagiu/miniconda/envs/ki_intnets
+prefix: /data/deodagiu/miniconda/envs/ki_intnets
