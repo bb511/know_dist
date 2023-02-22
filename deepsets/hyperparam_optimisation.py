@@ -30,7 +30,7 @@ def main(args):
     jet_data = Data.shuffled(**args["data_hyperparams"])
 
     study = optuna.create_study(
-        study_name="2layer_minimal",
+        study_name="3layer",
         sampler=optuna.samplers.TPESampler(),
         pruner=optuna.pruners.SuccessiveHalvingPruner(),
         direction="maximize",

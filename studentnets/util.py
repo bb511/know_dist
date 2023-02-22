@@ -27,6 +27,25 @@ def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     return model
 
 
+def load_optimizer(choice: str, lr: float) -> keras.optimizers.Optimizer:
+    """Construct a keras optimiser object with a certain learning rate given a string
+    for the name of that optimiser.
+    """
+
+    switcher = {
+        "adam": lambda: keras.optimizers.Adam(learning_rate=lr),
+    }
+
+    optimiser = switcher.get(choice, lambda: None)()
+    if optimiser is None:
+        raise TypeError(
+            "Optimiser was not implemented yet! Please choose one of the "
+            "following: adam."
+        )
+
+    return optimiser
+
+
 def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.

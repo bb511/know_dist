@@ -61,8 +61,8 @@ class DeepSets_Equiv(keras.Model):
                 KL.Activation(activ),
                 PermutationEquivariantMean(nnodes_phi),
                 KL.Activation(activ),
-                # PermutationEquivariantMean(nnodes_phi),
-                # KL.Activation(activ),
+                PermutationEquivariantMean(nnodes_phi),
+                KL.Activation(activ),
             ]
         )
 
