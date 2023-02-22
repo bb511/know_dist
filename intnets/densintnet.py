@@ -26,7 +26,6 @@ class EffectsMLP(KL.Layer):
     """
 
     def __init__(self, neffects: int, nnodes: int, activ: str, l2: float, **kwargs):
-
         super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes)
         self._activ_1 = KL.Activation(activ)
@@ -62,7 +61,6 @@ class DynamicsMLP(KL.Layer):
     """
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, l2: float, **kwargs):
-
         super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes)
         self._activ_1 = KL.Activation(activ)
@@ -99,7 +97,6 @@ class AbstractMLP(KL.Layer):
     """
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, l2: float, **kwargs):
-
         super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes)
         self._activ_1 = KL.Activation(activ)
@@ -161,7 +158,6 @@ class DensIntNet(keras.Model):
         summation: bool = True,
         **kwargs,
     ):
-
         super(DensIntNet, self).__init__(name="dens_intnet", **kwargs)
 
         self.nconst = nconst
@@ -200,7 +196,6 @@ class DensIntNet(keras.Model):
         )
 
     def call(self, inputs, **kwargs):
-
         constituents = KL.Permute((2, 1), input_shape=inputs.shape[1:])(inputs)
 
         rec_matrix = self._tmul(constituents, self._receiver_matrix)

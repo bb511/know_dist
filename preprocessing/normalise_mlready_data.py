@@ -60,7 +60,6 @@ parser.add_argument(
 
 
 def main(args):
-
     print("Loading the files...\n")
     x_data_train = np.load(args.x_data_path_train, "r")
     y_data_train = np.load(args.y_data_path_train, "r")
@@ -80,8 +79,8 @@ def main(args):
     x_data = apply_normalisation(args.norm, x_data)
     plot_normalised_data(plots_path, x_data, y_data)
 
-    x_data_train = x_data[:y_data_train.shape[0]]
-    x_data_test = x_data[y_data_train.shape[0]:]
+    x_data_train = x_data[: y_data_train.shape[0]]
+    x_data_test = x_data[y_data_train.shape[0] :]
 
     x_data_val, x_data_test, y_data_val, y_data_test = train_test_split(
         x_data_test,

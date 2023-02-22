@@ -16,7 +16,6 @@ class UniversalStudent(keras.Model):
     """
 
     def __init__(self, node_size: int = 64, activ: str = "relu"):
-
         super(UniversalStudent, self).__init__(name="UniversalStudent")
 
         # Hyperparameters decided for universal student.

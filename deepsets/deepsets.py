@@ -61,8 +61,8 @@ class DeepSets_Equiv(keras.Model):
                 KL.Activation(activ),
                 PermutationEquivariantMean(nnodes_phi),
                 KL.Activation(activ),
-                PermutationEquivariantMean(nnodes_phi),
-                KL.Activation(activ),
+                # PermutationEquivariantMean(nnodes_phi),
+                # KL.Activation(activ),
             ]
         )
 
@@ -112,4 +112,3 @@ class DeepSets_Inv(keras.Model):
         rho_output = self.rho(sum_output)
 
         return rho_output
-

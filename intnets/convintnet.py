@@ -25,7 +25,6 @@ class EffectsMLP(KL.Layer):
     """
 
     def __init__(self, neffects: int, nnodes: int, activ: str, **kwargs):
-
         super(EffectsMLP, self).__init__(name="relational_model", **kwargs)
         self._hid_layer_1 = KL.Conv1D(nnodes, kernel_size=1, name=f"relnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"relnet_activ_1")
@@ -63,7 +62,6 @@ class DynamicsMLP(KL.Layer):
     """
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, **kwargs):
-
         super(DynamicsMLP, self).__init__(name="object_model", **kwargs)
         self._hid_layer_1 = KL.Conv1D(nnodes, kernel_size=1, name=f"objnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"objnet_activ_1")
@@ -102,7 +100,6 @@ class AbstractMLP(KL.Layer):
     """
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, **kwargs):
-
         super(AbstractMLP, self).__init__(name="classifier_model", **kwargs)
         self._hid_layer_1 = KL.Dense(nnodes, name=f"classnet_layer_1")
         self._activ_1 = KL.Activation(activ, name=f"classnet_activ_1")
@@ -160,7 +157,6 @@ class ConvIntNet(keras.Model):
         summation: bool = True,
         **kwargs,
     ):
-
         super(ConvIntNet, self).__init__(name="conv_intnet", **kwargs)
 
         self.nconst = nconst
@@ -200,7 +196,6 @@ class ConvIntNet(keras.Model):
         )
 
     def call(self, inputs, **kwargs):
-
         norm_constituents = self._batchnorm(inputs)
         norm_constituents = KL.Permute((2, 1), input_shape=norm_constituents.shape[1:])(
             norm_constituents

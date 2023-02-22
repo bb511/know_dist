@@ -14,6 +14,7 @@ from tensorflow import keras
 
 
 import absl.logging
+
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
@@ -29,13 +30,14 @@ def main(args):
     jet_data = Data.shuffled(**args["data_hyperparams"])
 
     study = optuna.create_study(
-        study_name="deepsets_3layer",
+        study_name="2layer_minimal",
         sampler=optuna.samplers.TPESampler(),
         pruner=optuna.pruners.SuccessiveHalvingPruner(),
-        direction='maximize',
-        storage=f'sqlite:///{outdir}/test.db',
-        load_if_exists=True)
-    study.optimize(Objective(jet_data, args), n_trials=200)
+        direction="maximize",
+        storage=f"sqlite:///{outdir}/deepsets_equiv.db",
+        load_if_exists=True,
+    )
+    study.optimize(Objective(jet_data, args), n_trials=250)
 
 
 class Objective:
@@ -43,43 +45,47 @@ class Objective:
         self.jet_data = jet_data
         self.args = args
         self.training_hyperparams = {
-            "epochs":      args["training_hyperparams"]["epochs"],
+            "epochs": args["training_hyperparams"]["epochs"],
             "valid_split": args["training_hyperparams"]["valid_split"],
         }
         self.compilation_hyperparams = {
-            "loss":     args["compilation"]["loss"],
-            "metrics":  args["compilation"]["metrics"],
+            "loss": args["compilation"]["loss"],
+            "metrics": args["compilation"]["metrics"],
         }
         self.model_hyperparams = {}
 
     def __call__(self, trial):
         self.training_hyperparams.update(
-        {
-            "batch":  trial.suggest_categorical(
-                "bs", self.args["training_hyperparams"]["batch"]
+            {
+                "batch": trial.suggest_categorical(
+                    "bs", self.args["training_hyperparams"]["batch"]
                 ),
-            "lr":     trial.suggest_float(
-                "lr", *self.args["training_hyperparams"]["lr"], log=True
+                "lr": trial.suggest_float(
+                    "lr", *self.args["training_hyperparams"]["lr"], log=True
                 ),
-        })
-        self.compilation_hyperparams.update({
-            "optimizer": trial.suggest_categorical(
-                "optim", self.args["compilation"]["optimizer"]
+            }
+        )
+        self.compilation_hyperparams.update(
+            {
+                "optimizer": trial.suggest_categorical(
+                    "optim", self.args["compilation"]["optimizer"]
                 ),
-        })
+            }
+        )
 
         self.model_hyperparams.update(
-        {
-            "nnodes_phi": trial.suggest_categorical(
-                "nphi", self.args["model_hyperparams"]["nnodes_phi"]
+            {
+                "nnodes_phi": trial.suggest_categorical(
+                    "nphi", self.args["model_hyperparams"]["nnodes_phi"]
                 ),
-            "nnodes_rho": trial.suggest_categorical(
-                "nrho", self.args["model_hyperparams"]["nnodes_rho"]
+                "nnodes_rho": trial.suggest_categorical(
+                    "nrho", self.args["model_hyperparams"]["nnodes_rho"]
                 ),
-            "activ":      trial.suggest_categorical(
-                "activ", self.args["model_hyperparams"]["activ"]
+                "activ": trial.suggest_categorical(
+                    "activ", self.args["model_hyperparams"]["activ"]
                 ),
-        })
+            }
+        )
 
         model = dsutil.choose_deepsets(
             self.args["deepsets_type"],
@@ -87,7 +93,7 @@ class Objective:
             self.jet_data.nfeat,
             self.model_hyperparams,
             self.compilation_hyperparams,
-            self.training_hyperparams['lr'],
+            self.training_hyperparams["lr"],
         )
         model.summary(expand_nested=True)
 
@@ -114,9 +120,9 @@ class Objective:
 
         # fprs = []
         # for idx in range(y_pred.shape[1]):
-            # fpr, tpr, thr = sklearn.metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
-            # tpr_idx = find_nearest(tpr, 0.8)
-            # fprs.append(fpr[tpr_idx])
+        # fpr, tpr, thr = sklearn.metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
+        # tpr_idx = find_nearest(tpr, 0.8)
+        # fprs.append(fpr[tpr_idx])
 
         accuracy = tf.keras.metrics.CategoricalAccuracy()
         accuracy.update_state(self.jet_data.va_target, y_pred)
@@ -137,6 +143,7 @@ def get_tensorflow_callbacks():
 
 
 class OptunaPruner(keras.callbacks.Callback):
+    """This is useless since an implementation by the optuna ppl exists already xDD."""
     def __init__(self, trial):
         super(OptunaPruner, self).__init__()
         self.trial = trial

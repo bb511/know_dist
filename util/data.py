@@ -29,7 +29,6 @@ class Data:
         jet_seed: int = None,
         seed: int = None,
     ):
-
         self._fpath = fpath
         self._fname = fname
 
@@ -71,6 +70,7 @@ class Data:
         cls._shuffle_constituents(data.tr_data, tr_seeds, "training")
         cls._shuffle_constituents(data.va_data, va_seeds, "validation")
         cls._shuffle_constituents(data.te_data, te_seeds, "testing")
+        print("\n--------------------")
 
         return data
 
@@ -96,7 +96,7 @@ class Data:
             shuffling = np.random.RandomState(seed=seed).permutation(data.shape[1])
             data[jet_idx, :] = data[jet_idx, shuffling]
 
-        print(tcols.OKGREEN + f"Shuffled the {dtype} data! \U0001F0CF\n" + tcols.ENDC)
+        print(tcols.OKGREEN + f"Shuffled the {dtype} data! \U0001F0CF" + tcols.ENDC)
 
         return data
 

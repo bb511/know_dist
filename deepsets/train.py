@@ -11,6 +11,7 @@ from tensorflow import keras
 keras.utils.set_random_seed(123)
 
 import absl.logging
+
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
@@ -46,7 +47,7 @@ def build_model(args: dict, data: Data):
         data.nfeat,
         args["model_hyperparams"],
         args["compilation"],
-        args["training_hyperparams"]['lr'],
+        args["training_hyperparams"]["lr"],
     )
     model.summary(expand_nested=True)
 

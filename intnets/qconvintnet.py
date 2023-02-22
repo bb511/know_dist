@@ -22,7 +22,6 @@ class EffectsMLP(KL.Layer):
     """
 
     def __init__(self, neffects: int, nnodes: int, activ: str, nbits: int, **kwargs):
-
         super(EffectsMLP, self).__init__(name="fr", **kwargs)
         self._input_layer = qkeras.QConv1D(
             nnodes,
@@ -72,7 +71,6 @@ class DynamicsMLP(KL.Layer):
     """
 
     def __init__(self, ndynamics: int, nnodes: int, activ: str, nbits: int, **kwargs):
-
         super(DynamicsMLP, self).__init__(name="fo", **kwargs)
         self._input_layer = qkeras.QConv1D(
             nnodes,
@@ -122,7 +120,6 @@ class AbstractMLP(KL.Layer):
     """
 
     def __init__(self, nabs_quant: int, nnodes: int, activ: str, nbits: int, **kwargs):
-
         super(AbstractMLP, self).__init__(name="fc", **kwargs)
         self._input_layer = qkeras.QDense(
             nnodes, kernel_quantizer=nbits, bias_quantizer=nbits, name=f"abs_layer_1"

@@ -27,7 +27,7 @@ def choose_deepsets(
 
     switcher = {
         "equivariant": lambda: DeepSets_Equiv(**model_hyperparams),
-        "invariant": lambda: DeepSets_Inv(**model_hyperparams)
+        "invariant": lambda: DeepSets_Inv(**model_hyperparams),
     }
 
     model = switcher.get(deepsets_type, lambda: None)()
@@ -46,6 +46,7 @@ def choose_deepsets(
 
     return model
 
+
 def load_optimizer(choice: str, lr: float) -> keras.optimizers.Optimizer:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.
@@ -59,20 +60,23 @@ def load_optimizer(choice: str, lr: float) -> keras.optimizers.Optimizer:
 
     return optimiser
 
+
 def choose_loss(choice: str, from_logits: bool = True) -> keras.losses.Loss:
     """Construct a keras optimiser object with a certain learning rate given a string
     for the name of that optimiser.
     """
 
     switcher = {
-        "categorical_crossentropy": \
-            lambda: keras.losses.CategoricalCrossentropy(from_logits=from_logits),
+        "categorical_crossentropy": lambda: keras.losses.CategoricalCrossentropy(
+            from_logits=from_logits
+        ),
         "softmax_with_crossentropy": lambda: tf.nn.softmax_cross_entropy_with_logits,
     }
 
     loss = switcher.get(choice, lambda: None)()
 
     return loss
+
 
 def print_training_attributes(model: keras.models.Model, args: dict):
     """Prints model attributes so all interesting infromation is printed."""
