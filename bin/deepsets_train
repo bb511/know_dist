@@ -9,10 +9,6 @@ sys.path.append("..")
 from deepsets.train import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
-parser.add_argument("--jet_seed", type=int, default=123,
-                    help="Seed to use in shuffling the jets.")
-parser.add_argument("--seed", type=int, default=127,
-                    help="Seed to use in any random thing that is done.")
 parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
 parser.add_argument("--outdir", type=str, default="test",

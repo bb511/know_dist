@@ -30,7 +30,7 @@ def nice_print_dictionary(dictionary_name: str, dictionary: dict):
         print(f"{key}: {dictionary[key]}")
 
 
-def device_info(max_gpu_memory: int):
+def device_info():
     """Prints what device the tensorflow network will run on."""
     gpu_devices = tf.config.list_physical_devices("GPU")
     if gpu_devices:

@@ -1,13 +1,17 @@
 # Determined AI DeepSets Trial Class for hyperparameter optimisation.
 # See the deepsets.py file for detailed information about the architecture.
 
+import os
 import numpy as np
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import optuna
 import sklearn
 import tensorflow as tf
 import tensorflow.keras.layers as KL
 from tensorflow import keras
+
 
 import absl.logging
 absl.logging.set_verbosity(absl.logging.ERROR)
@@ -32,6 +36,7 @@ def main(args):
         storage=f'sqlite:///{outdir}/test.db',
         load_if_exists=True)
     study.optimize(Objective(jet_data, args), n_trials=200)
+
 
 class Objective:
     def __init__(self, jet_data: Data, args: dict):
@@ -118,6 +123,7 @@ class Objective:
 
         return accuracy.result().numpy()
 
+
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""
     early_stopping = keras.callbacks.EarlyStopping(
@@ -128,6 +134,7 @@ def get_tensorflow_callbacks():
     )
 
     return [early_stopping, learning]
+
 
 class OptunaPruner(keras.callbacks.Callback):
     def __init__(self, trial):

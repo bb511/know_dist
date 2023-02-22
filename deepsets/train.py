@@ -23,7 +23,7 @@ tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
-    util.util.device_info(max_gpu_memory=8192)
+    util.util.device_info()
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
@@ -35,6 +35,7 @@ def main(args):
     print(tcols.OKGREEN + "\n\n\nSAVING MODEL TO: " + tcols.ENDC, outdir)
     model.save(outdir, save_format="tf")
     plot_model_performance(history.history, outdir)
+
 
 def build_model(args: dict, data: Data):
     """Instantiate the model with chosen hyperparams and return it."""
@@ -50,6 +51,7 @@ def build_model(args: dict, data: Data):
     model.summary(expand_nested=True)
 
     return model
+
 
 def train_model(model, data, args: dict):
     """Fit the model to the data."""
@@ -69,6 +71,7 @@ def train_model(model, data, args: dict):
 
     return history
 
+
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
     util.plots.loss_vs_epochs(outdir, history["loss"], history["val_loss"])
@@ -77,6 +80,7 @@ def plot_model_performance(history: dict, outdir: str):
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
     )
+
 
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""

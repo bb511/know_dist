@@ -3,6 +3,8 @@
 import os
 import numpy as np
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 from tensorflow import keras
 
@@ -18,8 +20,6 @@ from util.data import Data
 from util.terminal_colors import tcols
 from . import util as intutil
 
-# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 tf.keras.backend.set_floatx("float64")
 
 
@@ -28,9 +28,7 @@ def main(args):
     outdir = util.util.make_output_directory("trained_intnets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data_hp = args["data_hyperparams"]
-    util.util.nice_print_dictionary("DATA DEETS", data_hp)
-    jet_data = Data.shuffled(**data_hp, jet_seed=args["jet_seed"], seed=args["seed"])
+    jet_data = Data.shuffled(**args["data_hyperparams"])
 
     model = intutil.choose_intnet(
         args["intnet_type"],

@@ -50,21 +50,20 @@ if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
-    "data_folder":       args.data_folder,
-    "norm":              args.norm,
-    "train_events":      args.train_events,
-    "test_events":       0,
-    "pt_min":            "2.0",
-    "nconstituents":     "16",
-    "feature_selection": "jedinet",
-    "flag":              "",
+    "fpath":       '../../ki_data/mlready',
+    "fname":       'jet_images_c150_pt2.0_jedinet_robust',
+    "train_events": -1,
+    "val_events":   0,
+    "test_events":  0,
+    "jet_seed":     123,
+    "seed":         127,
 }
 
 training_hyperparams = {
-    "batch":        args.batch,
-    "epochs":       args.epochs,
-    "lr":           args.lr,
-    "valid_split":  args.valid_split,
+    "batch":        128,
+    "epochs":       100,
+    "lr":           0.001,
+    "valid_split":  0.3,
 }
 
 intnet_compilation_hyperparams = {

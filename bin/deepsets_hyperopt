@@ -18,7 +18,7 @@ if args.gpu:
 
 data_hyperparams = {
     "fpath":       '../../ki_data/mlready',
-    "fname":       'x_jet_images_c150_pt2.0_jedinet_robust',
+    "fname":       'jet_images_c150_pt2.0_jedinet_robust',
     "train_events": -1,
     "val_events":   -1,
     "test_events":  0,
