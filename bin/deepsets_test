@@ -9,7 +9,7 @@ sys.path.append("..")
 from deepsets.test import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
-parser.add_argument("--model_dir", type=str, default="./trained_intnets/test",
+parser.add_argument("--model_dir", type=str, default="./trained_deepsets/test",
                     help="The output directory name.")
 parser.add_argument("--gpu", type=str, default="0",
                     help="Sets the number of the GPU to run on.")
@@ -18,17 +18,12 @@ args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-data_hyperparams = {
-    "train_events":      0,
-    "val_events":        0,
-    "test_events":       -1,
-    "seed":             318,
-    "jet_seed":         123,
-}
+data_hyperparams = {}
 
 args = {
     "data_hyperparams": data_hyperparams,
     "model_dir":        args.model_dir,
+    "const_seed":       318
 }
 
 main(args)

@@ -26,10 +26,9 @@ def main(args):
     outdir = util.util.make_output_directory("trained_students", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data = Data.shuffled(**args["data_hyperparams"])
+    data = Data(**args["data_hyperparams"])
 
     print("Importing the teacher network model...")
-    print(args["teacher"])
     teacher = keras.models.load_model(args["teacher"], compile=False)
 
     print(f"Instantiating the student of type: {args['student_type']}...")
@@ -64,13 +63,13 @@ def distill_knowledge(args, distiller, data):
     print("====================")
     stutil.print_training_attributes(args["training_hyperparams"], distiller)
     history = distiller.fit(
-        data.tr_data,
-        data.tr_target,
+        data.train_data,
+        data.train_target,
         epochs=args["training_hyperparams"]["epochs"],
         batch_size=args["training_hyperparams"]["batch"],
         verbose=2,
         callbacks=get_callbacks(),
-        validation_split=0.3,
+        validation_split=args["training_hyperparams"]["valid_split"],
         shuffle=True,
     )
 

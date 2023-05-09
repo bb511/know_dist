@@ -7,7 +7,8 @@ from tensorflow import keras
 
 from .jedidnn_student import JEDIstudent
 from .universal_student import UniversalStudent
-from .deepsets_student import DeepSets
+from .deepsets_student import DeepSets_Equiv
+from .deepsets_student import DeepSets_Inv
 from util.terminal_colors import tcols
 
 
@@ -16,7 +17,8 @@ def choose_student(student_type: str, hyperparams: dict) -> keras.models.Model:
     switcher = {
         "jedidnn": lambda: JEDIstudent(**hyperparams),
         "universal": lambda: UniversalStudent(**hyperparams),
-        "deepsets": lambda: DeepSets(**hyperparams),
+        "deepsets_equiv": lambda: DeepSets_Equiv(**hyperparams),
+        "deepsets_inv": lambda: DeepSets_Inv(**hyperparams),
     }
 
     model = switcher.get(student_type, lambda: None)()

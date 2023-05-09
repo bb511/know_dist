@@ -6,15 +6,12 @@ import sys
 import os
 sys.path.append("..")
 
-from studentnets.train import main
+from studentnets.hyperparam_optimisation import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
 parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
-parser.add_argument("--outdir", type=str, default="test",
-                    help="The output directory name.")
 args = parser.parse_args()
-
 
 if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -25,9 +22,9 @@ data_hyperparams = {
 }
 
 training_hyperparams = {
-    "batch":        64,
-    "epochs":       300,
-    "lr":           0.0008542527343517243,
+    "batch":        [64, 128, 256],
+    "epochs":       100,
+    "lr":           [0.0001, 0.001],
     "valid_split":  0.2,
 }
 
@@ -38,21 +35,21 @@ student_hyperparams = {
 }
 
 distiller_hyperparams = {
-    "optimizer":       'adam',
+    "optimizer":       ['adam'],
     "student_loss_fn": 'softmax_with_crossentropy',
     "distill_loss_fn": 'kl_divergence',
-    "alpha":           0.3,
-    "temperature":     1,
+    "alpha":           [0.1, 1, 0.1],
+    "temperature":     [1, 100],
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "teacher":              './trained_deepsets/deepsets_3layer_best',
     "student_type":         'deepsets_equiv',
     "student":              student_hyperparams,
     "distill":              distiller_hyperparams,
-    "outdir":               args.outdir,
+    "teacher":              'trained_deepsets/deepsets_3layer_best',
+    "outdir":               'deepsets_deepsets_hyperopt',
 }
 
 main(args)

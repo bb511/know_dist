@@ -8,7 +8,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 from tensorflow import keras
 
-keras.utils.set_random_seed(123)
+# keras.utils.set_random_seed(123)
 
 import absl.logging
 
@@ -28,7 +28,7 @@ def main(args):
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data = Data.shuffled(**args["data_hyperparams"])
+    data = Data(**args["data_hyperparams"])
 
     model = build_model(args, data)
     history = train_model(model, data, args)
@@ -36,7 +36,6 @@ def main(args):
     print(tcols.OKGREEN + "\n\n\nSAVING MODEL TO: " + tcols.ENDC, outdir)
     model.save(outdir, save_format="tf")
     plot_model_performance(history.history, outdir)
-
 
 def build_model(args: dict, data: Data):
     """Instantiate the model with chosen hyperparams and return it."""
@@ -53,15 +52,14 @@ def build_model(args: dict, data: Data):
 
     return model
 
-
 def train_model(model, data, args: dict):
     """Fit the model to the data."""
     print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
     dsutil.print_training_attributes(model, args)
 
     history = model.fit(
-        data.tr_data,
-        data.tr_target,
+        data.train_data,
+        data.train_target,
         epochs=args["training_hyperparams"]["epochs"],
         batch_size=args["training_hyperparams"]["batch"],
         verbose=2,
@@ -72,7 +70,6 @@ def train_model(model, data, args: dict):
 
     return history
 
-
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
     util.plots.loss_vs_epochs(outdir, history["loss"], history["val_loss"])
@@ -81,7 +78,6 @@ def plot_model_performance(history: dict, outdir: str):
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
     )
-
 
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""

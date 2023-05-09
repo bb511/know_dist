@@ -19,19 +19,14 @@ if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 data_hyperparams = {
-    "fpath":       '../../ki_data/mlready',
-    "fname":       'jet_images_c150_pt2.0_jedinet_robust',
-    "train_events": -1,
-    "val_events":   0,
-    "test_events":  0,
-    "jet_seed":     123,
-    "seed":         127,
+    "fpath":         '../../ki_data/mlready',
+    "fname":         'jet_images_c150_minpt2.0_jedinet_robust',
 }
 
 training_hyperparams = {
+    "epochs":       300,
     "batch":        64,
-    "epochs":       100,
-    "lr":           0.0006853157773936255,
+    "lr":           0.0008895478312688979,
     "valid_split":  0.2,
 }
 
@@ -42,15 +37,15 @@ compilation_hyperparams = {
 }
 
 model_hyperparams = {
-    "nnodes_phi": 64,
-    "nnodes_rho": 32,
-    "activ": 'selu',
+    "nnodes_phi": 8,
+    "nnodes_rho": 16,
+    "activ": 'relu',
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "deepsets_type":        "equivariant",
+    "deepsets_type":        "invariant",
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
     "outdir":               args.outdir,
