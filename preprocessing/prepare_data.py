@@ -46,15 +46,15 @@ parser.add_argument(
 def main(args):
     data_file_paths = get_file_paths(args.data_file_dir)
     data = h5py.File(data_file_paths[0])
-    x_data = data['jetConstituentList']
-    y_data = data['jets'][:, -6:-1]
+    x_data = data["jetConstituentList"]
+    y_data = data["jets"][:, -6:-1]
 
     print(tcols.HEADER + "Importing files:" + tcols.ENDC)
     for file_path in data_file_paths[1:]:
         print(file_path)
         data = h5py.File(file_path)
-        add_x_data = data['jetConstituentList']
-        add_y_data = data['jets'][:, -6:-1]
+        add_x_data = data["jetConstituentList"]
+        add_y_data = data["jets"][:, -6:-1]
         x_data = np.concatenate((x_data, add_x_data), axis=0)
         y_data = np.concatenate((y_data, add_y_data), axis=0)
     print("Data is imported! \U0001F370 \n")

@@ -72,27 +72,26 @@ class Objective:
                 ),
                 "alpha": trial.suggest_float(
                     "alpha",
-                    self.args['distill']['alpha'][0],
-                    self.args['distill']['alpha'][1],
-                    step=self.args['distill']['alpha'][2],
+                    self.args["distill"]["alpha"][0],
+                    self.args["distill"]["alpha"][1],
+                    step=self.args["distill"]["alpha"][2],
                 ),
                 "temperature": trial.suggest_int(
-                    "temperature", *self.args['distill']['temperature'],
+                    "temperature",
+                    *self.args["distill"]["temperature"],
                 ),
             }
         )
 
-        teacher = keras.models.load_model(self.args['teacher'], compile=False)
-        student = stutil.choose_student(self.args['student_type'], self.args['student'])
+        teacher = keras.models.load_model(self.args["teacher"], compile=False)
+        student = stutil.choose_student(self.args["student_type"], self.args["student"])
 
         distiller = self.build_distiller(student, teacher)
 
         print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
 
         callbacks = self.get_tensorflow_callbacks()
-        callbacks.append(
-            optuna.integration.TFKerasPruningCallback(trial, "val_acc")
-        )
+        callbacks.append(optuna.integration.TFKerasPruningCallback(trial, "val_acc"))
 
         stutil.print_training_attributes(self.args["training_hyperparams"], distiller)
         distiller.fit(
@@ -121,8 +120,7 @@ class Objective:
         distillation_params = {}
         distillation_params.update(self.distillation_params)
         distillation_params["optimizer"] = stutil.load_optimizer(
-            distillation_params["optimizer"],
-            self.training_hyperparams["lr"]
+            distillation_params["optimizer"], self.training_hyperparams["lr"]
         )
         distiller = Distiller(student, teacher)
         distiller.compile(**distillation_params)
@@ -141,6 +139,7 @@ class Objective:
 
 class OptunaPruner(keras.callbacks.Callback):
     """This is useless since an implementation by the optuna ppl exists already xDD."""
+
     def __init__(self, trial):
         super(OptunaPruner, self).__init__()
         self.trial = trial

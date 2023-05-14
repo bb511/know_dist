@@ -138,6 +138,7 @@ def get_tensorflow_callbacks():
 
 class OptunaPruner(keras.callbacks.Callback):
     """This is useless since an implementation by the optuna ppl exists already xDD."""
+
     def __init__(self, trial):
         super(OptunaPruner, self).__init__()
         self.trial = trial

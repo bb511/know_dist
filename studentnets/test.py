@@ -9,6 +9,7 @@ import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 import tensorflow as tf
 from tensorflow import keras
+
 # keras.utils.set_random_seed(0)
 
 import util.util
@@ -56,6 +57,7 @@ def main(args):
     util.plots.dnn_output(plots_dir, y_pred)
     util.plots.roc_curves(plots_dir, y_pred, jet_data.test_target)
     print(tcols.OKGREEN + "\nPlotted results! \U0001F4C8\U00002728" + tcols.ENDC)
+
 
 def shuffle_constituents(data: np.ndarray, seeds: np.ndarray) -> np.ndarray:
     """Shuffles the constituents based on an array of seeds.

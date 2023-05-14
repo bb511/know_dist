@@ -15,7 +15,8 @@ class EquivariantMaxQuantised(KL.Layer):
         super(PermutationEquivariantMax, self).__init__()
         self.gamma = qkeras.QDense(dim, kernel_quantizer=nbits, bias_quantizer=nbits)
         self.lambd = qkeras.QDense(
-            dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits)
+            dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits
+        )
 
     def call(self, inputs: np.ndarray, **kwargs):
         x_maximum = tf.reduce_max(inputs, axis=1, keepdims=True)
@@ -25,6 +26,7 @@ class EquivariantMaxQuantised(KL.Layer):
 
         return x
 
+
 class EquivariantMeanQuantised(KL.Layer):
     """Permutation equivariant neural network layer with mean operation."""
 
@@ -32,7 +34,8 @@ class EquivariantMeanQuantised(KL.Layer):
         super(EquivariantMean, self).__init__()
         self.gamma = KL.QDense(dim, kernel_quantizer=nbits, bias_quantizer=nbits)
         self.lambd = KL.QDense(
-            dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits)
+            dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits
+        )
 
     def call(self, inputs: np.ndarray, **kwargs):
         x_mean = tf.reduce_mean(inputs, axis=1, keepdims=True)
@@ -41,6 +44,7 @@ class EquivariantMeanQuantised(KL.Layer):
         x = x - x_mean
 
         return x
+
 
 class DeepSetsEquivQuantised(keras.Model):
     """Deep sets permutation equivariant graph network https://arxiv.org/abs/1703.06114.
@@ -58,7 +62,6 @@ class DeepSetsEquivQuantised(keras.Model):
         activ: str = "elu",
         nbits: int = 8,
     ):
-
         super(DeepSetsEquivQuantised, self).__init__(name="DeepSetsEquivQuantised")
         self.nclasses = 5
         nbits = format_quantiser(nbits)
@@ -81,7 +84,7 @@ class DeepSetsEquivQuantised(keras.Model):
                 qkeras.QActivation(activ),
                 qkeras.QDense(
                     self.nclasses, kernel_quantizer=nbits, bias_quantizer=nbits
-                )
+                ),
             ]
         )
 
@@ -91,6 +94,7 @@ class DeepSetsEquivQuantised(keras.Model):
         rho_output = self.rho(sum_output)
 
         return rho_output
+
 
 class DeepSetsInvQuantised(keras.Model):
     """Deep sets permutation invariant graph network https://arxiv.org/abs/1703.06114.
@@ -106,7 +110,7 @@ class DeepSetsInvQuantised(keras.Model):
         nnodes_phi: int = 32,
         nnodes_rho: int = 16,
         activ: str = "elu",
-        nbits: int  = 8
+        nbits: int = 8,
     ):
         super(DeepSetsInvQuantised, self).__init__(name="DeepSetsInvQuantised")
         self.nclasses = 5
@@ -130,7 +134,7 @@ class DeepSetsInvQuantised(keras.Model):
                 qkeras.QActivation(activ),
                 qkeras.QDense(
                     self.nclasses, kernel_quantizer=nbits, bias_quantizer=nbits
-                )
+                ),
             ]
         )
 
@@ -141,6 +145,7 @@ class DeepSetsInvQuantised(keras.Model):
 
         return rho_output
 
+
 def format_quantiser(self, nbits: int):
     """Format the quantisation of the ml floats in a QKeras way."""
     if nbits == 1:
@@ -149,6 +154,7 @@ def format_quantiser(self, nbits: int):
         self.nbits = "ternary(alpha=1)"
     else:
         self.nbits = f"quantized_bits({nbits}, 0, alpha=1)"
+
 
 def format_qactivation(self, activation: str, nbits: int) -> str:
     """Format the activation function strings in a QKeras friendly way."""

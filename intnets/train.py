@@ -47,7 +47,7 @@ def build_model(data, args):
         data.nfeat,
         args["intnet_hyperparams"],
         args["intnet_compilation"],
-        args["training_hyperparams"]["lr"]
+        args["training_hyperparams"]["lr"],
     )
     model.summary(expand_nested=True)
 

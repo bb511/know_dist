@@ -65,7 +65,7 @@ parser.add_argument(
     "--shuffle_seed",
     type=int,
     default=123,
-    help="Seed for shuffling the jets in the data set."
+    help="Seed for shuffling the jets in the data set.",
 )
 parser.add_argument(
     "--output_dir", type=str, required=True, help="Path to the output folder."
@@ -95,15 +95,18 @@ def main(args):
     plots.constituent_number(plots_path, x_data)
     plots.normalised_data(plots_path, x_data, y_data)
 
-    x_data_train = x_data[:y_data_train.shape[0]]
-    x_data_test = x_data[y_data_train.shape[0]:]
+    x_data_train = x_data[: y_data_train.shape[0]]
+    x_data_test = x_data[y_data_train.shape[0] :]
     del x_data
 
     y_category = np.argwhere(y_data_test == 1)[:, 1]
     val_idx, test_idx = next(
-        StratifiedKFold(n_splits=int(1/args.val_split)).split(x_data_test, y_category)
+        StratifiedKFold(n_splits=int(1 / args.val_split)).split(x_data_test, y_category)
     )
-    x_data_val, y_data_val = x_data_test[val_idx], y_data_test[val_idx],
+    x_data_val, y_data_val = (
+        x_data_test[val_idx],
+        y_data_test[val_idx],
+    )
     x_data_test, y_data_test = x_data_test[test_idx], y_data_test[test_idx]
 
     print("Shuffling jets...")
@@ -125,7 +128,7 @@ def main(args):
     tr_seeds = rng.integers(low=0, high=10000, size=ntrain_events)
     va_seeds = rng.integers(low=0, high=10000, size=nvalid_events)
     te_seeds = rng.integers(low=0, high=10000, size=ntest_events)
-    
+
     x_data_train = shuffle_constituents(x_data_train, tr_seeds)
     x_data_val = shuffle_constituents(x_data_val, va_seeds)
     x_data_test = shuffle_constituents(x_data_test, te_seeds)
@@ -181,6 +184,7 @@ def shuffle_constituents(data: np.ndarray, seeds: np.ndarray) -> np.ndarray:
         data[jet_idx, :] = data[jet_idx, shuffling]
 
     return data
+
 
 def format_output_filename(input_name: str, feats_sel: str, norm_name: str) -> str:
     """Formats the name of the output file given a certain convention so the data

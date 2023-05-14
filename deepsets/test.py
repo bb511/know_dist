@@ -44,10 +44,11 @@ def main(args):
     print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)
 
     print(tcols.OKGREEN + "\nSaving the model weights..." + tcols.ENDC)
-    weights_file_path = os.path.join(args["model_dir"], 'model_weights.h5')
-    model.save_weights(weights_file_path, save_format='h5')
+    weights_file_path = os.path.join(args["model_dir"], "model_weights.h5")
+    model.save_weights(weights_file_path, save_format="h5")
     print(tcols.OKGREEN + "Saved predictions array..." + tcols.ENDC)
     y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
+
 
 def import_model(args: dict, hyperparams: dict):
     """Imports the model from a specified path. Model is saved in tf format."""
@@ -57,6 +58,7 @@ def import_model(args: dict, hyperparams: dict):
     model.summary(expand_nested=True)
 
     return model
+
 
 def shuffle_constituents(data: np.ndarray, args: dict) -> np.ndarray:
     """Shuffles the constituents based on an array of seeds.

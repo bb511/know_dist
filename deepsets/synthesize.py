@@ -9,6 +9,7 @@ tf.random.set_seed(12)
 from tensorflow import keras
 import tensorflow.keras.layers as KL
 
+
 def main(args):
     util.util.device_info()
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
@@ -24,16 +25,19 @@ def main(args):
     plot_model_performance(history.history, outdir)
 
     print(tcols.OKGREEN + "\n\n\nSYNTHESIZING MODEL\n" + tcols.ENDC)
-    config = hls4ml.utils.config_from_keras_model(model, granularity='name')
+    config = hls4ml.utils.config_from_keras_model(model, granularity="name")
     # config['LayerName']['dense_1']['ReuseFactor']= 2
     print(f"---------Configuration--------")
     # plotting.print_dict(config)
-    hls_model = hls4ml.converters.convert_from_keras_model(model, hls_config=config,output_dir=outname)
+    hls_model = hls4ml.converters.convert_from_keras_model(
+        model, hls_config=config, output_dir=outname
+    )
     hls_model.compile()
     # hls_model.write()
     hls_model.build()
 
     # hls4ml.utils.plot_model(hls_model, show_shapes=True, show_precision=True, to_file=None)
+
 
 def train_model(model, data, args: dict):
     """Fit the model to the data."""
@@ -53,6 +57,7 @@ def train_model(model, data, args: dict):
 
     return history
 
+
 def plot_model_performance(history: dict, outdir: str):
     """Does different plots that show the performance of the trained model."""
     util.plots.loss_vs_epochs(outdir, history["loss"], history["val_loss"])
@@ -61,6 +66,7 @@ def plot_model_performance(history: dict, outdir: str):
         history["categorical_accuracy"],
         history["val_categorical_accuracy"],
     )
+
 
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""
@@ -73,12 +79,13 @@ def get_tensorflow_callbacks():
 
     return [early_stopping, learning]
 
+
 def print_dict(d, indent=0):
-    align=20
+    align = 20
     for key, value in d.items():
-        print('  ' * indent + str(key), end='')
+        print("  " * indent + str(key), end="")
         if isinstance(value, dict):
             print()
-            print_dict(value, indent+1)
+            print_dict(value, indent + 1)
         else:
-            print(':' + ' ' * (20 - len(key) - 2 * indent) + str(value))
+            print(":" + " " * (20 - len(key) - 2 * indent) + str(value))
