@@ -12,7 +12,7 @@ class EquivariantMaxQuantised(KL.Layer):
     """Permutation equivariant neural network layer with max operation."""
 
     def __init__(self, dim, nbits):
-        super(PermutationEquivariantMax, self).__init__()
+        super(EquivariantMaxQuantised, self).__init__()
         self.gamma = qkeras.QDense(dim, kernel_quantizer=nbits, bias_quantizer=nbits)
         self.lambd = qkeras.QDense(
             dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits
@@ -31,9 +31,9 @@ class EquivariantMeanQuantised(KL.Layer):
     """Permutation equivariant neural network layer with mean operation."""
 
     def __init__(self, dim, nbits):
-        super(EquivariantMean, self).__init__()
-        self.gamma = KL.QDense(dim, kernel_quantizer=nbits, bias_quantizer=nbits)
-        self.lambd = KL.QDense(
+        super(EquivariantMeanQuantised, self).__init__()
+        self.gamma = qkeras.QDense(dim, kernel_quantizer=nbits, bias_quantizer=nbits)
+        self.lambd = qkeras.QDense(
             dim, use_bias=False, kernel_quantizer=nbits, bias_quantizer=nbits
         )
 
@@ -53,6 +53,7 @@ class DeepSetsEquivQuantised(keras.Model):
         nnodes_phi: Number of nodes in the layers of the phi neural network.
         nnodes_rho: Number of nodes in the layers of the rho neural network.
         activ: Activation function to use between the dense layers.
+        nbits: Bit width to quantised the layers to.
     """
 
     def __init__(
@@ -82,9 +83,7 @@ class DeepSetsEquivQuantised(keras.Model):
             [
                 qkeras.QDense(nnodes_rho, kernel_quantizer=nbits, bias_quantizer=nbits),
                 qkeras.QActivation(activ),
-                qkeras.QDense(
-                    self.nclasses, kernel_quantizer=nbits, bias_quantizer=nbits
-                ),
+                KL.Dense(self.nclasses),
             ]
         )
 
@@ -103,6 +102,7 @@ class DeepSetsInvQuantised(keras.Model):
         nnodes_phi: Number of nodes in the layers of the phi neural network.
         nnodes_rho: Number of nodes in the layers of the rho neural network.
         activ: Activation function to use between the dense layers.
+        nbits: Bit width to quantised the layers to.
     """
 
     def __init__(
@@ -132,9 +132,7 @@ class DeepSetsInvQuantised(keras.Model):
             [
                 qkeras.QDense(nnodes_rho, kernel_quantizer=nbits, bias_quantizer=nbits),
                 qkeras.QActivation(activ),
-                qkeras.QDense(
-                    self.nclasses, kernel_quantizer=nbits, bias_quantizer=nbits
-                ),
+                KL.Dense(self.nclasses),
             ]
         )
 
@@ -146,16 +144,16 @@ class DeepSetsInvQuantised(keras.Model):
         return rho_output
 
 
-def format_quantiser(self, nbits: int):
+def format_quantiser(nbits: int):
     """Format the quantisation of the ml floats in a QKeras way."""
     if nbits == 1:
-        self.nbits = "binary(alpha=1)"
+        return "binary(alpha=1)"
     elif nbits == 2:
-        self.nbits = "ternary(alpha=1)"
+        return "ternary(alpha=1)"
     else:
-        self.nbits = f"quantized_bits({nbits}, 0, alpha=1)"
+        return f"quantized_bits({nbits}, 0, alpha=1)"
 
 
-def format_qactivation(self, activation: str, nbits: int) -> str:
+def format_qactivation(activation: str, nbits: int) -> str:
     """Format the activation function strings in a QKeras friendly way."""
     return f"quantized_{activation}({nbits}, 0)"

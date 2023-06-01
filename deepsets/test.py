@@ -33,7 +33,7 @@ def main(args):
 
     model = import_model(args, hyperparams)
 
-    print(tcols.HEADER + f"\n'Running inference'" + tcols.ENDC)
+    print(tcols.HEADER + f"\nRunning inference" + tcols.ENDC)
     y_pred = tf.nn.softmax(model.predict(jet_data.test_data)).numpy()
 
     ce_loss = keras.losses.CategoricalCrossentropy()(jet_data.test_target, y_pred)

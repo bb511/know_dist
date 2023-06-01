@@ -30,14 +30,14 @@ def main(args):
     jet_data = Data(**args["data_hyperparams"])
 
     study = optuna.create_study(
-        study_name="3layer_dumb",
+        study_name=args['study_name'],
         sampler=optuna.samplers.TPESampler(),
         pruner=optuna.pruners.SuccessiveHalvingPruner(),
         direction="maximize",
-        storage=f"sqlite:///{outdir}/deepsets_inv.db",
+        storage=f"sqlite:///{outdir}/{args['storage']}.db",
         load_if_exists=True,
     )
-    study.optimize(Objective(jet_data, args), n_trials=150, gc_after_trial=True)
+    study.optimize(Objective(jet_data, args), n_trials=500, gc_after_trial=True)
 
 
 class Objective:

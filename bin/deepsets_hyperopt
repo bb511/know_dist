@@ -22,9 +22,9 @@ data_hyperparams = {
 }
 
 training_hyperparams = {
-    "batch":        [64, 128, 256],
-    "epochs":       100,
-    "lr":           [0.0001, 0.001],
+    "batch":        [64, 128, 256, 512],
+    "epochs":       150,
+    "lr":           [0.0001, 0.01],
     "valid_split":  0.2,
 }
 
@@ -35,12 +35,15 @@ compilation_hyperparams = {
 }
 
 model_hyperparams = {
-    "nnodes_phi": [8],
-    "nnodes_rho": [16],
-    "activ": ['elu', 'selu', 'relu'],
+    "nnodes_phi": [8, 16, 24],
+    "nnodes_rho": [8, 16, 24],
+    "activ": ['relu', 'tanh'],
+    # "nbits": 8
 }
 
 args = {
+    "study_name":           '3layer_32const',
+    "storage":              'deepsets_inv',
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
     "model_hyperparams":    model_hyperparams,

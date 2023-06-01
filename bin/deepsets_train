@@ -26,7 +26,7 @@ data_hyperparams = {
 training_hyperparams = {
     "epochs":       300,
     "batch":        64,
-    "lr":           0.0008895478312688979,
+    "lr":           0.0009,
     "valid_split":  0.2,
 }
 
@@ -40,15 +40,16 @@ model_hyperparams = {
     "nnodes_phi": 8,
     "nnodes_rho": 16,
     "activ": 'relu',
+    # "nbits": 8,
 }
 
 args = {
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
-    "deepsets_type":        "invariant",
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
     "outdir":               args.outdir,
+    "deepsets_type":        "invariant",
 }
 
 main(args)
