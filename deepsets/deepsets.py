@@ -52,7 +52,7 @@ class DeepSetsEquiv(keras.Model):
         activ: Activation function to use between the dense layers.
     """
 
-    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "elu"):
+    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "relu"):
         super(DeepSetsEquiv, self).__init__(name="DeepSetsEquiv")
         self.nclasses = 5
 
@@ -88,7 +88,7 @@ class DeepSetsInv(keras.Model):
         activ: Activation function to use between the dense layers.
     """
 
-    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "elu"):
+    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "relu"):
         super(DeepSetsInv, self).__init__(name="DeepSetsInv")
         self.nclasses = 5
 

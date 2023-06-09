@@ -32,6 +32,9 @@ def choose_deepsets(
     if deepsets_type in ['sequivariant', 'sinvariant']:
         model_hyperparams.update({'input_shape': (nconst, nfeats)})
 
+    if 'nbits' in model_hyperparams.keys():
+        deepsets_type = 'q' + deepsets_type
+
     switcher = {
         "equivariant": lambda: DeepSetsEquiv(**model_hyperparams),
         "invariant": lambda: DeepSetsInv(**model_hyperparams),
@@ -102,3 +105,5 @@ def print_training_attributes(model: keras.models.Model, args: dict):
     print(tcols.OKGREEN + "Training epochs:" + tcols.ENDC, train_hyperparams["epochs"])
     print(tcols.OKGREEN + "Loss: \t\t" + tcols.ENDC, compilation_hyperparams["loss"])
     print("")
+
+def get_number_flops():

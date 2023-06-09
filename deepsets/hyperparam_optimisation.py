@@ -32,12 +32,12 @@ def main(args):
     study = optuna.create_study(
         study_name=args['study_name'],
         sampler=optuna.samplers.TPESampler(),
-        pruner=optuna.pruners.SuccessiveHalvingPruner(),
+        pruner=optuna.pruners.HyperbandPruner(),
         direction="maximize",
         storage=f"sqlite:///{outdir}/{args['storage']}.db",
         load_if_exists=True,
     )
-    study.optimize(Objective(jet_data, args), n_trials=500, gc_after_trial=True)
+    study.optimize(Objective(jet_data, args), n_trials=250, gc_after_trial=True)
 
 
 class Objective:

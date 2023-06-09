@@ -6,6 +6,7 @@ import json
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+from keras_flops import get_flops
 
 # keras.utils.set_random_seed(123)
 
@@ -78,3 +79,5 @@ def shuffle_constituents(data: np.ndarray, args: dict) -> np.ndarray:
     print(tcols.OKGREEN + f"Shuffling done! \U0001F0CF" + tcols.ENDC)
 
     return data
+
+def get_number_flops(model: tf.keras.Model):

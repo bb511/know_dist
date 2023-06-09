@@ -20,13 +20,13 @@ if args.gpu:
 
 data_hyperparams = {
     "fpath":         '../../ki_data/mlready',
-    "fname":         'jet_images_c150_minpt2.0_jedinet_robust',
+    "fname":         'jet_images_c8_minpt2.0_andre_robust',
 }
 
 training_hyperparams = {
     "epochs":       300,
-    "batch":        64,
-    "lr":           0.0009,
+    "batch":        128,
+    "lr":           0.0012,
     "valid_split":  0.2,
 }
 
@@ -37,10 +37,10 @@ compilation_hyperparams = {
 }
 
 model_hyperparams = {
-    "nnodes_phi": 8,
+    "nnodes_phi": 32,
     "nnodes_rho": 16,
     "activ": 'relu',
-    # "nbits": 8,
+    "nbits": 8,
 }
 
 args = {
@@ -49,7 +49,7 @@ args = {
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
     "outdir":               args.outdir,
-    "deepsets_type":        "invariant",
+    "deepsets_type":        "equivariant",
 }
 
 main(args)

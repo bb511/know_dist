@@ -16,7 +16,7 @@ def equalise_classes(x_data: np.ndarray, y_data: np.ndarray):
     """
     print("Equalizing data classes...")
     x_data_segregated, y_data_segregated = segregate_data(x_data, y_data)
-    maxdata_class = get_min_data_per_class(x_data_segregated)
+    maxdata_class = get_min_data_of_classes(x_data_segregated)
 
     x_data = x_data_segregated[0][:maxdata_class, :, :]
     y_data = y_data_segregated[0][:maxdata_class, :]
@@ -50,7 +50,7 @@ def segregate_data(x_data: np.array, y_data: np.array):
     return x_data_segregated, y_data_segregated
 
 
-def get_min_data_per_class(x_data_segregated: np.ndarray):
+def get_min_data_of_classes(x_data_segregated: np.ndarray):
     """Get the amount of data the class with the lowest representation has."""
     num_classes = len(x_data_segregated)
     num_datapoints_per_class = [len(x_data_class) for x_data_class in x_data_segregated]
