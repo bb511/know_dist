@@ -6,7 +6,8 @@ import json
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from keras_flops import get_flops
+from tensorflow.python.profiler.model_analyzer import profile
+from tensorflow.python.profiler.option_builder import ProfileOptionBuilder
 
 # keras.utils.set_random_seed(123)
 
@@ -29,18 +30,18 @@ def main(args):
     hyperparams = util.util.load_hyperparameters_file(args["model_dir"])
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
-    jet_data = Data(**hyperparams["data_hyperparams"])
-    jet_data.test_data = shuffle_constituents(jet_data.test_data, args)
+    data = Data(**hyperparams["data_hyperparams"])
+    data.test_data = shuffle_constituents(data.test_data, args)
 
     model = import_model(args, hyperparams)
 
     print(tcols.HEADER + f"\nRunning inference" + tcols.ENDC)
-    y_pred = tf.nn.softmax(model.predict(jet_data.test_data)).numpy()
+    y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
 
-    ce_loss = keras.losses.CategoricalCrossentropy()(jet_data.test_target, y_pred)
+    ce_loss = keras.losses.CategoricalCrossentropy()(data.test_target, y_pred)
     print(tcols.OKCYAN + f"\nCross-entropy loss: {ce_loss}" + tcols.ENDC)
 
-    util.plots.roc_curves(plots_dir, y_pred, jet_data.test_target)
+    util.plots.roc_curves(plots_dir, y_pred, data.test_target)
     util.plots.dnn_output(plots_dir, y_pred)
     print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)
 
@@ -79,5 +80,3 @@ def shuffle_constituents(data: np.ndarray, args: dict) -> np.ndarray:
     print(tcols.OKGREEN + f"Shuffling done! \U0001F0CF" + tcols.ENDC)
 
     return data
-
-def get_number_flops(model: tf.keras.Model):

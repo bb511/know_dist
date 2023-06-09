@@ -30,7 +30,7 @@ def main(args):
     jet_data = Data(**args["data_hyperparams"])
 
     study = optuna.create_study(
-        study_name=args['study_name'],
+        study_name=args["study_name"],
         sampler=optuna.samplers.TPESampler(),
         pruner=optuna.pruners.HyperbandPruner(),
         direction="maximize",

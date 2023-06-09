@@ -20,7 +20,8 @@ from util.data import Data
 from util.terminal_colors import tcols
 from . import util as dsutil
 
-tf.keras.backend.set_floatx("float64")
+# Set keras float precision. Default is float32.
+# tf.keras.backend.set_floatx("float64")
 
 
 def main(args):

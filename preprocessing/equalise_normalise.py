@@ -40,7 +40,6 @@ def main(args):
     plots.constituent_number(plots_path, x_data)
     plots.normalised_data(plots_path, x_data, y_data)
 
-
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
@@ -54,7 +53,7 @@ def main(args):
             args.shuffle_seed,
             args.val_split,
             args.output_dir,
-            output_name
+            output_name,
         )
 
         return
@@ -64,7 +63,6 @@ def main(args):
     )
 
 
-
 def split_kfold_data(
     x_data: np.ndarray,
     y_data: np.ndarray,
@@ -72,32 +70,43 @@ def split_kfold_data(
     seed: int,
     output_dir: str,
     output_name: str,
-    ):
+):
     """Splits the data into a certain number of partitions."""
     x_data_segregated, y_data_segregated = util.segregate_data(x_data, y_data)
     maxdata_class = util.get_min_data_of_classes(x_data_segregated)
-    maxdata_class_kfold = int(maxdata_class/nfolds)
+    maxdata_class_kfold = int(maxdata_class / nfolds)
 
     for kfold in range(nfolds):
         x_data_kfold = x_data_segregated[0][
-            maxdata_class_kfold*kfold:maxdata_class_kfold*(kfold + 1), :, :
+            maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1), :, :
         ]
         y_data_kfold = y_data_segregated[0][
-            maxdata_class_kfold*kfold:maxdata_class_kfold*(kfold + 1), :
+            maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1), :
         ]
         for x_data, y_data in zip(x_data_segregated[1:], y_data_segregated[1:]):
-            x_data_kfold = np.concatenate((
-                x_data_kfold,
-                x_data[maxdata_class_kfold*kfold:maxdata_class_kfold*(kfold+1), :, :]),
-                axis=0
+            x_data_kfold = np.concatenate(
+                (
+                    x_data_kfold,
+                    x_data[
+                        maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1),
+                        :,
+                        :,
+                    ],
+                ),
+                axis=0,
             )
-            y_data_kfold = np.concatenate((
-                y_data_kfold,
-                y_data[maxdata_class_kfold*kfold:maxdata_class_kfold*(kfold + 1), :]),
-                axis=0
+            y_data_kfold = np.concatenate(
+                (
+                    y_data_kfold,
+                    y_data[
+                        maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1),
+                        :,
+                    ],
+                ),
+                axis=0,
             )
 
-        print('\n')
+        print("\n")
         print(tcols.HEADER + f"Shuffling jets in kfold {kfold}..." + tcols.ENDC)
         x_data_kfold, y_data_kfold = shuffle_jets(x_data_kfold, y_data_kfold, seed)
 
@@ -114,7 +123,6 @@ def split_kfold_data(
         np.save(os.path.join(output_dir, f"y_{output_name}_{kfold}"), y_data_kfold)
 
 
-
 def split_train_valid_test(
     x_data: np.ndarray,
     y_data_train: np.ndarray,
@@ -123,7 +131,7 @@ def split_train_valid_test(
     val_split: float,
     output_dir: str,
     output_name: str,
-    ):
+):
     """Splits the data into training, validation, and test data sets.
 
     The training data is the same as described in the following link
@@ -134,7 +142,7 @@ def split_train_valid_test(
     reduced such that each class has an equal representation.
     """
     x_data_train = x_data[: y_data_train.shape[0]]
-    x_data_test = x_data[y_data_train.shape[0]:]
+    x_data_test = x_data[y_data_train.shape[0] :]
     del x_data
 
     y_category = np.argwhere(y_data_test == 1)[:, 1]
@@ -224,7 +232,9 @@ def print_jets_per_class(y_data: np.array):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--x_data_path_train",
         type=str,

@@ -42,14 +42,15 @@ def main(args):
 
     # hls4ml.utils.plot_model(hls_model, show_shapes=True, show_precision=True, to_file=None)
 
+
 def import_model(args: dict, hyperparams: dict):
     """Imports the model from a specified path. Model is saved in tf format."""
     print("Instantiating model with the hyperparameters:")
     for key in model_hyperparams:
         print(f"{key}: {model_hyperparams[key]}")
 
-    if deepsets_type in ['sequivariant', 'sinvariant']:
-        model_hyperparams.update({'input_shape': (nconst, nfeats)})
+    if deepsets_type in ["sequivariant", "sinvariant"]:
+        model_hyperparams.update({"input_shape": (nconst, nfeats)})
 
     switcher = {
         "sequivariant": lambda: deepsets_equivariant_synth(**model_hyperparams),
@@ -57,9 +58,10 @@ def import_model(args: dict, hyperparams: dict):
     }
 
     model = switcher.get(deepsets_type, lambda: None)()
-    model.load_weights(os.path.join(args['model_dir'], 'model_weights.h5'))
+    model.load_weights(os.path.join(args["model_dir"], "model_weights.h5"))
 
     return model
+
 
 def print_dict(d, indent=0):
     align = 20
