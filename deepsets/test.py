@@ -3,11 +3,12 @@
 import os
 import json
 
+# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.python.profiler.model_analyzer import profile
-from tensorflow.python.profiler.option_builder import ProfileOptionBuilder
 
 # keras.utils.set_random_seed(123)
 
@@ -16,9 +17,8 @@ import util.plots
 from util.data import Data
 from util.terminal_colors import tcols
 
-# Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-tf.keras.backend.set_floatx("float64")
+# Set keras float precision. Default is float32.
+# tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
@@ -31,10 +31,15 @@ def main(args):
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
     data = Data(**hyperparams["data_hyperparams"])
-    data.test_data = shuffle_constituents(data.test_data, args)
+    # data.test_data = shuffle_constituents(data.test_data, args)
 
     model = import_model(args, hyperparams)
 
+    # layers = model.layers[0].get_config()
+    # for layer in layers['layers'][3:]:
+    #     print(layer)
+    #     exit(1)
+    # exit(1)
     print(tcols.HEADER + f"\nRunning inference" + tcols.ENDC)
     y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
 

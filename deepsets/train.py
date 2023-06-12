@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 from tensorflow import keras
 
@@ -87,10 +87,10 @@ def plot_model_performance(history: dict, outdir: str):
 def get_tensorflow_callbacks():
     """Prepare the callbacks for the training."""
     early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_categorical_accuracy", patience=25
+        monitor="val_categorical_accuracy", patience=20
     )
     learning = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_categorical_accuracy", factor=0.8, patience=15, min_lr=0.0001
+        monitor="val_categorical_accuracy", factor=0.8, patience=10, min_lr=0.0001
     )
 
     return [early_stopping, learning]
