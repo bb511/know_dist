@@ -126,19 +126,19 @@ class DeepSets_Inv(keras.Model):
 def get_deepsets_invariant_hls4ml(input_shape=(16, 16)):
     deepsets_input = keras.Input(shape=input_shape, name="input_layer")
 
-    x_phi = KL.Dense(32)(deepsets_input)
+    x_phi = KL.Dense(32, name="phi1")(deepsets_input)
     x_phi = KL.Activation('elu')(x_phi)
 
-    x_phi = KL.Dense(32)(x_phi)
+    x_phi = KL.Dense(32, name="phi2")(x_phi)
     x_phi = KL.Activation('elu')(x_phi)
 
-    x_phi = KL.Dense(32)(x_phi)
+    x_phi = KL.Dense(32, name="phi3")(x_phi)
     phi_output = KL.Activation('elu')(x_phi)
 
     # Invariant operation
-    sum_output = KL.GlobalMaxPooling1D(keepdims=True)(phi_output) 
+    sum_output = KL.GlobalMaxPooling1D(keepdims=True, name="gp")(phi_output) 
 
-    x_rho = KL.Dense(16)(sum_output)
+    x_rho = KL.Dense(16, name="rho")(sum_output)
     x_rho = KL.Activation('elu')(x_rho)
     deepsets_output = KL.Dense(5)(x_rho)
     deepsets_network = keras.Model(deepsets_input, deepsets_output, name="deepsets_invariant")
@@ -151,25 +151,24 @@ def get_deepsets_equivariant_hls4ml(input_shape=(16, 16)):
 
     # Permutation Equivariant Layer
     x_max = KL.GlobalMaxPooling1D(keepdims=True)(deepsets_input) 
-    #TODO~ KeepDims not supported in hls4ml, switch to extension API and new GP wrapper. Ask Katya about KL in contrib/
-    x_lambd = KL.Dense(32, use_bias=False)(x_max)
+    x_lambd = KL.Dense(32, use_bias=False, name="lambda")(x_max)
     x_gamma = KL.Dense(32)(deepsets_input)
     x = KL.Subtract()([x_gamma, x_lambd])
     x = KL.Activation('elu')(x)
 
-    # Permutation Equivariant Layer
-    x_max = KL.GlobalMaxPooling1D(keepdims=True)(x)
-    x_lambd = KL.Dense(32, use_bias=False)(x_max)
-    x_gamma = KL.Dense(32)(x)
-    x = KL.Subtract()([x_gamma, x_lambd])
-    x = KL.Activation('elu')(x)
-
-    # Permutation Equivariant Layer
-    x_max = KL.GlobalMaxPooling1D(keepdims=True)(x)
-    x_lambd = KL.Dense(32, use_bias=False)(x_max)
-    x_gamma = KL.Dense(32)(x)
-    x = KL.Subtract()([x_gamma, x_lambd])
-    x = KL.Activation('elu')(x)
+    # # Permutation Equivariant Layer
+    # x_max = KL.GlobalMaxPooling1D(keepdims=True)(x)
+    # x_lambd = KL.Dense(32, use_bias=False)(x_max)
+    # x_gamma = KL.Dense(32)(x)
+    # x = KL.Subtract()([x_gamma, x_lambd])
+    # x = KL.Activation('elu')(x)
+    #
+    # # Permutation Equivariant Layer
+    # x_max = KL.GlobalMaxPooling1D(keepdims=True)(x)
+    # x_lambd = KL.Dense(32, use_bias=False)(x_max)
+    # x_gamma = KL.Dense(32)(x)
+    # x = KL.Subtract()([x_gamma, x_lambd])
+    # x = KL.Activation('elu')(x)
  
     x_max = KL.GlobalMaxPooling1D()(x)
     x = KL.Dense(16)(x)
@@ -189,11 +188,11 @@ if __name__ == "__main__":
     # model = get_deepsets_equivariant_hls4ml(input_shape=input_shape)
     if doEquivariant:
         model = get_deepsets_equivariant_hls4ml(input_shape=input_shape)
-        outname = '/mnt/data/thaarres/deepsets_equivariant/'
+        outname = '/data/hlssynt-users/thaarres/'
         # model.load_weights("model_weights_equivariant.h5") #can't be bothered layer matching these for hlsm4l model, skip for now
     else:
         model = get_deepsets_invariant_hls4ml(input_shape=input_shape)
-        outname = '/mnt/data/thaarres/deepsets_invariant/'
+        outname = '/data/hlssynt-users/thaarres/'
         # model.load_weights("model_weights_invariant.h5") #can't be bothered layer matching these for hlsm4l model, skip for now
 
     # ------------ Patricks model (not compatible with hls4ml! ------------
@@ -214,6 +213,13 @@ if __name__ == "__main__":
 
     # hls4ml
     config = hls4ml.utils.config_from_keras_model(model, granularity='name')
+    if doEquivariant:
+      config['LayerName']['lambda']['ParallelizationFactor']= 16
+      
+    else:
+      config['LayerName']['phi1']['ParallelizationFactor']= 16
+      config['LayerName']['phi2']['ParallelizationFactor']= 16
+      config['LayerName']['phi3']['ParallelizationFactor']= 16    
     # config['LayerName']['dense_1']['ReuseFactor']= 2
     print("-----------------------------------")
     print("Configuration")
