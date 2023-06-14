@@ -42,11 +42,6 @@ def main(args):
         print("\n".join(f"{k} FLOPs: {v}" for k, v in nflops.items()))
         print(f"{'':=<65}")
 
-        nflops_tfgraph = flops.get_flops_tfgraph(args['model_dir'])
-        print(f"TFGraph FLOPs: {nflops_tfgraph} \U0001fA74")
-
-    exit(1)
-
     print(tcols.HEADER + f"\nRunning inference" + tcols.ENDC)
     y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
 

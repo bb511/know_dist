@@ -71,38 +71,29 @@ def split_kfold_data(
     output_dir: str,
     output_name: str,
 ):
-    """Splits the data into a certain number of partitions."""
+    """Splits the data into a nfolds number of partitions.
+
+    The data is frist segregated into classes. Then each kfold is built such that
+    it contains an equal number of samples for each class.
+    """
     x_data_segregated, y_data_segregated = util.segregate_data(x_data, y_data)
     maxdata_class = util.get_min_data_of_classes(x_data_segregated)
     maxdata_class_kfold = int(maxdata_class / nfolds)
 
     for kfold in range(nfolds):
-        x_data_kfold = x_data_segregated[0][
-            maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1), :, :
-        ]
-        y_data_kfold = y_data_segregated[0][
-            maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1), :
-        ]
+        start_kfold = maxdata_class_kfold * kfold
+        end_kfold = maxdata_class_kfold * (kfold + 1)
+        x_data_kfold = x_data_segregated[0][start_kfold:end_kfold, :, :]
+        y_data_kfold = y_data_segregated[0][start_kfold:end_kfold, :]
         for x_data, y_data in zip(x_data_segregated[1:], y_data_segregated[1:]):
+            start_kfold = maxdata_class_kfold * kfold
+            end_kfold = maxdata_class_kfold * (kfold + 1)
             x_data_kfold = np.concatenate(
-                (
-                    x_data_kfold,
-                    x_data[
-                        maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1),
-                        :,
-                        :,
-                    ],
-                ),
+                (x_data_kfold, x_data[start_kfold:end_kfold, :, :]),
                 axis=0,
             )
             y_data_kfold = np.concatenate(
-                (
-                    y_data_kfold,
-                    y_data[
-                        maxdata_class_kfold * kfold : maxdata_class_kfold * (kfold + 1),
-                        :,
-                    ],
-                ),
+                (y_data_kfold, y_data[start_kfold:end_kfold, :]),
                 axis=0,
             )
 

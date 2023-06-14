@@ -135,7 +135,11 @@ def get_flops_bottleneck(first_sequential_layer: dict):
 
 
 def get_flops_tfgraph(model_path: str) -> int:
-    """Computes the number of FLOPs using the tensorflow profiler."""
+    """Computes the number of FLOPs using the tensorflow profiler.
+
+    Currently doesn't work that well for the deepsets models, no matter the
+    implementation api used for them.
+    """
     session = tf.compat.v1.Session()
     graph = tf.compat.v1.get_default_graph()
 
