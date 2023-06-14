@@ -16,7 +16,7 @@ absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
 import util.plots
-from util.data import Data
+import util.data
 from util.terminal_colors import tcols
 from . import util as dsutil
 
@@ -29,7 +29,7 @@ def main(args):
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data = Data(**args["data_hyperparams"])
+    data = util.data.Data(**args["data_hyperparams"])
 
     model = build_model(args, data)
     history = train_model(model, data, args)
@@ -39,7 +39,7 @@ def main(args):
     plot_model_performance(history.history, outdir)
 
 
-def build_model(args: dict, data: Data):
+def build_model(args: dict, data: util.data.Data):
     """Instantiate the model with chosen hyperparams and return it."""
     print(tcols.HEADER + "\n\nINSTANTIATING MODEL" + tcols.ENDC)
     model = dsutil.choose_deepsets(

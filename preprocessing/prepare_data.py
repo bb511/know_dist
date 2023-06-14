@@ -14,35 +14,6 @@ import h5py
 from terminal_colors import tcols
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument(
-    "data_file_dir",
-    type=str,
-    help="Path to directories with .h5 files containing jet image data.",
-)
-parser.add_argument(
-    "output_dir", type=str, help="Directory to save the processed data in."
-)
-parser.add_argument(
-    "--min_pt",
-    type=float,
-    default=2,
-    help="Minimum transverse momentum that the data should have.",
-)
-parser.add_argument(
-    "--max_constituents",
-    type=int,
-    default=8,
-    help="Maximum number of jet constituents data should have.",
-)
-parser.add_argument(
-    "--flag",
-    type=str,
-    default="",
-    help="Attach a string to the end of the output file name.",
-)
-
-
 def main(args):
     data_file_paths = get_file_paths(args.data_file_dir)
     data = h5py.File(data_file_paths[0])
@@ -153,5 +124,35 @@ def make_output_file_name(args):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "data_file_dir",
+        type=str,
+        help="Path to directories with .h5 files containing jet image data.",
+    )
+    parser.add_argument(
+        "output_dir", type=str, help="Directory to save the processed data in."
+    )
+    parser.add_argument(
+        "--min_pt",
+        type=float,
+        default=2,
+        help="Minimum transverse momentum that the data should have.",
+    )
+    parser.add_argument(
+        "--max_constituents",
+        type=int,
+        default=8,
+        help="Maximum number of jet constituents data should have.",
+    )
+    parser.add_argument(
+        "--flag",
+        type=str,
+        default="",
+        help="Attach a string to the end of the output file name.",
+    )
     args = parser.parse_args()
+
     main(args)

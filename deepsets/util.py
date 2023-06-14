@@ -40,8 +40,8 @@ def choose_deepsets(
         "invariant": lambda: DeepSetsInv(**model_hyperparams),
         "qequivariant": lambda: DeepSetsEquivQuantised(**model_hyperparams),
         "qinvariant": lambda: DeepSetsInvQuantised(**model_hyperparams),
-        "sequivariant": lambda: deepsets_equivariant_synth(**model_hyperparams),
-        "sinvariant": lambda: deepsets_invariant_synth(**model_hyperparams),
+        "qsequivariant": lambda: deepsets_equivariant_synth(**model_hyperparams),
+        "qsinvariant": lambda: deepsets_invariant_synth(**model_hyperparams),
     }
 
     model = switcher.get(deepsets_type, lambda: None)()

@@ -14,7 +14,8 @@ from tensorflow import keras
 
 import util.util
 import util.plots
-from util.data import Data
+import util.data
+from . import flops
 from util.terminal_colors import tcols
 
 # Set keras float precision. Default is float32.
@@ -30,16 +31,22 @@ def main(args):
     hyperparams = util.util.load_hyperparameters_file(args["model_dir"])
     hyperparams["data_hyperparams"].update(args["data_hyperparams"])
 
-    data = Data(**hyperparams["data_hyperparams"])
+    data = util.data.Data(**hyperparams["data_hyperparams"])
     # data.test_data = shuffle_constituents(data.test_data, args)
 
     model = import_model(args, hyperparams)
 
-    # layers = model.layers[0].get_config()
-    # for layer in layers['layers'][3:]:
-    #     print(layer)
-    #     exit(1)
-    # exit(1)
+    # FLOPs calculation only implemented for floating point models.
+    if hyperparams['deepsets_type'] in ['equivariant', 'invariant']:
+        nflops = flops.get_flops(model)
+        print("\n".join(f"{k} FLOPs: {v}" for k, v in nflops.items()))
+        print(f"{'':=<65}")
+
+        nflops_tfgraph = flops.get_flops_tfgraph(args['model_dir'])
+        print(f"TFGraph FLOPs: {nflops_tfgraph} \U0001fA74")
+
+    exit(1)
+
     print(tcols.HEADER + f"\nRunning inference" + tcols.ENDC)
     y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
 
@@ -85,3 +92,4 @@ def shuffle_constituents(data: np.ndarray, args: dict) -> np.ndarray:
     print(tcols.OKGREEN + f"Shuffling done! \U0001F0CF" + tcols.ENDC)
 
     return data
+
