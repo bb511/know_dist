@@ -4,11 +4,11 @@ import os
 import numpy as np
 
 # Silence the info from tensorflow in which it brags that it can run on cpu nicely.
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 from tensorflow import keras
 
-keras.utils.set_random_seed(123)
+# keras.utils.set_random_seed(123)
 
 import absl.logging
 
@@ -16,11 +16,12 @@ absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
 import util.plots
-from util.data import Data
+import util.data
 from util.terminal_colors import tcols
 from . import util as dsutil
 
-tf.keras.backend.set_floatx("float64")
+# Set keras float precision. Default is float32.
+# tf.keras.backend.set_floatx("float64")
 
 
 def main(args):
@@ -28,7 +29,7 @@ def main(args):
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data = Data.shuffled(**args["data_hyperparams"])
+    data = util.data.Data(**args["data_hyperparams"])
 
     model = build_model(args, data)
     history = train_model(model, data, args)
@@ -38,7 +39,7 @@ def main(args):
     plot_model_performance(history.history, outdir)
 
 
-def build_model(args: dict, data: Data):
+def build_model(args: dict, data: util.data.Data):
     """Instantiate the model with chosen hyperparams and return it."""
     print(tcols.HEADER + "\n\nINSTANTIATING MODEL" + tcols.ENDC)
     model = dsutil.choose_deepsets(
@@ -60,8 +61,8 @@ def train_model(model, data, args: dict):
     dsutil.print_training_attributes(model, args)
 
     history = model.fit(
-        data.tr_data,
-        data.tr_target,
+        data.train_data,
+        data.train_target,
         epochs=args["training_hyperparams"]["epochs"],
         batch_size=args["training_hyperparams"]["batch"],
         verbose=2,

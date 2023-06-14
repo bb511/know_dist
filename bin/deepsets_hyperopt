@@ -18,18 +18,13 @@ if args.gpu:
 
 data_hyperparams = {
     "fpath":       '../../ki_data/mlready',
-    "fname":       'jet_images_c150_pt2.0_jedinet_robust',
-    "train_events": -1,
-    "val_events":   -1,
-    "test_events":  0,
-    "jet_seed":     None,
-    "seed":         None,
+    "fname":       'jet_images_c16_minpt2.0_andre_robust',
 }
 
 training_hyperparams = {
-    "batch":        [64, 128, 256],
-    "epochs":       100,
-    "lr":           [0.0001, 0.001],
+    "batch":        [64, 128, 256, 512],
+    "epochs":       150,
+    "lr":           [0.0001, 0.01],
     "valid_split":  0.2,
 }
 
@@ -40,18 +35,20 @@ compilation_hyperparams = {
 }
 
 model_hyperparams = {
-    "nnodes_phi": [64, 32, 20, 16, 8],
-    "nnodes_rho": [64, 32, 20, 16, 8],
-    "activ": ['elu', 'selu', 'relu'],
+    "nnodes_phi": [8, 16, 24],
+    "nnodes_rho": [8, 16, 24, 32],
+    "activ": ['relu', 'tanh'],
 }
 
 args = {
+    "study_name":           '3layer_invdumb_16const_ptetaphi_redo',
+    "storage":              'deepsets_equiv',
+    "deepsets_type":        'equivariant',
+    "outdir":               'deepsets_hyperopt',
     "data_hyperparams":     data_hyperparams,
     "training_hyperparams": training_hyperparams,
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
-    "deepsets_type":        'equivariant',
-    "outdir":               'deepsets_hyperopt',
 }
 
 main(args)

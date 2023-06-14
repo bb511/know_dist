@@ -6,13 +6,14 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow.keras.layers as KL
+import qkeras
 
 
-class PermutationEquivariantMax(KL.Layer):
+class EquivariantMax(KL.Layer):
     """Permutation equivariant neural network layer with max operation."""
 
     def __init__(self, dim):
-        super(PermutationEquivariantMax, self).__init__()
+        super(EquivariantMax, self).__init__()
         self.gamma = KL.Dense(dim)
         self.lambd = KL.Dense(dim, use_bias=False)
 
@@ -25,11 +26,11 @@ class PermutationEquivariantMax(KL.Layer):
         return x
 
 
-class PermutationEquivariantMean(KL.Layer):
+class EquivariantMean(KL.Layer):
     """Permutation equivariant neural network layer with mean operation."""
 
     def __init__(self, dim):
-        super(PermutationEquivariantMean, self).__init__()
+        super(EquivariantMean, self).__init__()
         self.gamma = KL.Dense(dim)
         self.lambd = KL.Dense(dim, use_bias=False)
 
@@ -42,7 +43,7 @@ class PermutationEquivariantMean(KL.Layer):
         return x
 
 
-class DeepSets_Equiv(keras.Model):
+class DeepSetsEquiv(keras.Model):
     """Deep sets permutation equivariant graph network https://arxiv.org/abs/1703.06114.
 
     Attributes:
@@ -51,17 +52,17 @@ class DeepSets_Equiv(keras.Model):
         activ: Activation function to use between the dense layers.
     """
 
-    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "elu"):
-        super(DeepSets_Equiv, self).__init__(name="DeepSets_Equiv")
+    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "relu"):
+        super(DeepSetsEquiv, self).__init__(name="DeepSetsEquiv")
         self.nclasses = 5
 
         self.phi = keras.Sequential(
             [
-                PermutationEquivariantMean(nnodes_phi),
+                EquivariantMean(nnodes_phi),
                 KL.Activation(activ),
-                PermutationEquivariantMean(nnodes_phi),
+                EquivariantMean(nnodes_phi),
                 KL.Activation(activ),
-                PermutationEquivariantMean(nnodes_phi),
+                EquivariantMean(nnodes_phi),
                 KL.Activation(activ),
             ]
         )
@@ -78,7 +79,7 @@ class DeepSets_Equiv(keras.Model):
         return rho_output
 
 
-class DeepSets_Inv(keras.Model):
+class DeepSetsInv(keras.Model):
     """Deep sets permutation invariant graph network https://arxiv.org/abs/1703.06114.
 
     Attributes:
@@ -87,8 +88,8 @@ class DeepSets_Inv(keras.Model):
         activ: Activation function to use between the dense layers.
     """
 
-    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "elu"):
-        super(DeepSets_Inv, self).__init__(name="DeepSets_Inv")
+    def __init__(self, nnodes_phi: int = 32, nnodes_rho: int = 16, activ: str = "relu"):
+        super(DeepSetsInv, self).__init__(name="DeepSetsInv")
         self.nclasses = 5
 
         self.phi = keras.Sequential(

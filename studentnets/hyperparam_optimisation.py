@@ -12,7 +12,6 @@ import tensorflow as tf
 import tensorflow.keras.layers as KL
 from tensorflow import keras
 
-
 import absl.logging
 
 absl.logging.set_verbosity(absl.logging.ERROR)
@@ -20,24 +19,25 @@ absl.logging.set_verbosity(absl.logging.ERROR)
 import util.util
 from util.data import Data
 from util.terminal_colors import tcols
-from . import util as dsutil
+from . import util as stutil
+from .distiller import Distiller
 
 
 def main(args):
     util.util.device_info()
-    outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
+    outdir = util.util.make_output_directory("trained_students", args["outdir"])
 
     jet_data = Data(**args["data_hyperparams"])
 
     study = optuna.create_study(
-        study_name=args["study_name"],
+        study_name="3layer_extremely_dumb_student",
         sampler=optuna.samplers.TPESampler(),
-        pruner=optuna.pruners.HyperbandPruner(),
+        pruner=optuna.pruners.SuccessiveHalvingPruner(),
         direction="maximize",
-        storage=f"sqlite:///{outdir}/{args['storage']}.db",
+        storage=f"sqlite:///{outdir}/deepsets_deepsets_equiv.db",
         load_if_exists=True,
     )
-    study.optimize(Objective(jet_data, args), n_trials=250, gc_after_trial=True)
+    study.optimize(Objective(jet_data, args), n_trials=150, gc_after_trial=True)
 
 
 class Objective:
@@ -48,11 +48,10 @@ class Objective:
             "epochs": args["training_hyperparams"]["epochs"],
             "valid_split": args["training_hyperparams"]["valid_split"],
         }
-        self.compilation_hyperparams = {
-            "loss": args["compilation"]["loss"],
-            "metrics": args["compilation"]["metrics"],
+        self.distillation_params = {
+            "student_loss_fn": args["distill"]["student_loss_fn"],
+            "distill_loss_fn": args["distill"]["distill_loss_fn"],
         }
-        self.model_hyperparams = {}
 
     def __call__(self, trial):
         tf.keras.backend.clear_session()
@@ -66,46 +65,36 @@ class Objective:
                 ),
             }
         )
-        self.compilation_hyperparams.update(
+        self.distillation_params.update(
             {
                 "optimizer": trial.suggest_categorical(
-                    "optim", self.args["compilation"]["optimizer"]
+                    "optim", self.args["distill"]["optimizer"]
+                ),
+                "alpha": trial.suggest_float(
+                    "alpha",
+                    self.args["distill"]["alpha"][0],
+                    self.args["distill"]["alpha"][1],
+                    step=self.args["distill"]["alpha"][2],
+                ),
+                "temperature": trial.suggest_int(
+                    "temperature",
+                    *self.args["distill"]["temperature"],
                 ),
             }
         )
 
-        self.model_hyperparams.update(
-            {
-                "nnodes_phi": trial.suggest_categorical(
-                    "nphi", self.args["model_hyperparams"]["nnodes_phi"]
-                ),
-                "nnodes_rho": trial.suggest_categorical(
-                    "nrho", self.args["model_hyperparams"]["nnodes_rho"]
-                ),
-                "activ": trial.suggest_categorical(
-                    "activ", self.args["model_hyperparams"]["activ"]
-                ),
-            }
-        )
+        teacher = keras.models.load_model(self.args["teacher"], compile=False)
+        student = stutil.choose_student(self.args["student_type"], self.args["student"])
 
-        model = dsutil.choose_deepsets(
-            self.args["deepsets_type"],
-            self.jet_data.ncons,
-            self.jet_data.nfeat,
-            self.model_hyperparams,
-            self.compilation_hyperparams,
-            self.training_hyperparams["lr"],
-        )
-        model.summary(expand_nested=True)
+        distiller = self.build_distiller(student, teacher)
 
         print(tcols.HEADER + "\n\nTRAINING THE MODEL \U0001F4AA" + tcols.ENDC)
 
-        callbacks = get_tensorflow_callbacks()
-        callbacks.append(
-            optuna.integration.TFKerasPruningCallback(trial, "val_categorical_accuracy")
-        )
+        callbacks = self.get_tensorflow_callbacks()
+        callbacks.append(optuna.integration.TFKerasPruningCallback(trial, "val_acc"))
 
-        model.fit(
+        stutil.print_training_attributes(self.args["training_hyperparams"], distiller)
+        distiller.fit(
             self.jet_data.train_data,
             self.jet_data.train_target,
             epochs=self.training_hyperparams["epochs"],
@@ -117,23 +106,35 @@ class Objective:
         )
 
         print(tcols.HEADER + "\nTraining done... Testing model." + tcols.ENDC)
-        y_pred = tf.nn.softmax(model.predict(self.jet_data.valid_data)).numpy()
+        student = distiller.student
+        y_pred = tf.nn.softmax(student.predict(self.jet_data.valid_data)).numpy()
+
         accuracy = tf.keras.metrics.CategoricalAccuracy()
         accuracy.update_state(self.jet_data.valid_target, y_pred)
 
         return accuracy.result().numpy()
 
+    def build_distiller(self, student, teacher):
+        """Instantiate and compile the knowledge distiller."""
+        print("Making the distiller...")
+        distillation_params = {}
+        distillation_params.update(self.distillation_params)
+        distillation_params["optimizer"] = stutil.load_optimizer(
+            distillation_params["optimizer"], self.training_hyperparams["lr"]
+        )
+        distiller = Distiller(student, teacher)
+        distiller.compile(**distillation_params)
 
-def get_tensorflow_callbacks():
-    """Prepare the callbacks for the training."""
-    early_stopping = keras.callbacks.EarlyStopping(
-        monitor="val_categorical_accuracy", patience=20
-    )
-    learning = keras.callbacks.ReduceLROnPlateau(
-        monitor="val_categorical_accuracy", factor=0.8, patience=10, min_lr=0.00001
-    )
+        return distiller
 
-    return [early_stopping, learning]
+    def get_tensorflow_callbacks(self):
+        """Prepare the callbacks for the training."""
+        early_stopping = keras.callbacks.EarlyStopping(monitor="val_acc", patience=20)
+        learning = keras.callbacks.ReduceLROnPlateau(
+            monitor="val_acc", factor=0.8, patience=10, min_lr=0.00001
+        )
+
+        return [early_stopping, learning]
 
 
 class OptunaPruner(keras.callbacks.Callback):
@@ -144,7 +145,7 @@ class OptunaPruner(keras.callbacks.Callback):
         self.trial = trial
 
     def on_epoch_end(self, epoch, logs=None):
-        self.trial.report(logs["val_categorical_accuracy"], epoch)
+        self.trial.report(logs["val_acc"], epoch)
         if self.trial.should_prune():
             trial = self.trial
             raise optuna.TrialPruned()

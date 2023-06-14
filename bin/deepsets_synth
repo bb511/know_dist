@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append("..")
 
-from deepsets.test import main
+from deepsets.synthesize import main
 parser = argparse.ArgumentParser(formatter_class=argparse.
                                  ArgumentDefaultsHelpFormatter)
 parser.add_argument("--model_dir", type=str, default="./trained_deepsets/test",

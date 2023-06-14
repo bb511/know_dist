@@ -7,8 +7,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from deepsets.deepsets import DeepSets_Equiv
-from deepsets.deepsets import DeepSets_Inv
+from deepsets.deepsets import DeepSetsEquiv
+from deepsets.deepsets import DeepSetsInv
+from deepsets.deepsets_quantised import DeepSetsEquivQuantised
+from deepsets.deepsets_quantised import DeepSetsInvQuantised
+from deepsets.deepsets_synth import deepsets_invariant_synth
+from deepsets.deepsets_synth import deepsets_equivariant_synth
 from util.terminal_colors import tcols
 
 
@@ -25,19 +29,26 @@ def choose_deepsets(
     for key in model_hyperparams:
         print(f"{key}: {model_hyperparams[key]}")
 
+    if deepsets_type in ["sequivariant", "sinvariant"]:
+        model_hyperparams.update({"input_shape": (nconst, nfeats)})
+
+    if "nbits" in model_hyperparams.keys():
+        deepsets_type = "q" + deepsets_type
+
     switcher = {
-        "equivariant": lambda: DeepSets_Equiv(**model_hyperparams),
-        "invariant": lambda: DeepSets_Inv(**model_hyperparams),
+        "equivariant": lambda: DeepSetsEquiv(**model_hyperparams),
+        "invariant": lambda: DeepSetsInv(**model_hyperparams),
+        "qequivariant": lambda: DeepSetsEquivQuantised(**model_hyperparams),
+        "qinvariant": lambda: DeepSetsInvQuantised(**model_hyperparams),
+        "qsequivariant": lambda: deepsets_equivariant_synth(**model_hyperparams),
+        "qsinvariant": lambda: deepsets_invariant_synth(**model_hyperparams),
     }
 
     model = switcher.get(deepsets_type, lambda: None)()
 
     comp_hps = {}
     comp_hps.update(compilation_hyperparams)
-    comp_hps["optimizer"] = load_optimizer(
-        comp_hps["optimizer"],
-        lr,
-    )
+    comp_hps["optimizer"] = load_optimizer(comp_hps["optimizer"], lr)
     comp_hps["loss"] = choose_loss(compilation_hyperparams["loss"])
 
     model.compile(**comp_hps)
