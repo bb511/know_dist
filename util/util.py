@@ -2,12 +2,21 @@
 
 import os
 import json
+import glob
 import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
 
 from .terminal_colors import tcols
+
+
+def make_output_directories(locations: list, outdir: str):
+    """Create an output directory in a list of locations."""
+    if isinstance(locations, str):
+        return make_output_directory(location, outdir)
+
+    return [make_output_directory(location, outdir) for location in locations]
 
 
 def make_output_directory(location: str, outdir: str) -> str:
@@ -52,7 +61,24 @@ def save_hyperparameters_file(hyperparams: dict, outdir: str):
     print(tcols.OKGREEN + "Saved hyperparameters to json file." + tcols.ENDC)
 
 
-def load_hyperparameters_file(model_dir: str):
+def save_flops_file(flops: dict, outdir: str):
+    """Saves the flops dictionary to file inside outdir."""
+    flops_file_path = os.path.join(outdir, "flops.json")
+    with open(flops_file_path, "w") as file:
+        json.dump(flops, file)
+
+    print(tcols.OKGREEN + "Saved flops information to json file." + tcols.ENDC)
+
+
+def load_hyperparameter_files(model_dirs: list):
+    """Load hyperparameters of multiple models and put them in an array."""
+    if isinstance(model_dirs, str):
+        return [load_hyperparameter_file(model_dirs)]
+
+    return [load_hyperparameter_file(model_dir) for model_dir in model_dirs]
+
+
+def load_hyperparameter_file(model_dir: str):
     """Loads a hyperparameters file given the directory that it's in."""
     with open(os.path.join(model_dir, "hyperparameters.json")) as file:
         hyperparams = json.load(file)

@@ -70,10 +70,15 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
     labels = ["Gluon", "Quark", "W", "Z", "Top"]
     cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
     tpr_baseline = np.linspace(0.025, 0.99, 100)
+    fprs = []
+    aucs = []
+    fprs_at_tprs = []
     for idx, label in enumerate(labels):
         fpr, tpr, thr = metrics.roc_curve(y_test[:, idx], y_pred[:, idx])
         auc = metrics.auc(fpr, tpr)
+        aucs.append(auc)
         fpr_baseline = np.interp(tpr_baseline, tpr, fpr)
+        fprs.append(fpr_baseline)
         fpr_baseline.astype("float32").tofile(os.path.join(outdir, f"fpr_{label}.dat"))
         tpr_baseline.astype("float32").tofile(os.path.join(outdir, f"tpr_{label}.dat"))
         tpr_idx = find_nearest(tpr, 0.8)
@@ -82,6 +87,49 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
             fpr,
             color=cols[idx],
             label=f"{label}: AUC = {auc*100:.1f}%; FPR @ 80% TPR: {fpr[tpr_idx]:.3f}",
+        )
+        fprs_at_tprs.append(fpr[tpr_idx])
+
+    plt.xlabel("True Positive Rate")
+    plt.ylabel("False Positive Rate")
+    plt.ylim(0.001, 1)
+    plt.semilogy()
+
+    plt.legend()
+    plt.savefig(os.path.join(outdir, "roc_curves.pdf"))
+    plt.close()
+    print(f"ROC curves plot saved to {outdir}.")
+
+    return fprs, tpr_baseline, aucs, fprs_at_tprs
+
+
+def roc_curves_uncert(
+    tpr: np.ndarray,
+    fprs: np.ndarray,
+    fprs_errors: np.ndarray,
+    aucs: np.ndarray,
+    aucs_errors: np.ndarray,
+    fats: np.ndarray,
+    fats_errors: np.ndarray,
+    outdir: str,
+):
+    """Plots ROC curves given fprs and tprs for each class."""
+    labels = ["Gluon", "Quark", "W", "Z", "Top"]
+    cols = ["#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]
+    tpr_baseline = np.linspace(0.025, 0.99, 100)
+    for idx, label in enumerate(labels):
+        plt.plot(
+            tpr,
+            fprs[idx],
+            color=cols[idx],
+            label=f"{label}: {aucs[idx]*100:.1f}%; FAT: {fats[idx]:.4f} $\\pm$ {fats_errors[idx]:.4f}",
+        )
+        plt.fill_between(
+            tpr,
+            fprs[idx] - fprs_errors[idx],
+            fprs[idx] + fprs_errors[idx],
+            color=cols[idx],
+            alpha=0.5
         )
 
     plt.xlabel("True Positive Rate")
