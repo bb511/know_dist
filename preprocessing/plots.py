@@ -1,6 +1,7 @@
 # Select feature labels.
 
 import os
+import operator
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,7 +11,7 @@ from terminal_colors import tcols
 
 def select_feature_labels(filename: str) -> list[str]:
     """Gets the feature labels for a certain type of selection."""
-    jedinet_feature_labels = [
+    all_feature_labels = [
         "$p_x$",
         "$p_y$",
         "$p_z$",
@@ -29,11 +30,12 @@ def select_feature_labels(filename: str) -> list[str]:
         "$\\cos(\\theta^\\mathrm{rel}$",
     ]
     andre_feature_labels = ["p_T", "\\eta^\\mathrm{rel}", "\\phi^\\mathrm{rel}"]
+    print(filename)
     choice = filename.split("_")[4]
 
     switcher = {
-        "andre": lambda: andre_feature_labels,
-        "jedinet": lambda: jedinet_feature_labels,
+        "ptetaphi": lambda: operator.itemgetter(5, 8, 11)(all_feature_labels),
+        "allfeats": lambda: all_feature_labels,
     }
 
     feature_labels = switcher.get(choice, lambda: None)()

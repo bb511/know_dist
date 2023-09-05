@@ -29,22 +29,13 @@ def main(args):
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
     util.util.save_hyperparameters_file(args, outdir)
 
-    data = import_data(args)
-
+    data = util.data.Data.load_kfolds(**args["data_hyperparams"])
     model = build_model(args, data)
     history = train_model(model, data, args)
 
     print(tcols.OKGREEN + "\n\n\nSAVING MODEL TO: " + tcols.ENDC, outdir)
     model.save(outdir, save_format="tf")
     plot_model_performance(history.history, outdir)
-
-
-def import_data(args):
-    """Import the data used for training and validating the network."""
-    if "fnames_train" in args["data_hyperparams"].keys():
-        return util.data.Data.load_kfolds(**args["data_hyperparams"])
-
-    return util.data.Data(**args["data_hyperparams"])
 
 
 def build_model(args: dict, data: util.data.Data):

@@ -45,7 +45,7 @@ def main(args):
     for idx, hyperparams in enumerate(hyperparam_dicts):
         model_dir = args["model_dir"][idx]
         data = import_data(hyperparams)
-        # data.test_data = shuffle_constituents(data.test_data, args['const_seed'])
+        data.test_data = shuffle_constituents(data.test_data, args['const_seed'])
 
         model = import_model(model_dir, hyperparams)
         if hyperparams["deepsets_type"] in ["equivariant", "invariant"]:

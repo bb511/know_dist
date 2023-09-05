@@ -1,7 +1,8 @@
 # Utility methods for data pre-processing.
 
+import os
+import json
 import numpy as np
-
 
 def equalise_classes(x_data: np.ndarray, y_data: np.ndarray):
     """Equalize the number of events each class has in the data file.
@@ -57,3 +58,12 @@ def get_min_data_of_classes(x_data_segregated: np.ndarray):
     desired_datapoints_per_class = min(num_datapoints_per_class)
 
     return desired_datapoints_per_class
+
+
+def save_hyperparameters_file(hyperparams: dict, outdir: str):
+    """Saves the hyperparameters dictionary that defines an net to a file."""
+    hyperparams_file_path = os.path.join(outdir, "hyperparameters.json")
+    with open(hyperparams_file_path, "w") as file:
+        json.dump(hyperparams, file)
+
+    print(tcols.OKGREEN + "Saved hyperparameters to json file." + tcols.ENDC)

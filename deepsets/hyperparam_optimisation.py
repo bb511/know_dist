@@ -18,7 +18,7 @@ import absl.logging
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 import util.util
-from util.data import Data
+import util.data
 from util.terminal_colors import tcols
 from . import util as dsutil
 
@@ -27,7 +27,7 @@ def main(args):
     util.util.device_info()
     outdir = util.util.make_output_directory("trained_deepsets", args["outdir"])
 
-    jet_data = Data(**args["data_hyperparams"])
+    data = util.data.Data.load_kfolds(**args["data_hyperparams"])
 
     study = optuna.create_study(
         study_name=args["study_name"],
@@ -37,11 +37,11 @@ def main(args):
         storage=f"sqlite:///{outdir}/{args['storage']}.db",
         load_if_exists=True,
     )
-    study.optimize(Objective(jet_data, args), n_trials=250, gc_after_trial=True)
+    study.optimize(Objective(data, args), n_trials=250, gc_after_trial=True)
 
 
 class Objective:
-    def __init__(self, jet_data: Data, args: dict):
+    def __init__(self, jet_data: util.data.Data, args: dict):
         self.jet_data = jet_data
         self.args = args
         self.training_hyperparams = {
@@ -73,7 +73,6 @@ class Objective:
                 ),
             }
         )
-
         self.model_hyperparams.update(
             {
                 "nnodes_phi": trial.suggest_categorical(
@@ -117,9 +116,9 @@ class Objective:
         )
 
         print(tcols.HEADER + "\nTraining done... Testing model." + tcols.ENDC)
-        y_pred = tf.nn.softmax(model.predict(self.jet_data.valid_data)).numpy()
+        y_pred = tf.nn.softmax(model.predict(self.jet_data.test_data)).numpy()
         accuracy = tf.keras.metrics.CategoricalAccuracy()
-        accuracy.update_state(self.jet_data.valid_target, y_pred)
+        accuracy.update_state(self.jet_data.test_target, y_pred)
 
         return accuracy.result().numpy()
 
