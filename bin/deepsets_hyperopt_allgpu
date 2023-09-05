@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+nohup python -u deepsets_hyperopt --test_kfold 4 --gpu 0 > synthable_8const_ptetaphi_0 &
+nohup python -u deepsets_hyperopt --test_kfold 4 --gpu 1 > synthable_8const_ptetaphi_1 &
+nohup python -u deepsets_hyperopt --test_kfold 4 --gpu 2 > synthable_8const_ptetaphi_2 &
+nohup python -u deepsets_hyperopt --test_kfold 4 --gpu 3 > synthable_8const_ptetaphi_3 &

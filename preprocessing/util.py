@@ -3,6 +3,8 @@
 import os
 import json
 import numpy as np
+from terminal_colors import tcols
+
 
 def equalise_classes(x_data: np.ndarray, y_data: np.ndarray):
     """Equalize the number of events each class has in the data file.
@@ -66,4 +68,4 @@ def save_hyperparameters_file(hyperparams: dict, outdir: str):
     with open(hyperparams_file_path, "w") as file:
         json.dump(hyperparams, file)
 
-    print(tcols.OKGREEN + "Saved hyperparameters to json file." + tcols.ENDC)
+    print(tcols.OKGREEN + "Saved preprocessing hyperparameters to json." + tcols.ENDC)

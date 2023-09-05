@@ -71,7 +71,7 @@ class Data:
         target = np.load(datafile_path)
         for fname in self._fnames_train[1:]:
             targetfile_name = "y_" + fname + ".npy"
-            targetfile_path = os.path.join(self._fpath, datafile_name)
+            targetfile_path = os.path.join(self._fpath, targetfile_name)
             target_kfold = np.load(targetfile_path)
             target = np.concatenate((target, target_kfold), axis=0)
 

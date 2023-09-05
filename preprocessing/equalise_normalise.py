@@ -62,7 +62,8 @@ def main(args):
         plots_path
     )
 
-    print("Saving hyperparameters of the preprocessing to file.")
+    util.save_hyperparameters_file(vars(args), args.output_dir)
+
 
 def split_kfold_data(
     x_data: np.ndarray,
@@ -79,12 +80,12 @@ def split_kfold_data(
     it contains an equal number of samples for each class.
     """
     x_data_segregated, y_data_segregated = util.segregate_data(x_data, y_data)
-    maxdata_class = util.get_min_data_of_classes(x_data_segregated)
-    maxdata_class_kfold = int(maxdata_class / nfolds)
+    ndata_per_class = y_data_segregated[0].shape[0]
+    ndata_class_kfold = int(ndata_per_class / nfolds)
 
     for kfold in range(nfolds):
-        start_kfold = maxdata_class_kfold * kfold
-        end_kfold = maxdata_class_kfold * (kfold + 1)
+        start_kfold = ndata_class_kfold * kfold
+        end_kfold = ndata_class_kfold * (kfold + 1)
         x_data_kfold = x_data_segregated[0][start_kfold:end_kfold, :, :]
         y_data_kfold = y_data_segregated[0][start_kfold:end_kfold, :]
         for x_data, y_data in zip(x_data_segregated[1:], y_data_segregated[1:]):
@@ -99,9 +100,7 @@ def split_kfold_data(
 
         print("\n")
         print(tcols.HEADER + f"Shuffling jets in kfold {kfold}..." + tcols.ENDC)
-        x_data_kfold, y_data_kfold = shuffle_jets(
-            x_data_kfold, y_data_kfold, seed + kfold
-        )
+        x_data_kfold, y_data_kfold = shuffle_jets(x_data_kfold, y_data_kfold, seed + kfold)
 
         print(tcols.HEADER + f"Shuffling constituents in kfold {kfold}..." + tcols.ENDC)
         rng = np.random.default_rng(seed + kfold)
@@ -121,9 +120,9 @@ def split_kfold_data(
 def shuffle_jets(x_data: np.ndarray, y_data: np.ndarray, seed: int):
     """Shuffles the jets inside a data array."""
     nevents = x_data.shape[0]
-    shuffle = np.random.RandomState(seed=seed).permutation(nevents)
+    shuffle = np.random.default_rng(seed=seed).permutation(nevents)
 
-    return x_data[shuffle], y_data[shuffle]
+    return x_data[shuffle, :, :], y_data[shuffle, :]
 
 
 def shuffle_constituents(data: np.ndarray, seeds: np.ndarray) -> np.ndarray:
@@ -134,7 +133,7 @@ def shuffle_constituents(data: np.ndarray, seeds: np.ndarray) -> np.ndarray:
     """
 
     for jet_idx, seed in enumerate(seeds):
-        shuffling = np.random.RandomState(seed=seed).permutation(data.shape[1])
+        shuffling = np.random.default_rng(seed=seed).permutation(data.shape[1])
         data[jet_idx, :] = data[jet_idx, shuffling]
 
     return data
