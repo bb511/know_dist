@@ -106,11 +106,11 @@ def roc_curves(outdir: str, y_pred: np.ndarray, y_test: np.ndarray):
 def roc_curves_uncert(
     tpr: np.ndarray,
     fprs: np.ndarray,
-    fprs_errors: np.ndarray,
+    fprs_errs: np.ndarray,
     aucs: np.ndarray,
-    aucs_errors: np.ndarray,
+    aucs_errs: np.ndarray,
     fats: np.ndarray,
-    fats_errors: np.ndarray,
+    fats_errs: np.ndarray,
     outdir: str,
 ):
     """Plots ROC curves given fprs and tprs for each class."""
@@ -122,12 +122,12 @@ def roc_curves_uncert(
             tpr,
             fprs[idx],
             color=cols[idx],
-            label=f"{label}: {aucs[idx]*100:.1f}%; FAT: {fats[idx]:.4f} $\\pm$ {fats_errors[idx]:.4f}",
+            label=f"{label}: {aucs[idx]*100:.1f}%; FAT: {fats[idx]:.4f} $\\pm$ {fats_errs[idx]:.4f}",
         )
         plt.fill_between(
             tpr,
-            fprs[idx] - fprs_errors[idx],
-            fprs[idx] + fprs_errors[idx],
+            fprs[idx] - fprs_errs[idx],
+            fprs[idx] + fprs_errs[idx],
             color=cols[idx],
             alpha=0.5
         )

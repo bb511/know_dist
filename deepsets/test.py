@@ -26,96 +26,135 @@ from util.terminal_colors import tcols
 
 def main(args):
     util.util.device_info()
-    if "kfold" in args["model_dir"]:
-        kfold_root_dir = args["model_dir"]
-        args["model_dir"] = glob.glob(os.path.join(args["model_dir"], "*kfold*"))
+    seed = args['const_seed']
+    if args['kfolds']:
+        kfold_root_dir = args['model_dir']
+        args['model_dir'] = get_kfolded_models(args['model_dir'])
+
     plots_dir = util.util.make_output_directories(
-        args["model_dir"], f"plots_{args['const_seed']}"
+        args['model_dir'], f"plots_{args['const_seed']}"
     )
-    if isinstance(args["model_dir"], str):
-        args["model_dir"] = [args["model_dir"]]
+    hyperparam_dict = util.util.load_hyperparameter_files(args["model_dir"])
 
-    hyperparam_dicts = util.util.load_hyperparameter_files(args["model_dir"])
-    kfold_fprs = []
-    kfold_aucs = []
-    kfold_fats = []
-    kfold_accs = []
-    kfold_loss = []
+    if args['kfolds']:
+        data = import_data(hyperparam_dict[0])
+        data.test_data = shuffle_constituents(data.test_data, seed)
+        kfold_metrics = {
+            "fprs": [],
+            "aucs": [],
+            "fats": [],
+            "accs": [],
+            "loss": []
+        }
+        for idx, hyperparams in enumerate(hyperparam_dict):
+            tprs_baseline, model_kfold_metrics = evaluate_model(
+                data, hyperparams, args['model_dir'][idx], plots_dir[idx], seed
+            )
+            for key in model_kfold_metrics.keys():
+                kfold_metrics[key].append(model_kfold_metrics[key])
 
-    for idx, hyperparams in enumerate(hyperparam_dicts):
-        model_dir = args["model_dir"][idx]
-        data = import_data(hyperparams)
-        data.test_data = shuffle_constituents(data.test_data, args['const_seed'])
-
-        model = import_model(model_dir, hyperparams)
-        if hyperparams["deepsets_type"] in ["equivariant", "invariant"]:
-            count_flops(model_dir, model)
-
-        print(tcols.HEADER + f"\nRunning inference and saving preds" + tcols.ENDC)
-        y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
-        y_pred.astype("float32").tofile(os.path.join(plots_dir[idx], "y_pred.dat"))
-
-        ce_loss = keras.losses.CategoricalCrossentropy()(
-            data.test_target, y_pred
-        ).numpy()
-        print(tcols.OKCYAN + f"Cross-entropy loss: " + tcols.ENDC, ce_loss)
-        kfold_loss.append(ce_loss)
-
-        acc = calculate_accuracy(y_pred, data.test_target)
-        print(tcols.OKCYAN + f"Accuracy: " + tcols.ENDC, acc)
-        kfold_accs.append(acc)
-
-        fprs, tpr_baseline, aucs, fats = util.plots.roc_curves(
-            plots_dir[idx], y_pred, data.test_target
+        compute_average_metrics(tprs_baseline, kfold_metrics, kfold_root_dir)
+    else:
+        data = import_data(hyperparam_dict)
+        data.test_data = shuffle_constituents(data.test_data, seed)
+        _, model_metrics = evaluate_model(
+            data, hyperparam_dict, args['model_dir'], plots_dir, seed
         )
-        util.plots.dnn_output(plots_dir[idx], y_pred)
-        print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)
-        kfold_fprs.append(fprs)
-        kfold_aucs.append(aucs)
-        kfold_fats.append(fats)
+        util.util.nice_print_dictionary(model_metrics)
 
-        print(tcols.OKGREEN + "\nSaving the model weights..." + tcols.ENDC)
-        weights_file_path = os.path.join(model_dir, "model_weights.h5")
-        model.save_weights(weights_file_path, save_format="h5")
 
-    if len(kfold_fprs) > 1:
-        print(tcols.HEADER + "\nAVERAGE RESULTS..." + tcols.ENDC)
-        outdir = util.util.make_output_directory(kfold_root_dir, "average_plots")
-        average_fprs = np.mean(kfold_fprs, axis=0)
-        errors_fprs = np.std(kfold_fprs, axis=0)
-        average_aucs = np.mean(kfold_aucs, axis=0)
-        errors_aucs = np.std(kfold_aucs, axis=0)
-        average_fats = np.mean(kfold_fats, axis=0)
-        errors_fats = np.std(kfold_fats, axis=0)
-        variance_fats = np.var(kfold_fats, axis=0)
-        util.plots.roc_curves_uncert(
-            tpr_baseline,
-            average_fprs,
-            errors_fprs,
-            average_aucs,
-            errors_aucs,
-            average_fats,
-            errors_fats,
-            outdir,
-        )
+def compute_average_metrics(tprs_baseline, kfold_metrics: dict, kfold_root_dir: str):
+    """Compute the average metrics over the kfolds."""
+    print(tcols.HEADER + "\nAVERAGE RESULTS..." + tcols.ENDC)
+    outdir = util.util.make_output_directory(kfold_root_dir, "average_plots")
 
-        print(
-            f"Accuracy breakdown: {np.mean(kfold_accs, axis=0):.3f} \u00B1 {np.std(kfold_accs):.3f}"
+    avg_metrics = {}
+    for key, value in kfold_metrics.items():
+        avg_metrics.update(
+            {f"{key}": np.mean(value, axis=0), f"{key}_errs": np.std(value, axis=0)}
         )
-        print(
-            f"Average loss: {np.mean(kfold_loss, axis=0):.3f} \u00B1 {np.std(kfold_loss):.3f}"
-        )
-        inverse_fats = 1 / np.mean(average_fats)
-        inverse_fats_error = inverse_fats**2 * np.sqrt(np.sum(variance_fats))
-        print(f"Average 1/<FPR>: {inverse_fats:.3f} \u00B1 {inverse_fats_error:.3f}")
+    variance_fats = np.var(kfold_metrics['fats'])
+
+    roc_uncert_plot_data = avg_metrics.copy()
+    del roc_uncert_plot_data['accs']
+    del roc_uncert_plot_data['accs_errs']
+    del roc_uncert_plot_data['loss']
+    del roc_uncert_plot_data['loss_errs']
+
+    roc_uncert_plot_data.update({'tpr': tprs_baseline, 'outdir': outdir})
+    util.plots.roc_curves_uncert(**roc_uncert_plot_data)
+    inverse_fats = 1 / np.mean(avg_metrics['fats'])
+    inverse_fats_error = inverse_fats**2 * np.sqrt(np.sum(variance_fats))
+
+    print(f"Accuracy: {avg_metrics['accs']:.3f} \u00B1 {avg_metrics['accs_errs']:.3f}")
+    print(f"Avg loss: {avg_metrics['loss']:.3f} \u00B1 {avg_metrics['loss_errs']:.3f}")
+    print(f"Average 1/<FPR>: {inverse_fats:.3f} \u00B1 {inverse_fats_error:.3f}")
+
+
+def evaluate_model(data, hyperparams: dict, model_dir: str,  plots_dir: list, seed: int):
+    """Evaluate a model given its hyperparameters."""
+    model = import_model(model_dir, hyperparams)
+
+    if hyperparams['model_hyperparams']['nbits'] < 1:
+        # Counting of FLOPs only implemented for the floating point models.
+        count_flops(model_dir, model)
+
+    print(tcols.HEADER + f"\nRunning inference for {model_dir}" + tcols.ENDC)
+    y_pred = run_inference(model, data, plots_dir)
+
+    roc_metrics = util.plots.roc_curves(plots_dir, y_pred, data.test_target)
+    util.plots.dnn_output(plots_dir, y_pred)
+    print(tcols.OKGREEN + "\nPlotting done! \U0001F4C8\U00002728" + tcols.ENDC)
+
+    kfold_metrics = {}
+    kfold_metrics.update({"fprs": roc_metrics[0]})
+    kfold_metrics.update({"aucs": roc_metrics[2]})
+    kfold_metrics.update({"fats": roc_metrics[3]})
+    kfold_metrics.update({"accs": calculate_accuracy(y_pred, data.test_target)})
+    kfold_metrics.update({"loss": compute_crossent(y_pred, data.test_target)})
+
+    save_model_weights(model_dir, model)
+
+    return roc_metrics[1], kfold_metrics
+
+
+def save_model_weights(model_dir: str, model: keras.Model):
+    """Saves the weights of a keras model to a specified path."""
+    print(tcols.OKGREEN + "\nSaving the model weights..." + tcols.ENDC)
+    weights_file_path = os.path.join(model_dir, "model_weights.h5")
+    model.save_weights(weights_file_path, save_format="h5")
+
+
+def get_kfolded_models(kfolds_folder: str):
+    return glob.glob(os.path.join(kfolds_folder, "*kfold*"))
+
+
+def run_inference(model: keras.Model, data: util.data.Data, plots_dir: list):
+    """Computes predictions of a model and saves them to numpy files."""
+    y_pred = tf.nn.softmax(model.predict(data.test_data)).numpy()
+    y_pred.astype("float32").tofile(os.path.join(plots_dir, "y_pred.dat"))
+
+    return y_pred
+
+
+def compute_crossent(y_pred: np.ndarray, y_true: np.ndarray):
+    """Computes corss-entropy loss given the predictions of the model and the truth."""
+    categorical_crossent = keras.losses.CategoricalCrossentropy()
+    ce_loss = categorical_crossent(y_true, y_pred).numpy()
+    print(tcols.OKCYAN + f"Cross-entropy loss: " + tcols.ENDC, ce_loss)
+
+    return ce_loss
 
 
 def import_data(hyperparams):
     """Import the data used for training and validating the network."""
-    if "fnames_train" in hyperparams["data_hyperparams"].keys():
-        return util.data.Data.load_kfolds(**hyperparams["data_hyperparams"])
+    fpath = hyperparams['data_hyperparams']['fpath']
+    if hyperparams['data_hyperparams']['fname_test']:
+        fname = hyperparams['data_hyperparams']['fname_test'].rsplit('_', 1)[0]
+    else:
+        fname = hyperparams['data_hyperparams']['fname']
 
-    return util.data.Data(**hyperparams["data_hyperparams"])
+    return util.data.Data(fpath=fpath, fname=fname, only_test=True)
 
 
 def import_model(model_dir: str, hyperparams: dict):
@@ -129,6 +168,7 @@ def import_model(model_dir: str, hyperparams: dict):
 
 
 def count_flops(model_dir: str, model: keras.Model):
+    """Counts the flops a model does and saves the result to a text file."""
     nflops = flops.get_flops(model)
     print("\n".join(f"{k} FLOPs: {v}" for k, v in nflops.items()))
     print(f"{'':=<65}")
@@ -139,6 +179,7 @@ def calculate_accuracy(y_pred: np.ndarray, y_true: np.ndarray):
     """Computes accuracy for a model's predictions."""
     acc = keras.metrics.CategoricalAccuracy()
     acc.update_state(y_true, y_pred)
+    print(tcols.OKCYAN + f"Accuracy: " + tcols.ENDC, acc)
 
     return acc.result().numpy()
 

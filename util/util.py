@@ -73,7 +73,7 @@ def save_flops_file(flops: dict, outdir: str):
 def load_hyperparameter_files(model_dirs: list):
     """Load hyperparameters of multiple models and put them in an array."""
     if isinstance(model_dirs, str):
-        return [load_hyperparameter_file(model_dirs)]
+        return load_hyperparameter_file(model_dirs)
 
     return [load_hyperparameter_file(model_dir) for model_dir in model_dirs]
 

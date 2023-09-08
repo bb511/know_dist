@@ -29,11 +29,11 @@ def choose_deepsets(
     for key in model_hyperparams:
         print(f"{key}: {model_hyperparams[key]}")
 
-    if deepsets_type in ["sequivariant", "sinvariant"]:
-        model_hyperparams.update({"input_shape": (nconst, nfeats)})
-
-    if "nbits" in model_hyperparams.keys():
+    if model_hyperparams['nbits'] > 0:
         deepsets_type = "q" + deepsets_type
+
+    if deepsets_type in ["qsequivariant", "qsinvariant"]:
+        model_hyperparams.update({"input_shape": (nconst, nfeats)})
 
     switcher = {
         "equivariant": lambda: DeepSetsEquiv(**model_hyperparams),

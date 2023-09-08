@@ -10,20 +10,20 @@ import qkeras
 
 
 def deepsets_invariant_synth(
-    input_shape: tuple = (150, 16),
+    input_shape: tuple,
     nnodes_phi: int = 32,
     nnodes_rho: int = 16,
-    activ: str = "elu",
+    activ: str = 'relu',
     nbits: int = 8,
 ):
-    """
-    Invariant deepsets network using functional API to be compatible with hls4ml.
+    """Invariant deepsets network using functional API to be compatible with hls4ml.
+
     The details of this architecture can be found in deepsets.py.
     """
 
+    nclasses = 5
     nbits = format_quantiser(nbits)
     activ = format_qactivation(activ, nbits)
-    nclasses = 5
 
     deepsets_input = keras.Input(shape=input_shape, name="input_layer")
 
@@ -63,7 +63,7 @@ def deepsets_equivariant_synth(
     input_shape=(150, 16),
     nnodes_phi: int = 32,
     nnodes_rho: int = 16,
-    activ: str = "elu",
+    activ: str = 'relu',
     nbits: int = 8,
 ):
     """

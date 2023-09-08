@@ -21,6 +21,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 args = {
     "model_dir":        args.model_dir,
+    "kfolds":           True,
     "const_seed":       318
 }
 

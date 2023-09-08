@@ -19,12 +19,13 @@ if args.gpu:
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 kfolds = 5
+const = 32
 train_kfolds = [kfold for kfold in range(kfolds) if kfold != args.test_kfold]
 data_hyperparams = {
-    "fpath":        '../../ki_data/jets_8constituents_ptetaphi_robust',
-    "fnames_train": ['jet_images_c8_minpt2.0_ptetaphi_robust_fast_' + str(train_kfold)
+    "fpath":        f'../../ki_data/jets_{const}constituents_ptetaphi_robust_fast',
+    "fnames_train": [f'jet_images_c{const}_minpt2.0_ptetaphi_robust_fast_{train_kfold}'
                      for train_kfold in train_kfolds],
-    "fname_test":   'jet_images_c8_minpt2.0_ptetaphi_robust_fast_' + str(args.test_kfold),
+    "fname_test":   f'jet_images_c{const}_minpt2.0_ptetaphi_robust_fast_{args.test_kfold}',
 }
 
 training_hyperparams = {
@@ -43,11 +44,11 @@ compilation_hyperparams = {
 model_hyperparams = {
     "nnodes_phi": [24, 32],
     "nnodes_rho": [32],
-    "activ": ['relu', 'tanh'],
+    "activ": ['relu'],
 }
 
 args = {
-    "study_name":           'synth_8const_ptetaphi_0',
+    "study_name":           f'synthable_{const}const_ptetaphi',
     "storage":              'deepsets_inv',
     "deepsets_type":        'invariant',
     "outdir":               'deepsets_hyperopt',

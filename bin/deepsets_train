@@ -13,6 +13,8 @@ parser.add_argument("--gpu", type=str, default="",
                     help="Sets the number of the GPU to run on.")
 parser.add_argument("--test_kfold", type=int, default=-1,
                     help="Which kfold to use for test.")
+parser.add_argument("--nbits", type=int, default=-1,
+                    help="The number of bits for quantisation of the model.")
 parser.add_argument("--outdir", type=str, default="test",
                     help="The output directory name.")
 args = parser.parse_args()
@@ -23,19 +25,18 @@ if args.gpu:
 kfolds = 5
 nconst = 8
 train_kfolds = [kfold for kfold in range(kfolds) if kfold != args.test_kfold]
+test_kfold = args.test_kfold
 data_hyperparams = {
-    "fpath":        f'../../ki_data/jets_{nconst}constituents_ptetaphi_robust',
-    "fnames_train": [
-        f'jet_images_c{nconst}_minpt2.0_ptetaphi_robust_' + str(train_kfold)
-        for train_kfold in train_kfolds
-        ],
-    "fname_test": None,
+    "fpath":        f'../../ki_data/jets_{nconst}constituents_ptetaphi_robust_fast',
+    "fnames_train": [f'jet_images_c{nconst}_minpt2.0_ptetaphi_robust_fast_{train_kfold}'
+                     for train_kfold in train_kfolds],
+    "fname_test":   f'jet_images_c{nconst}_minpt2.0_ptetaphi_robust_fast_{test_kfold}',
 }
 
 training_hyperparams = {
     "epochs":       300,
-    "batch":        64,
-    "lr":           0.0001,
+    "batch":        256,
+    "lr":           0.0018,
     "valid_split":  0.2,
 }
 
@@ -49,7 +50,7 @@ model_hyperparams = {
     "nnodes_phi": 32,
     "nnodes_rho": 32,
     "activ": 'relu',
-    # "nbits": 8,
+    "nbits": args.nbits,
 }
 
 args = {
@@ -58,7 +59,7 @@ args = {
     "model_hyperparams":    model_hyperparams,
     "compilation":          compilation_hyperparams,
     "outdir":               args.outdir,
-    "deepsets_type":        "invariant",
+    "deepsets_type":        "sinvariant",
 }
 
 main(args)

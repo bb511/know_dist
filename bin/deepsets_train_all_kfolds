@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
-nohup python -u deepsets_train --test_kfold 0 --gpu 0 --outdir deepsequiv_3layer_8const_kfolds/kfold_0 > ./logs/deepsequiv_3layer_8const_kfold_0 &
-nohup python -u deepsets_train --test_kfold 1 --gpu 0 --outdir deepsequiv_3layer_8const_kfolds/kfold_1 > ./logs/deepsequiv_3layer_8const_kfold_1 &
-nohup python -u deepsets_train --test_kfold 2 --gpu 0 --outdir deepsequiv_3layer_8const_kfolds/kfold_2 > ./logs/deepsequiv_3layer_8const_kfold_2 &
-nohup python -u deepsets_train --test_kfold 3 --gpu 1 --outdir deepsequiv_3layer_8const_kfolds/kfold_3 > ./logs/deepsequiv_3layer_8const_kfold_3 &
-nohup python -u deepsets_train --test_kfold 4 --gpu 1 --outdir deepsequiv_3layer_8const_kfolds/kfold_4 > ./logs/deepsequiv_3layer_8const_kfold_4 &
-nohup python -u deepsets_train --test_kfold 5 --gpu 1 --outdir deepsequiv_3layer_8const_kfolds/kfold_5 > ./logs/deepsequiv_3layer_8const_kfold_5 &
-nohup python -u deepsets_train --test_kfold 6 --gpu 2 --outdir deepsequiv_3layer_8const_kfolds/kfold_6 > ./logs/deepsequiv_3layer_8const_kfold_6 &
-nohup python -u deepsets_train --test_kfold 7 --gpu 2 --outdir deepsequiv_3layer_8const_kfolds/kfold_7 > ./logs/deepsequiv_3layer_8const_kfold_7 &
-nohup python -u deepsets_train --test_kfold 8 --gpu 2 --outdir deepsequiv_3layer_8const_kfolds/kfold_8 > ./logs/deepsequiv_3layer_8const_kfold_8 &
-nohup python -u deepsets_train --test_kfold 9 --gpu 3 --outdir deepsequiv_3layer_8const_kfolds/kfold_9 > ./logs/deepsequiv_3layer_8const_kfold_9 &
+nohup python -u deepsets_train --test_kfold 0 --gpu 0 --nbits 8 --outdir deepsinv_synthable_8bits_8const_ptetaphi_kfolds/kfold_0 > ./logs/deepsinv_synthable_8bits_8const_ptetaphi_kfold_0 &
+nohup python -u deepsets_train --test_kfold 1 --gpu 1 --nbits 8 --outdir deepsinv_synthable_8bits_8const_ptetaphi_kfolds/kfold_1 > ./logs/deepsinv_synthable_8bits_8const_ptetaphi_kfold_1 &
+nohup python -u deepsets_train --test_kfold 2 --gpu 2 --nbits 8 --outdir deepsinv_synthable_8bits_8const_ptetaphi_kfolds/kfold_2 > ./logs/deepsinv_synthable_8bits_8const_ptetaphi_kfold_2 &
+nohup python -u deepsets_train --test_kfold 3 --gpu 3 --nbits 8 --outdir deepsinv_synthable_8bits_8const_ptetaphi_kfolds/kfold_3 > ./logs/deepsinv_synthable_8bits_8const_ptetaphi_kfold_3 &
+nohup python -u deepsets_train --test_kfold 4 --gpu 0 --nbits 8 --outdir deepsinv_synthable_8bits_8const_ptetaphi_kfolds/kfold_4 > ./logs/deepsinv_synthable_8bits_8const_ptetaphi_kfold_4 &
