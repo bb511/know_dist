@@ -1,3 +1,5 @@
+# Script that synthesizes a given deepsets model and then returns the performance
+# performance metrics for the synthesis.
 import os
 import numpy as np
 import tensorflow as tf
@@ -9,8 +11,11 @@ tf.random.set_seed(12)
 from tensorflow import keras
 import tensorflow.keras.layers as KL
 
-from deepsets.deepsets_synth import deepsets_invariant_synth
-from deepsets.deepsets_synth import deepsets_equivariant_synth
+import util.util
+import util.plots
+import util.data
+from . import flops
+from util.terminal_colors import tcols
 
 
 def main(args):
@@ -31,7 +36,7 @@ def main(args):
     hls_model = hls4ml.converters.convert_from_keras_model(
         model,
         hls_config=config,
-        output_dir=outname,
+        output_dir=model_dir,
         part="xcvu9p-flgb2104-2l-e",
         io_type="io_parallel",
     )
