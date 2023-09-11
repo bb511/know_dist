@@ -30,7 +30,6 @@ def select_feature_labels(filename: str) -> list[str]:
         "$\\cos(\\theta^\\mathrm{rel}$",
     ]
     andre_feature_labels = ["p_T", "\\eta^\\mathrm{rel}", "\\phi^\\mathrm{rel}"]
-    print(filename)
     choice = filename.split("_")[4]
 
     switcher = {
