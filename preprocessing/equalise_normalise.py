@@ -143,8 +143,8 @@ def format_output_filename(input_name: str, feats_sel: str, norm_name: str) -> s
     """Formats the name of the output file given a certain convention so the data
     loading for the ml models is easier.
     """
-    input_name_separated = os.path.basename(input_name).split("_")
-    input_base_name = input_name_separated[1:-1]
+    input_name_separated = os.path.splitext(os.path.basename(input_name))[0].split("_")
+    input_base_name = input_name_separated[1:]
 
     output_filename = "_".join(input_base_name)
 

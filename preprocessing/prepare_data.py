@@ -11,6 +11,7 @@ import argparse
 import numpy as np
 import h5py
 
+import util
 from terminal_colors import tcols
 
 
@@ -36,8 +37,10 @@ def main(args):
 
     out_file_name = make_output_file_name(args)
 
-    np.save(os.path.join(args.output_dir, f"x_{out_file_name}"), x_data)
-    np.save(os.path.join(args.output_dir, f"y_{out_file_name}"), y_data)
+    output_dir = args.output_dir.rsplit('/', 1)
+    output_dir = util.make_output_directory(output_dir[0], output_dir[1])
+    np.save(os.path.join(output_dir, f"x_{out_file_name}"), x_data)
+    np.save(os.path.join(output_dir, f"y_{out_file_name}"), y_data)
 
     print(tcols.OKGREEN + f"Saved processed data to {args.output_dir}." + tcols.ENDC)
 
@@ -120,7 +123,7 @@ def make_output_file_name(args):
     constituents = f"_c{args.max_constituents}"
     min_pt = f"_minpt{args.min_pt}"
 
-    return prefix + constituents + min_pt + f"_{args.flag}"
+    return prefix + constituents + min_pt
 
 
 if __name__ == "__main__":
@@ -146,12 +149,6 @@ if __name__ == "__main__":
         type=int,
         default=8,
         help="Maximum number of jet constituents data should have.",
-    )
-    parser.add_argument(
-        "--flag",
-        type=str,
-        default="",
-        help="Attach a string to the end of the output file name.",
     )
     args = parser.parse_args()
 
